@@ -1,0 +1,90 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "allowJs": false,
+    "strict": true,
+    "jsx": "preserve",
+    "importHelpers": true,
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "noUnusedLocals": false,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "types": [
+      "vite/client"
+    ],
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "@common/base/*": [
+        "common/base/src/*"
+      ],
+      "@modules/campus/*": [
+        "modules/campus/src/*"
+      ],
+      "@modules/scheduling/*": [
+        "modules/scheduling/src/*"
+      ],
+      "@modules/patient/*": [
+        "modules/patient/src/*"
+      ],
+      "@modules/system/*": [
+        "modules/system/src/*"
+      ],
+      "@modules/workbench/*": [
+        "modules/workbench/src/*"
+      ],
+      "@modules/property/*": [
+        "modules/property/src/*"
+      ],
+      "@modules/chat/*": [
+        "modules/chat/src/*"
+      ],
+      "@modules/visualization/*": [
+        "modules/visualization/src/*"
+      ],
+      "@modules/evaluate/*": [
+        "modules/evaluate/src/*"
+      ],
+      "@modules/qualityControl/*": [
+        "modules/qualityControl/src/*"
+      ],
+      "@modules/statisticalStatement/*": [
+        "modules/statisticalStatement/src/*"
+      ],
+      "@modules/advanced/*": [
+        "modules/advanced/src/*"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.d.ts",
+    "src/**/*.vue",
+    "ui/**/*.ts",
+    "ui/**/*.tsx",
+    "ui/**/*.d.ts",
+    "ui/**/*.vue",
+    "common/**/*.ts",
+    "common/**/*.tsx",
+    "common/**/*.d.ts",
+    "common/**/*.vue",
+    "modules/*/src/**/*.ts",
+    "modules/*/src/**/*.tsx",
+    "modules/**/*.d.ts",
+    "modules/*/src/**/*.vue",
+    "vite.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.js",
+    "common"
+  ]
+}
