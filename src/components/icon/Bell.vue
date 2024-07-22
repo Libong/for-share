@@ -8,7 +8,6 @@
 
 <script lang="ts" setup>
 import {ref, watch} from 'vue';
-import Phone from "@/assets/phone.svg";
 
 
 /*定义组件的入参 并使用ts规定类型*/
