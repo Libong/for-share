@@ -34,12 +34,9 @@ let props = defineProps({
     type: Boolean,
     default: true,
   },
-  noticeSpan: {
-    type: Object as PropType<NoticeSpanProp>,
-    default: {
-      text: "",
-      style: { opacity: 1 },
-    },
+  noticeText: {
+    type: String,
+    default: "",
   },
   inputValue: String,
   isShaking: Boolean,
@@ -63,13 +60,20 @@ function showChange() {
 const emit = defineEmits(["update:inputValue"]);
 const updateModel = (event: Event) => {
   let v = (event.target as HTMLInputElement).value;
-  console.log(2);
   if (v == "") {
-    console.log(1);
-    props.noticeSpan.style.opacity = 0;
+    showNotice(false);
   }
   emit("update:inputValue", v);
 };
+
+//提示词
+const showNoticeText = ref(false);
+function showNotice(ev: boolean) {
+  showNoticeText.value = ev;
+}
+defineExpose({
+  showNotice,
+});
 </script>
 
 <template>
@@ -92,9 +96,7 @@ const updateModel = (event: Event) => {
         alt=""
       />
     </span>
-    <span :style="noticeSpan?.style" class="notice-content">{{
-      noticeSpan.text
-    }}</span>
+    <span v-show="showNoticeText" class="notice-content">{{ noticeText }}</span>
   </div>
 </template>
 

@@ -11,26 +11,25 @@
       <img class="logo" :src="LogoImg" alt="" />
       <!-- 用户名登录表单 start-->
       <CustomInput
+        ref="userNameEl"
         :is-show="loginChangeItem.loginType === FormTypeEnum.UserName"
         :input="{ placeholder: '用户名', name: '用户名' }"
-        :noticeSpan="temp"
-        v-model:inputValue="loginReq.username"
+        notice-text="用户名已被占用"
+        v-model:inputValue="loginReq.account"
       />
       <CustomInput
         :is-show="loginChangeItem.loginType === FormTypeEnum.UserName"
         :type="'password'"
         :input="{ placeholder: '密码', name: '密码' }"
-        v-model:input-value="loginReq.password"
+        v-model:inputValue="loginReq.password"
       />
       <!-- 用户名登录表单 end-->
       <!-- 手机号登录表单 start-->
       <CustomInput
+        ref="phoneEl"
         :is-show="loginChangeItem.loginType === FormTypeEnum.Phone"
         :input="{ placeholder: '手机号', name: '手机号' }"
-        :noticeSpan="{
-          text: '手机号格式不正确',
-          style: { opacity: inputNoticeSpanStyle.phoneOpacity },
-        }"
+        notice-text="手机号格式不正确"
         :is-shaking="inputShakingCtrl.phoneShaking"
         v-model:inputValue="loginReq.phone"
       />
@@ -71,6 +70,7 @@
       </div>
 
       <Button1 :text="'登 录'" @click="login()" />
+      <!--      <el-button @click="login()">test</el-button>-->
     </div>
     <div v-if="!isLogin" class="form-container">
       <img class="back-arrow" :src="BackArrowImg" alt="" @click="toLogin" />
@@ -88,14 +88,12 @@
         v-model:input-value="registerReq.password"
       />
       <CustomInput
+        ref="confirmPasswordEl"
         :is-show="loginChangeItem.loginType === FormTypeEnum.UserName"
         :type="'password'"
         :input="{ placeholder: '确认密码', name: '确认密码' }"
         v-model:input-value="registerReq.repeatPassword"
-        :noticeSpan="{
-          text: '两次输入密码不一致',
-          style: { opacity: inputNoticeSpanStyle.phoneOpacity },
-        }"
+        notice-text="两次输入密码不一致"
       />
       <!-- 用户名注册表单 end-->
 
@@ -116,28 +114,39 @@
 </template>
 
 <script lang="ts" setup>
-import { defineComponent, reactive, ref } from "vue";
-import Bell from "@/components/icon/Bell.vue";
+import { defineComponent, onMounted, reactive, ref } from "vue";
+import Bell from "@/components/common/icon/Bell.vue";
 import LogoImg from "@/assets/logo.png";
 import Phone from "@/assets/phone.svg";
 import Email from "@/assets/email.svg";
 import Username from "@/assets/username.svg";
-import { FormTypeEnum } from "./Login";
+import { FormTypeEnum, ILoginInReq, loginInInterface } from "./Login";
 import BackArrowImg from "@/assets/back-arrow.svg";
-import Button1 from "@/components/button/button1.vue";
+import Button1 from "@/components/common/button/button1.vue";
 import { CSSProperties } from "@vue/runtime-dom";
-import CustomInput from "@/components/input/customInput.vue";
+import CustomInput from "@/components/common/input/customInput.vue";
+import { ElNotification } from "element-plus";
+import { ObjClear } from "@/tool/tool";
+import { Notification } from "@arco-design/web-vue";
 
 defineComponent({
   components: {
     Bell,
   },
 });
+onMounted(() => {
+  ElNotification({
+    title: "123213",
+    message: "登录成功",
+    duration: 0,
+  });
+});
 //数据
-let loginReq = reactive({
+let loginReq = reactive(<ILoginInReq>{
+  loginInType: 0,
   phone: "",
-  captcha: "",
-  username: "",
+  verifyCode: "",
+  account: "",
   password: "",
   email: "",
 });
@@ -146,15 +155,6 @@ let registerReq = reactive({
   password: "",
   repeatPassword: "",
 });
-/*输入框提示词样式*/
-let inputNoticeSpanStyle = reactive({
-  usernameOpacity: 0,
-  phoneOpacity: 0,
-});
-let temp = reactive({
-  text: "用户名已被占用",
-  style: { opacity: inputNoticeSpanStyle.usernameOpacity },
-});
 /*抖动控制*/
 let inputShakingCtrl = reactive({
   usernameShaking: false,
@@ -162,18 +162,15 @@ let inputShakingCtrl = reactive({
 });
 /*校验*/
 //确认密码校验
-let noticeTextStyle = reactive({
-  top: "40px",
-  opacity: 0,
-});
+const confirmPasswordEl = ref();
 const checkConfirmPassword = (ev: any) => {
   const { target } = ev;
   if (!target?.value) return;
 
   if (registerReq.password != target.value) {
-    noticeTextStyle.opacity = 1;
+    confirmPasswordEl.value.showNotice(true);
   } else {
-    noticeTextStyle.opacity = 0;
+    confirmPasswordEl.value.showNotice(false);
   }
 };
 //登录功能切换
@@ -213,13 +210,28 @@ function changeLoginWay() {
       break;
   }
 }
-function login() {
-  // ObjClear(loginReq);
-  if (loginReq.username == "123") {
-    inputNoticeSpanStyle.usernameOpacity = 1;
+let userNameEl = ref();
+async function login() {
+  ObjClear(loginReq);
+  if (loginReq.account == "123") {
+    userNameEl.value.showNotice(true);
   } else {
-    inputNoticeSpanStyle.usernameOpacity = 0;
+    userNameEl.value.showNotice(false);
   }
+  Notification.info({
+    title: "Notification",
+    content: "This is a notification!",
+  });
+  // ElNotification({
+  //   title: "123213",
+  //   message: "登录成功",
+  //   duration: 0,
+  // });
+  // loginReq.loginInType = loginChangeItem.loginType;
+  //
+  // let loginResp = await loginInInterface(loginReq);
+
+  // console.log("login over:", loginResp);
 }
 /*验证码*/
 let captchaButtonText = ref("获取验证码");
@@ -240,6 +252,7 @@ function btnAble() {
   btnDisabledStyle.cursor = "pointer";
 }
 const phoneRegex = /^1[3-9]\d{9}$/;
+const phoneEl = ref();
 function sendPhoneCaptcha() {
   //手机号校验 判断输入内容格式是否正确
   if (!phoneRegex.test(loginReq.phone)) {
@@ -247,10 +260,10 @@ function sendPhoneCaptcha() {
     setTimeout(() => {
       inputShakingCtrl.phoneShaking = !inputShakingCtrl.phoneShaking;
     }, 500);
-    inputNoticeSpanStyle.phoneOpacity = 1;
+    phoneEl.value.showNotice(true);
     return;
   } else {
-    inputNoticeSpanStyle.phoneOpacity = 0;
+    phoneEl.value.showNotice(false);
   }
   //将button改为不可点击
   btnDisable();
@@ -269,17 +282,17 @@ function sendPhoneCaptcha() {
     captchaButtonText.value = countDown.value + "秒后重试";
   }, 1000);
 }
-//注册
+//去注册页面
 function toRegister() {
   isLogin.value = false;
+  ObjClear(loginReq);
 }
+//去登录页面
 function toLogin() {
   isLogin.value = true;
-  for (let key in registerReq) {
-    registerReq[key as keyof typeof registerReq] = "";
-  }
-  //TODO 很蠢就
-  noticeTextStyle.opacity = 0;
+  ObjClear(registerReq);
+  //关闭提示红字
+  confirmPasswordEl.value.showNotice(false);
 }
 //忘记密码
 </script>
