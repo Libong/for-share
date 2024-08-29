@@ -1,23 +1,29 @@
-<script setup lang="ts">
-import { PropType, reactive, ref } from "vue";
+<script lang="ts" setup>
+import {PropType, reactive, ref} from "vue";
+
 interface NoticeSpanStyle {
   opacity: number;
+
   //加个这个就可以解决把对象当作style进行赋值且不会报错的volar提示问题
   [cssProperty: string]: string | number | undefined;
 }
+
 interface NoticeSpanProp {
   text: string;
   style: NoticeSpanStyle;
 }
+
 interface InputStyleProp {
   [cssProperty: string]: string | number | undefined;
 }
+
 interface InputProp {
   placeholder: string;
   name: string;
   // style: InputStyleProp;
   // type: string;
 }
+
 let props = defineProps({
   input: {
     type: Object as PropType<InputProp>,
@@ -52,9 +58,9 @@ let passwordEye = reactive({
 function showChange() {
   inputType.value = inputType.value == "text" ? "password" : "text";
   passwordEye.src =
-    passwordEye.src == "src/assets/eye-open.svg"
-      ? "src/assets/eye-hide.svg"
-      : "src/assets/eye-open.svg";
+      passwordEye.src == "src/assets/eye-open.svg"
+          ? "src/assets/eye-hide.svg"
+          : "src/assets/eye-open.svg";
 }
 
 const emit = defineEmits(["update:inputValue"]);
@@ -68,32 +74,39 @@ const updateModel = (event: Event) => {
 
 //提示词
 const showNoticeText = ref(false);
-function showNotice(ev: boolean) {
-  showNoticeText.value = ev;
+
+function showNotice(isShow: boolean) {
+  showNoticeText.value = isShow;
 }
+
+function isNoticeShow(): boolean {
+  return showNoticeText.value;
+}
+
 defineExpose({
   showNotice,
+  isNoticeShow,
 });
 </script>
 
 <template>
   <div v-if="isShow" class="input-er">
     <input
-      :value="inputValue"
-      :type="inputType"
-      :placeholder="input?.placeholder"
-      @input="updateModel"
-      :class="{ shaking: isShaking }"
+        :class="{ shaking: isShaking }"
+        :placeholder="input?.placeholder"
+        :type="inputType"
+        :value="inputValue"
+        @input="updateModel"
     />
     <span class="content">{{ input.name }}</span>
     <span v-if="type == 'password'">
       <img
-        @click="showChange()"
-        class="eye"
-        :src="passwordEye.src"
-        width="25px"
-        height="25px"
-        alt=""
+          :src="passwordEye.src"
+          alt=""
+          class="eye"
+          height="25px"
+          width="25px"
+          @click="showChange()"
       />
     </span>
     <span v-show="showNoticeText" class="notice-content">{{ noticeText }}</span>
@@ -128,34 +141,43 @@ defineExpose({
     /*加边距使文本浮空 不会贴紧输入框*/
     padding: 0 15px;
     /*设置颜色*/
+
     &::placeholder {
       color: rgba(255, 255, 255, 0.6);
       font-weight: bold;
       font-size: 12px;
     }
+
     /*聚焦时*/
+
     &:focus {
       /*改变描边的颜色*/
       outline: 2px solid rgb(255, 255, 255, 0.5);
       /*提示字消失*/
+
       &::placeholder {
         /*完全透明*/
         opacity: 0;
       }
+
       /*输入框外展示提示字*/
+
       & + .content {
         /*显示*/
         opacity: 1;
         top: -20px;
       }
     }
+
     /*当内部提示字未展示时(输入框中有内容) 展示外部提示字*/
+
     &:not(:placeholder-shown) + .content {
       /*显示*/
       opacity: 1;
       top: -20px;
     }
   }
+
   .content {
     /*会根据父标签中为relative的div 移动*/
     position: absolute;
@@ -173,6 +195,7 @@ defineExpose({
     /*默认隐藏*/
     opacity: 0;
   }
+
   .notice-content {
     /*会根据父标签中为relative的div 移动*/
     position: absolute;
@@ -187,6 +210,7 @@ defineExpose({
     transition: 0.25s ease-out;
     top: 40px;
   }
+
   .eye {
     position: absolute;
     right: 10px;
