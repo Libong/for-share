@@ -12,6 +12,7 @@
   /*背景大小 覆盖整个 会失真*/
   background-size: cover;
 }
+
 .form-container {
   transition: 1s;
   height: 500px;
@@ -37,7 +38,8 @@
   /*边距 4->上右下左 2->上下左右*/
   color: black;
   padding: 40px 60px;
-  .bell{
+
+  .bell {
     position: absolute;
     top: 0;
     left: 300px;
@@ -45,12 +47,14 @@
     height: 30px;
     cursor: pointer;
   }
-  .logo{
+
+  .logo {
     width: 200px;
     height: 70px;
     margin-top: 10px;
   }
-  .input-phoneCaptcha{
+
+  .input-phoneCaptcha {
     /*必须加宽度否则子标签无法变化*/
     width: 100%;
     display: flex;
@@ -58,25 +62,27 @@
     justify-content: space-between;
     align-items: center;
   }
-  .to-forget{
+
+  .to-forget {
     width: 100%;
     height: 5%;
     margin-top: 5px;
     font-size: 12px;
     display: flex;
     /*设置子标签为一左一右*/
-    justify-content: space-between;
+    justify-content: right;
   }
 }
+
 /*验证码*/
-.captcha-btn{
+.captcha-btn {
   width: 40%;
   height: 35px;
   margin-top: 30px;
   /*圆角边框*/
   border-radius: 5px;
   /*背景设置透明*/
-/*  background-color: rgb(58, 50, 50);*/
+  /*  background-color: rgb(58, 50, 50);*/
   background: transparent;
   /*不设置边框 否则会有边框会有阴影*/
   border: none;
@@ -88,8 +94,9 @@
   font-weight: bold;
   margin-left: 10px;
 }
+
 /*返回箭头*/
-.back-arrow{
+.back-arrow {
   position: absolute;
   width: 30px;
   height: 30px;
@@ -101,7 +108,7 @@
 
 
 @media screen and (max-width: 968px) {
-  .form-container{
+  .form-container {
     height: 350px;
     width: 250px;
     padding: 20px;

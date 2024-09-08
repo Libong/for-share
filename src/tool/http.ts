@@ -1,28 +1,39 @@
-import axios from "axios";
+import axios, {AxiosRequestConfig} from "axios";
+import {toSnakeCase} from "@/tool/tool";
 
-axios.defaults.baseURL = "http://192.168.10.101:8000/libong";
+export interface IApiResponse {
+    code: number;
+    error: string;
+    data: object;
+}
+
+axios.defaults.timeout = 25000;
+axios.defaults.baseURL = "http://localhost:8000";
 axios.defaults.headers.common = {
     "Content-Type": "application/json",
     app_id: "1231",
 };
-// //请求拦截器
-// axios.interceptors.request.use((config: AxiosRequestConfig | any) => config);
-//
-// //响应拦截器
-// axios.interceptors.response.use(
-//     //成功时调用
-//     (res) => {
-//         console.log(res);
-//         return res;
-//     },
-//     //失败时调用 返回Promise.reject可以使得在链路的catch中捕获该err
-//     (err) => {
-//         return Promise.reject(err);
-//     },
-// );
+//请求拦截器
+axios.interceptors.request.use((config: AxiosRequestConfig | any) => config);
+
+//响应拦截器
+axios.interceptors.response.use(
+    //成功时调用
+    (res) => {
+        const apiResponse = res.data as IApiResponse;
+        if (apiResponse.error != "") {
+            return Promise.reject(apiResponse.error);
+        }
+        return res;
+    },
+    //失败时调用 返回Promise.reject可以使得在链路的catch中捕获该err
+    (err) => {
+        return Promise.reject(err);
+    },
+);
 
 interface IHttp {
-    get<T>(url: string, auth: boolean, param?: unknown): Promise<T>;
+    get<T>(url: string, auth: boolean, param?: unknown): Promise<IApiResponse>;
 
     post<T>(url: string, auth: boolean, data?: unknown): Promise<IApiResponse>;
 }
@@ -47,9 +58,10 @@ const http: IHttp = {
         });
     },
     post(url, auth, data) {
+
         return new Promise((resolve, reject) => {
             axios
-                .post(url, data, {})
+                .post(url, toSnakeCase(data), {})
                 .then((res) => {
                     resolve(res.data);
                 })
@@ -61,9 +73,3 @@ const http: IHttp = {
 };
 
 export default http;
-
-export interface IApiResponse {
-    code: number;
-    error: string;
-    data: object;
-}

@@ -1,9 +1,10 @@
 import http from "@/tool/http";
+import {toCamelCaseObject, toSnakeCase} from "@/tool/tool";
 
 export enum FormTypeEnum {
     Phone = 1,
-    Email = 2,
-    UserName = 3,
+    Email = 4,
+    Account = 2,
 }
 
 export interface ILoginInReq {
@@ -24,9 +25,9 @@ export interface ILoginInResp {
 export function loginInInterface(req: ILoginInReq): Promise<ILoginInResp> {
     return new Promise((resolve, reject) => {
         http
-            .post("/login/in", false, req)
+            .post("/libong/login/in", false, req)
             .then((res) => {
-                return res.data as ILoginInResp;
+                resolve(toCamelCaseObject(res.data) as ILoginInResp);
             })
             .catch((err) => {
                 reject(err);
@@ -41,8 +42,9 @@ export interface ISendLoginSmsReq {
 export function sendLoginSmsInterface(req: ISendLoginSmsReq): Promise<void> {
     return new Promise((resolve, reject) => {
         http
-            .get("/login/sms/send", false, req)
+            .get("/libong/login/login/sms/send", false, toSnakeCase(req))
             .then((res) => {
+                resolve();
             })
             .catch((err) => {
                 reject(err);

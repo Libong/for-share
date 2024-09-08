@@ -1,0 +1,154 @@
+$borderRadius: 10px;
+$primary: #406ff3;
+$text: #6a778e;
+$timing: 250ms;
+$transition: $timing ease all;
+
+.bg-container {
+  /*视口宽度的百分比 vw*/
+  width: 100vw;
+  /*作为flex容器*/
+  display: flex;
+  /*类似水平和垂直居中 */
+  justify-content: center;
+  align-items: center;
+  /*视口高度的百分比 vh*/
+  height: 100vh;
+  /*背景大小 覆盖整个 会失真*/
+  background-size: cover;
+  background-color: #ebeef5;
+}
+
+@mixin gooeyEffect($i) {
+  @keyframes gooeyEffect-#{$i} {
+    0% {
+      transform: scale(1, 1);
+    }
+    50% {
+      transform: scale(1.5, 0.5);
+    }
+    100% {
+      transform: scale(1, 1);
+    }
+  }
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap');
+body {
+  background: #eaeef6;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.navbar {
+  $ref: &;
+  position: fixed;
+  top: 1rem;
+  background: #fff;
+  border-radius: $borderRadius;
+  height: 3rem;
+  box-shadow: 0 0 40px rgba(144, 154, 171, 0.75);
+
+  &__link {
+    position: relative;
+    display: flex;
+    height: 3rem;
+    width: 4rem;
+    color: $text;
+    transition: $transition;
+    align-items: center;
+    justify-content: center;
+
+    span {
+      position: absolute;
+      top: 120%; /* 位于链接的正下方 */
+      left: 50%; /* 位于链接的中间 */
+      transform: translate(-50%, -(1.5rem)); /* 垂直向下移动，并向左对齐 */
+      opacity: 0;
+      //pointer-events: none;
+      color: $primary;
+      background: #fff;
+      transition: $transition;
+      border-radius: $borderRadius * 1.75;
+      text-align: center; /* 文本居中 */
+      width: 80%;
+      padding: 0.75rem;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    &:hover {
+      color: #fff;
+    }
+
+    .navbar:not(:hover) &:focus,
+    &:hover {
+      span {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+    }
+  }
+
+  &__lu {
+    display: flex;
+    list-style-type: none;
+    position: relative;
+    padding: 0;
+    height: 100%;
+  }
+
+  &__li {
+    margin: 0 20px;
+    cursor: pointer;
+
+    &:last-child {
+      &:before {
+        margin: 0 20px;
+        content: '';
+        position: absolute;
+        opacity: 0;
+        z-index: -1;
+        left: 0;
+        height: 3rem;
+        width: 4rem;
+        background: $primary;
+        border-radius: $borderRadius * 1.75;
+        transition: $timing cubic-bezier(1, 0.2, 0.1, 1.2) all;
+
+      }
+    }
+
+    @for $i from 1 to 12 {
+      &:first-child:nth-last-child(#{$i}),
+      &:first-child:nth-last-child(#{$i}) ~ li {
+        &:hover {
+          ~ li:last-child:before {
+            opacity: 1;
+          }
+        }
+
+        &:last-child:hover:before {
+          opacity: 1;
+        }
+
+        @for $j from 1 to $i {
+          &:nth-child(#{$j}):hover, {
+            ~ li:last-child:before {
+              @include gooeyEffect($j);
+              left: (100% / $i) * ($j - 1);
+              animation: gooeyEffect-#{$j} $timing 1;
+            }
+          }
+        }
+
+        &:last-child:hover:before, {
+          @include gooeyEffect($i);
+          left: (100% / $i) * ($i - 1);
+          animation: gooeyEffect-#{$i} $timing 1;
+        }
+      }
+    }
+
+  }
+
+}

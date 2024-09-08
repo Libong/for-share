@@ -12,12 +12,15 @@
   },
   "dependencies": {
     "@icon-park/vue-next": "^1.4.2",
+    "@types/feather-icons": "^4.29.4",
     "axios": "^1.7.2",
     "element-plus": "^2.7.4",
+    "feather-icons": "^4.29.2",
     "sass": "^1.77.6",
     "sass-loader": "^14.2.1",
     "swiper": "^11.1.9",
     "vue": "^3.4.21",
+    "vue-feather": "2",
     "vue-router": "^4.4.0"
   },
   "devDependencies": {

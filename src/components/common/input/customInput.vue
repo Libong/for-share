@@ -205,7 +205,7 @@ defineExpose({
     /*字体大小 比提示小点*/
     font-size: 11px;
     /*字体加粗*/
-    font-weight: bold;
+    font-weight: bolder;
     /*当改元素被改变时的动画 时间0.25 ease-out函数(使得变化开始较快，然后逐渐减慢)*/
     transition: 0.25s ease-out;
     top: 40px;
