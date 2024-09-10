@@ -113,8 +113,6 @@ body {
         width: 4rem;
         background: $primary;
         border-radius: $borderRadius * 1.75;
-        transition: $timing cubic-bezier(1, 0.2, 0.1, 1.2) all;
-
       }
     }
 
@@ -149,6 +147,10 @@ body {
       }
     }
 
+  }
+
+  &__transition:before{
+    transition: $timing cubic-bezier(1, 0.2, 0.1, 1.2) all;
   }
 
 }
