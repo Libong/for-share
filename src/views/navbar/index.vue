@@ -40,14 +40,24 @@ function toShare() {
             <i data-feather="slack"></i>
             <span>分享</span></a>
         </li>
+        <li class="navbar__li" @click="toHome">
+          <a class="navbar__link">
+            <i data-feather="slack"></i>
+            <span>分享</span></a>
+        </li>
       </ul>
     </nav>
-    <div class="content">
-      <router-view/> <!-- 主内容区域 -->
+    <div class="main-content">
+      <!--      <router-view/> &lt;!&ndash; 主内容区域 &ndash;&gt;-->
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
 @import "index";
+
+.main-content {
+  width: 500px;
+  height: 500px;
+}
 </style>
