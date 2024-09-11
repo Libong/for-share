@@ -2,6 +2,7 @@
 import feather from 'feather-icons';
 import {onMounted, ref} from "vue";
 import router from "@/router";
+import Mine from '../mine/index.vue'
 
 const navbarEl = ref()
 
@@ -54,7 +55,7 @@ function mouseleave(){
       </ul>
     </nav>
     <div class="content">
-      <router-view/> <!-- 主内容区域 -->
+      <router-view/>
     </div>
   </div>
 </template>
