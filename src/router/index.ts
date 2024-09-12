@@ -9,24 +9,7 @@ const routes: Array<RouteRecordRaw> = [
     {
         path: "/login",
         name: "Login",
-        component: () => import("../components/login/Login.vue"),
-        // children: [
-        //   {
-        //     path: "/login",
-        //     name: "Login",
-        //     component: import("../components/login/Login.vue"),
-        //   },
-        // ],
-    },
-    {
-        path: "/eat",
-        name: "Eat",
-        component: () => import("@/views/eat/index.vue"),
-    },
-    {
-        path: "/drink",
-        name: "Drink",
-        component: () => import("@/views/drink/index.vue"),
+        component: () => import("@/views/login/Login.vue"),
     },
     {
         path: "/improveInfo",
@@ -44,9 +27,9 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import("@/views/navbar/index.vue"),
         children: [
             {
-                path: "/mine",
-                name: "Mine",
-                component: () => import("@/views/mine/index.vue"),
+                path: "",
+                name: "Record",
+                component: () => import("@/views/record/index.vue"),
             },
         ]
     },

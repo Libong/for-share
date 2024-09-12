@@ -3,6 +3,8 @@ $primary: #406ff3;
 $text: #6a778e;
 $timing: 250ms;
 $transition: $timing ease all;
+$headerTop: 1rem;
+$headerHeight: 3rem;
 
 .bg-container {
   /*视口宽度的百分比 vw*/
@@ -10,8 +12,8 @@ $transition: $timing ease all;
   /*作为flex容器*/
   display: flex;
   /*类似水平和垂直居中 */
-  justify-content: center;
-  align-items: center;
+  //justify-content: center;
+  align-items: end;
   /*视口高度的百分比 vh*/
   height: 100vh;
   /*背景大小 覆盖整个 会失真*/
@@ -33,19 +35,15 @@ $transition: $timing ease all;
   }
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap');
-body {
-  background: #eaeef6;
-  font-family: 'Open Sans', sans-serif;
-}
 
 .navbar {
   $ref: &;
+  display: flex;
   position: fixed;
-  top: 1rem;
+  top: $headerTop;
   background: #fff;
   border-radius: $borderRadius;
-  height: 3rem;
+  height: $headerHeight;
   box-shadow: 0 0 40px rgba(144, 154, 171, 0.75);
 
   &__link {
@@ -133,7 +131,7 @@ body {
           &:nth-child(#{$j}):hover, {
             ~ li:last-child:before {
               @include gooeyEffect($j);
-              left: (100% / $i) * ($j - 1);
+              left: calc(100% / $i) * ($j - 1);
               animation: gooeyEffect-#{$j} $timing 1;
             }
           }
@@ -141,7 +139,7 @@ body {
 
         &:last-child:hover:before, {
           @include gooeyEffect($i);
-          left: (100% / $i) * ($i - 1);
+          left: calc(100% / $i) * ($i - 1);
           animation: gooeyEffect-#{$i} $timing 1;
         }
       }
@@ -149,8 +147,99 @@ body {
 
   }
 
-  &__transition:before{
+  &__transition:before {
     transition: $timing cubic-bezier(1, 0.2, 0.1, 1.2) all;
   }
 
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  height: $headerHeight;
+  top: $headerTop;
+  position: fixed;
+
+  &-center {
+    display: flex;
+    flex-grow: 1; /* 中间的元素可以伸缩，占据剩余空间 */
+  }
+
+  &-right {
+    display: flex;
+    width: 20%;
+    align-items: center;
+    justify-content: right;
+    margin-bottom: 5px;
+  }
+
+  &-left {
+    display: flex;
+    width: 40%;
+  }
+}
+
+.profile-btn {
+  border: none;
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-left: 2px solid #ddd;
+
+  img {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-right: 4px;
+  }
+
+  span {
+    color: var(--main-color);
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 700;
+  }
+}
+
+.mode-switch {
+  background-color: transparent;
+  border: 0;
+  color: var(--main-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.setting-btn {
+  color: #fff;
+  background-color: var(--button-bg);
+  border: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.notification-btn {
+  color: var(--main-color);
+  border: 0;
+  background-color: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+
+//.mode-switch.active .moon {
+//  fill: var(--main-color);
+//}
+.main-content {
+  display: flex;
+  width: 100%;
+  height: 85%;
 }

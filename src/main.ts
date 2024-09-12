@@ -1,4 +1,4 @@
-import "./assets/main.css";
+import "./base.css";
 //从vue库中引入函数
 import {createApp} from "vue";
 import "element-plus/dist/index.css";

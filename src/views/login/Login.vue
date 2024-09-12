@@ -416,5 +416,5 @@ function toLogin() {
 </script>
 
 <style lang="scss" scoped>
-@import "./login";
+@import "login";
 </style>
