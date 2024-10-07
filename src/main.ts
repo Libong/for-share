@@ -8,8 +8,10 @@ import App from "./App.vue";
 //加入路由
 import router from "./router";
 import {ElNotification} from "element-plus";
+import VueInfiniteScroll from 'vue-infinite-scroll';
 
 const app = createApp(App);
+app.directive('infinite-scroll', VueInfiniteScroll);
 //相当于把页面挂载到index.html上 div的id为app
 app.use(router).mount("#app");
 // 设置全局错误处理器

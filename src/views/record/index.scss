@@ -40,3 +40,34 @@
     opacity: .6;
   }
 }
+
+.projects-section {
+  display: flex;
+  height: 100%;
+  width: 80%;
+  flex-direction: column;
+}
+
+.projects-tool {
+  height: 40px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  &-refresh {
+    height: 30px;
+    width: 50px;
+    cursor: pointer;
+  }
+}
+
+.project-boxes {
+  margin: 0 -8px;
+  overflow-y: auto;
+
+  &.jsGridView {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}

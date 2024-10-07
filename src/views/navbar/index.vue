@@ -18,9 +18,9 @@ function to(path: string) {
 
 
 const options = [
-  {label: '首页', path: '/home', feathe: 'home'},
-  {label: '记录', path: '/navbar/mine', feathe: 'clipboard'},
-  {label: '分享', path: '/share', feathe: 'slack'}
+  {label: '首页', path: '/home', feather: 'home'},
+  {label: '记录', path: '/navbar/mine', feather: 'clipboard'},
+  {label: '分享', path: '/share', feather: 'slack'}
 ]
 
 
@@ -45,7 +45,7 @@ function mouseleave() {
           <ul class="navbar__lu" @mouseenter="mouseenter" @mouseleave="mouseleave">
             <li v-for="item in options" ref="navbarEl" class="navbar__li" @click="to(item.path)">
               <a class="navbar__link">
-                <i :data-feather="item.feathe"></i>
+                <i :data-feather="item.feather"></i>
                 <span>{{ item.label }}</span>
               </a>
             </li>
