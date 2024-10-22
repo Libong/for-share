@@ -83,6 +83,7 @@ function isNoticeShow(): boolean {
   return showNoticeText.value;
 }
 
+/*将方法暴露出去给父组件使用*/
 defineExpose({
   showNotice,
   isNoticeShow,

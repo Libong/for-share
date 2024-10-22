@@ -1,0 +1,40 @@
+.model {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+}
+
+.container {
+  width: 30%;
+  height: 60%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 8px;
+
+  &-form {
+    width: 80%;
+    height: 80%;
+    padding: 20px;
+    background: black;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/*动画刚开始时的效果 相当于从这个状态变成展示的状态*/
+.slide-and-grow-enter-from, .slide-and-grow-leave-to {
+  opacity: 0; //透明
+  transform: translateX(-37%) translateY(-27%) scale(0.1); //缩小
+}
+
+.slide-and-grow-enter-active, .slide-and-grow-leave-active {
+  transition: all 1s ease-in-out;
+}

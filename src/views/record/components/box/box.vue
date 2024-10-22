@@ -4,7 +4,7 @@ import DeleteIcon from "@/assets/delete-icon.svg";
 import UpdateIcon from "@/assets/update-icon.svg";
 import MoreVertical from "@/assets/more-vertical.svg";
 import {computed, PropType, ref} from "vue";
-import {ISearchRecord} from "@/views/record/index";
+import {IShoppingRecord} from "@/views/record/index";
 
 const boxColorMap: Record<number, string> = {
   1: '#e9e7fd',
@@ -18,7 +18,7 @@ const boxColorMap: Record<number, string> = {
 const showMenu = ref(true)
 let props = defineProps({
   data: {
-    type: Object as PropType<ISearchRecord>,
+    type: Object as PropType<IShoppingRecord>,
     default: {},
   },
   insideEstablishTime: String,
@@ -55,7 +55,11 @@ const buyTimeTextAlignItems = ref('normal');
 
 /*进度条相关操作*/
 //当前时间的偏移量
-const currentTimeOffsetPercent = Math.floor((new Date().getTime() / 1000 - props.data.produceAt) / (props.data.overdueAt - props.data.produceAt) * 100)
+let currentTimeOffsetPercent = Math.floor((new Date().getTime() / 1000 - props.data.produceAt) / (props.data.overdueAt - props.data.produceAt) * 100)
+if (currentTimeOffsetPercent > 100) {
+  currentTimeOffsetPercent = 100;
+}
+
 //购买时间下标的偏移量
 const triangleOffsetPercent = Math.floor((props.data.buyAt - props.data.produceAt) / (props.data.overdueAt - props.data.produceAt) / 86400 * 100)
 //购买时间文字的偏移量

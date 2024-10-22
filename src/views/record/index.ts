@@ -17,7 +17,7 @@ export interface ISearchShoppingRecordsPageReq {
     recordType: RecordType,
 }
 
-export interface ISearchRecord {
+export interface IShoppingRecord {
     establishAt: number, //创建时间
     produceAt: number, //生产日期
     overdueAt: number, //过期时间
@@ -28,7 +28,7 @@ export interface ISearchRecord {
 }
 
 export interface ISearchShoppingRecordsPageResp {
-    list: ISearchRecord[],
+    list: IShoppingRecord[],
     total: number,
 }
 

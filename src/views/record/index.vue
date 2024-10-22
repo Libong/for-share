@@ -3,8 +3,9 @@ import SearchIcon from "@/assets/search.svg"
 import SearchRefresh from "@/assets/refresh.svg"
 import AddIcon from "@/assets/add-icon.svg"
 import {onMounted, reactive, ref} from "vue";
-import {ISearchRecord, ISearchShoppingRecordsPageReq, RecordType} from "@/views/record/index";
+import {ISearchShoppingRecordsPageReq, IShoppingRecord, RecordType} from "@/views/record/index";
 import Box from "@/views/record/components/box/box.vue";
+import Form from "@/views/record/components/form/form.vue";
 
 onMounted(() => {
   search();
@@ -20,7 +21,7 @@ const searchShoppingRecordsPageReq = reactive(<ISearchShoppingRecordsPageReq>{
   pageNum: 1,
   recordType: recordType.value,
 })
-const shoppingRecords = ref<ISearchRecord[]>([])
+const shoppingRecords = ref<IShoppingRecord[]>([])
 
 async function search() {
   if (pageCondition.busy || (searchShoppingRecordsPageReq.pageNum * searchShoppingRecordsPageReq.pageSize >= pageCondition.total)) {
@@ -104,6 +105,22 @@ async function refreshSearch() {
     recordId: "6", //记录编号
   }]
 }
+
+const showAddModel = ref(false);
+
+function reverseAddModelDisplay() {
+  showAddModel.value = !showAddModel.value;
+}
+
+const addShoppingRecordReq = reactive(<IShoppingRecord>{
+  establishAt: 0, //创建时间
+  produceAt: 0, //生产日期
+  overdueAt: 0, //过期时间
+  buyAt: 0, //购买日期
+  goodsName: "", //物品名称
+  goodsTypes: [], //物品标签
+  recordId: "", //记录编号
+})
 </script>
 
 <template>
@@ -114,7 +131,7 @@ async function refreshSearch() {
     </div>
     <div class="projects-section">
       <div class="projects-tool">
-        <img :src="AddIcon" alt="" class="projects-tool-refresh" title="新增" @click="">
+        <img :src="AddIcon" alt="" class="projects-tool-refresh" title="新增" @click="reverseAddModelDisplay">
         <img :src="SearchRefresh" alt="" class="projects-tool-refresh" title="刷新" @click="refreshSearch">
       </div>
       <div class="project-boxes jsGridView">
@@ -127,6 +144,10 @@ async function refreshSearch() {
       </div>
     </div>
   </div>
+  <Form
+      :data=addShoppingRecordReq
+      :is-show="showAddModel"
+      @update:isShow="showAddModel = $event"><!--子组件触发update:isShow事件后同步更新--></Form>
 </template>
 
 <style lang="scss" scoped>
