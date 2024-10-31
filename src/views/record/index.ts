@@ -18,10 +18,10 @@ export interface ISearchShoppingRecordsPageReq {
 }
 
 export interface IShoppingRecord {
-    establishAt: number, //创建时间
-    produceAt: number, //生产日期
-    overdueAt: number, //过期时间
-    buyAt: number, //购买日期
+    establishAt: number | null, //创建时间
+    produceAt: number | null, //生产日期
+    overdueAt: number | null, //过期时间
+    buyAt: number | null, //购买日期
     goodsName: string, //物品名称
     goodsTypes: Label[], //物品标签
     recordId: string, //记录编号

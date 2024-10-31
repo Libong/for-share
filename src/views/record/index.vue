@@ -6,6 +6,7 @@ import {onMounted, reactive, ref} from "vue";
 import {ISearchShoppingRecordsPageReq, IShoppingRecord, RecordType} from "@/views/record/index";
 import Box from "@/views/record/components/box/box.vue";
 import Form from "@/views/record/components/form/form.vue";
+import {testData} from "@/views/record/components/form/form";
 
 onMounted(() => {
   search();
@@ -37,90 +38,35 @@ async function search() {
 async function refreshSearch() {
   // const recordsResp = await searchShoppingRecordsPageInterface(searchShoppingRecordsPageReq);
   // shoppingRecords.value = recordsResp.list;
-  shoppingRecords.value = [{
-    establishAt: 1726578156,
-    produceAt: 1727971200, //生产日期
-    overdueAt: 1728316800, //过期时间
-    buyAt: 1728028800, //购买日期
-    goodsName: "碧翠园厚切牛乳吐司", //物品名称
-    goodsTypes: [{
-      id: "1",
-      name: "面包",
-    }], //物品标签
-    recordId: "1", //记录编号
-  }, {
-    establishAt: 1726578156,
-    produceAt: 1726578156, //生产日期
-    overdueAt: 1726578156, //过期时间
-    buyAt: 1726578156, //购买日期
-    goodsName: "碧翠园厚切牛乳吐司", //物品名称
-    goodsTypes: [{
-      id: "1",
-      name: "面包",
-    }], //物品标签
-    recordId: "2", //记录编号
-  }, {
-    establishAt: 1726578156,
-    produceAt: 1726578156, //生产日期
-    overdueAt: 1726578156, //过期时间
-    buyAt: 1726578156, //购买日期
-    goodsName: "碧翠园厚切牛乳吐司", //物品名称
-    goodsTypes: [{
-      id: "1",
-      name: "面包",
-    }], //物品标签
-    recordId: "3", //记录编号
-  }, {
-    establishAt: 1728138765,
-    produceAt: 1728138765, //生产日期
-    overdueAt: 1728138765, //过期时间
-    buyAt: 1728138765, //购买日期
-    goodsName: "碧翠园厚切牛乳吐司", //物品名称
-    goodsTypes: [{
-      id: "1",
-      name: "面包",
-    }], //物品标签
-    recordId: "4", //记录编号
-  }, {
-    establishAt: 1728138765,
-    produceAt: 1728138765, //生产日期
-    overdueAt: 1728138765, //过期时间
-    buyAt: 1728138765, //购买日期
-    goodsName: "碧翠园厚切牛乳吐司", //物品名称
-    goodsTypes: [{
-      id: "1",
-      name: "面包",
-    }], //物品标签
-    recordId: "5", //记录编号
-  }, {
-    establishAt: 1728138765,
-    produceAt: 1728138765, //生产日期
-    overdueAt: 1728138765, //过期时间
-    buyAt: 1728138765, //购买日期
-    goodsName: "碧翠园厚切牛乳吐司", //物品名称
-    goodsTypes: [{
-      id: "1",
-      name: "面包",
-    }], //物品标签
-    recordId: "6", //记录编号
-  }]
-}
-
-const showAddModel = ref(false);
-
-function reverseAddModelDisplay() {
-  showAddModel.value = !showAddModel.value;
+  shoppingRecords.value = testData;
 }
 
 const addShoppingRecordReq = reactive(<IShoppingRecord>{
-  establishAt: 0, //创建时间
-  produceAt: 0, //生产日期
-  overdueAt: 0, //过期时间
-  buyAt: 0, //购买日期
+  establishAt: null, //创建时间
+  produceAt: null, //生产日期
+  overdueAt: null, //过期时间
+  buyAt: null, //购买日期
   goodsName: "", //物品名称
   goodsTypes: [], //物品标签
   recordId: "", //记录编号
 })
+const selectGoodsType = reactive([
+  {"id": "1", "name": "面包"},
+  {"id": "2", "name": "饮料"},
+  {"id": "3", "name": "巧克力"},
+  {"id": "4", "name": "豆制品"},
+])
+
+
+const showAddModel = ref(true);
+
+function openAddModelDisplay() {
+  showAddModel.value = !showAddModel.value;
+}
+
+function addRecordCallback() {
+  shoppingRecords.value.push(addShoppingRecordReq);
+}
 </script>
 
 <template>
@@ -131,7 +77,7 @@ const addShoppingRecordReq = reactive(<IShoppingRecord>{
     </div>
     <div class="projects-section">
       <div class="projects-tool">
-        <img :src="AddIcon" alt="" class="projects-tool-refresh" title="新增" @click="reverseAddModelDisplay">
+        <img :src="AddIcon" alt="" class="projects-tool-refresh" title="新增" @click="openAddModelDisplay">
         <img :src="SearchRefresh" alt="" class="projects-tool-refresh" title="刷新" @click="refreshSearch">
       </div>
       <div class="project-boxes jsGridView">
@@ -147,6 +93,8 @@ const addShoppingRecordReq = reactive(<IShoppingRecord>{
   <Form
       :data=addShoppingRecordReq
       :is-show="showAddModel"
+      :select-goods-types="selectGoodsType"
+      @addRecord="addRecordCallback"
       @update:isShow="showAddModel = $event"><!--子组件触发update:isShow事件后同步更新--></Form>
 </template>
 

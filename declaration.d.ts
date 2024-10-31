@@ -5,8 +5,4 @@ declare module 'vue-infinite-scroll' {
     const content: any;
     export default content;
 }
-declare const Physics2DPlugin: any;
-// declare module '@/plugin/Physics2DPlugin3.min.js' {
-//     const content: any;
-//     export default content;
-// }
+declare module "*.mjs";

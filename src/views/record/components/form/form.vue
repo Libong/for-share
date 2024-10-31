@@ -1,13 +1,9 @@
 <script lang="ts" setup>
 
-import {PropType} from "vue";
-import {IShoppingRecord} from "@/views/record/index";
-
-interface ITransformStyle {
-  scale: number,
-  left: number,
-  top: number,
-}
+import {PropType, reactive, ref} from "vue";
+import {IShoppingRecord, Label} from "@/views/record/index";
+import {ElMessage, FormInstance, FormRules} from "element-plus";
+import Button2 from "@/components/common/button/Button2.vue";
 
 let props = defineProps({
   data: {
@@ -18,59 +14,207 @@ let props = defineProps({
     type: Boolean,
     default: false,
   },
-  transformStyle: {
-    type: Object as PropType<ITransformStyle>,
-    default: {
-      scale: 0,
-      left: 0,
-      top: 0,
-    }
+  selectGoodsTypes: {
+    type: Array as PropType<Label[]>,
   }
 })
 
-const emits = defineEmits(['update:isShow']);
+let isDisabledTeleport = ref(true)
+//定义事件 用于给父组件获取
+const emits = defineEmits(['update:isShow', 'addRecord']);
 
-const toggleShow = () => {
+const closeAddModel = () => {
   emits('update:isShow', !props.isShow);
 };
+const addConfirmed = async (formEl: FormInstance | undefined) => {
+  let showMsgType = "success"
+  let showMsg = "添加成功";
+  if (formEl) {
+    await formEl.validate((valid, fields) => {
+      if (valid) {
+      } else {
+        showMsgType = "warning";
+        showMsg = "校验失败";
+      }
+    })
+  }
+  ElMessage({
+    message: showMsg,
+    // type: showMsgType,
+    plain: true,
+    customClass: "form-message",
+    duration: 1500
+  });
+  // //先将表单隐藏不可用 然后再执行动画归位
+  // setTimeout(function () {
+  //   isDisabledTeleport.value = !isDisabledTeleport.value;
+  //   closeAddModel();
+  // }, 1000);
+  // //再重置表单可用
+  // setTimeout(function () {
+  //   isDisabledTeleport.value = !isDisabledTeleport.value;
+  // }, 1000);
+  emits('addRecord');
+}
+
+function fixOverdueAt(value: number) {
+  if (value != null) {
+    props.data.overdueAt = value + 86400 - 1;
+  }
+}
+
+/*规则*/
+const ruleFormRef = ref<FormInstance>()
+
+const checkDateValidator = (rule: any, value: any, callback: any) => {
+  if (!value) {
+    return callback(new Error('请选择时间'))
+  }
+  if (props.data.produceAt != null && props.data.overdueAt != null) {
+    if (props.data.produceAt > props.data.overdueAt) {
+      return callback(new Error('生产时间不能大于过期时间'))
+    }
+  }
+  if (props.data.buyAt != null) {
+    console.log("props.data.overdueAt:", props.data.overdueAt);
+    console.log("props.data.produceAt:", props.data.produceAt);
+    if ((props.data.overdueAt != null && props.data.buyAt > props.data.overdueAt) || (props.data.produceAt != null && props.data.buyAt < props.data.produceAt)) {
+      return callback(new Error('请选择正确的购买时间'))
+    }
+  }
+  callback()
+}
+
+const rules = reactive<FormRules<typeof props.data>>({
+  produceAt: [{
+    required: true, validator: (rule: any, value: any, callback: any) => {
+      if (!value) {
+        callback(new Error('请输入生产时间'));
+      }
+      if (props.data.overdueAt != null && value > props.data.overdueAt) {
+        callback(new Error('生产日期必须小于过期时间'));
+      } else if (props.data.buyAt != null && value < props.data.buyAt) {
+        callback(new Error('生产日期必须小于购买日期'));
+      } else {
+        callback();
+      }
+    }, trigger: 'change'
+  }],
+  overdueAt: [{
+    required: true, validator: (rule: any, value: any, callback: any) => {
+      if (!value) {
+        callback(new Error('请输入过期时间'));
+      }
+      if (props.data.produceAt != null && value < props.data.produceAt) {
+        callback(new Error('过期时间必须大于生产日期'));
+      } else if (props.data.buyAt != null && value < props.data.buyAt) {
+        callback(new Error('过期时间必须大于购买日期'));
+      } else {
+        callback();
+      }
+    }, trigger: 'change'
+  }],
+  buyAt: [{
+    required: true, validator: (rule: any, value: any, callback: any) => {
+      if (!value) {
+        callback(new Error('请输入购买时间'));
+      }
+      if ((props.data.produceAt != null && value < props.data.produceAt) || (props.data.overdueAt != null && value > props.data.overdueAt)) {
+        callback(new Error('购买日期必须大于等于生产日期，且小于过期时间'));
+      } else {
+        callback();
+      }
+    }, trigger: 'change'
+  }],
+  goodsName: [
+    {required: true, message: '物品名称未填写', trigger: 'blur'},
+  ]
+})
+
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport v-if="isDisabledTeleport" to="body">
     <transition name="slide-and-grow">
       <div v-if="isShow"
            class="model">
         <div class="container">
-          <el-form :model="data" class="container-form">
-            <el-form-item label="物品名称">
-              <el-input v-model="data.goodsName"/>
+          <p class="addText">新增</p>
+          <el-form
+              ref="ruleFormRef"
+              :label-position="'right'"
+              :model="data"
+              :rules="rules"
+              class="container-form"
+              label-width="auto">
+            <el-form-item label="物品名称" prop="goodsName">
+              <el-input v-model="data.goodsName"
+                        placeholder="请输入物品名称"
+                        style="width:230px"/>
+            </el-form-item>
+            <el-form-item label="生产日期" prop="produceAt">
+              <el-date-picker
+                  v-model="data.produceAt"
+                  :editable="false"
+                  format="YYYY-MM-DD"
+                  style="width:230px"
+                  type="date"
+                  value-format="x"
+              />
+            </el-form-item>
+            <el-form-item label="过期时间" prop="overdueAt">
+              <el-date-picker
+                  v-model="data.overdueAt"
+                  :editable="false"
+                  editable:false
+                  format="YYYY-MM-DD"
+                  style="width:230px"
+                  type="date"
+                  value-format="x"
+                  @change="fixOverdueAt"
+              />
+            </el-form-item>
+            <el-form-item label="购买日期" prop="buyAt">
+              <el-date-picker
+                  v-model="data.buyAt"
+                  :editable="false"
+                  format="YYYY-MM-DD"
+                  style="width:230px"
+                  type="date"
+                  value-format="x"
+              />
+            </el-form-item>
+            <el-form-item label="分类">
+              <el-select
+                  v-model="data.goodsTypes"
+                  :max-collapse-tags="2"
+                  collapse-tags
+                  collapse-tags-tooltip
+                  filterable
+                  multiple
+                  placeholder="Select"
+                  style="width: 230px"
+              >
+                <el-option
+                    v-for="item in selectGoodsTypes"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id"
+                />
+              </el-select>
             </el-form-item>
           </el-form>
-          <div class="demo-datetime-picker">
-            <div class="block">
-              <el-date-picker
-                  v-model="value1"
-                  date-format="MMM DD, YYYY"
-                  format="YYYY-MM-DD HH:mm:ss"
-                  placeholder="Pick a Date"
-                  time-format="HH:mm"
-                  type="datetime"
-              />
-            </div>
-            <div class="line"/>
-            <div class="block">
-              <el-date-picker
-                  v-model="value2"
-                  date-format="YYYY/MM/DD ddd"
-                  end-placeholder="End date"
-                  format="YYYY-MM-DD HH:mm:ss"
-                  start-placeholder="Start date"
-                  time-format="A hh:mm:ss"
-                  type="datetimerange"
-              />
-            </div>
+          <div class="bottom-btn">
+            <button
+                class="bottom-btn-cancel"
+                @click="closeAddModel">
+              <span>等一下!</span>
+            </button>
+            <Button2 :text="'记录'"
+                     class="bottom-btn-confirm"
+                     @click="addConfirmed(ruleFormRef)">
+            </Button2>
           </div>
-          <button @click="toggleShow">测试</button>
         </div>
       </div>
     </transition>

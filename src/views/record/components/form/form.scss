@@ -18,14 +18,44 @@
   justify-content: center;
   background: white;
   border-radius: 8px;
+  flex-direction: column;
+
+  .addText {
+    font-size: larger;
+    width: 80%;
+    margin-bottom: 20px;
+  }
 
   &-form {
     width: 80%;
-    height: 80%;
-    padding: 20px;
-    background: black;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    height: 60%;
+  }
+
+  .bottom-btn {
+    display: flex;
+    width: 80%;
+    justify-content: space-between;
+
+    &-confirm {
+      display: flex;
+      scale: 0.8;
+    }
+
+    &-cancel {
+      width: 85px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      scale: 0.8;
+      outline: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      color: #F6F8FF;
+      border-radius: 12px;
+      background: #1E2235;
+      //padding: 9px 22px 9px 16px;
+    }
   }
 }
 

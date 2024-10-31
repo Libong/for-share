@@ -16,7 +16,6 @@
     "axios": "^1.7.2",
     "element-plus": "^2.7.4",
     "feather-icons": "^4.29.2",
-    "gsap": "^3.2.6",
     "sass": "^1.77.6",
     "sass-loader": "^14.2.1",
     "swiper": "^11.1.9",

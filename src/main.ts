@@ -7,12 +7,14 @@ import "@/style/custom.scss" //必须全局引用才能被element-plus的customC
 import App from "./App.vue";
 //加入路由
 import router from "./router";
+//全局引入组件
 import ElementPlus, {ElNotification} from 'element-plus'
-import VueInfiniteScroll from 'vue-infinite-scroll';
+
 
 const app = createApp(App);
-app.directive('infinite-scroll', VueInfiniteScroll);
 app.use(ElementPlus);
+//TODO没用移到app.vue里设置了
+// app.use(ElementPlus, {locale: zhCn})
 //相当于把页面挂载到index.html上 div的id为app
 app.use(router).mount("#app");
 // 设置全局错误处理器

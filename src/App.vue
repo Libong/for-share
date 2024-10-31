@@ -1,10 +1,12 @@
 <script lang="ts" setup>
-import Button2 from "@/components/common/button/Button2.vue";
+
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 </script>
 
 <template>
   <div>
-    <!--    <router-view :key="$route.fullPath"></router-view>-->
-    <Button2></Button2>
+    <el-config-provider :locale="zhCn">
+      <router-view :key="$route.fullPath"></router-view>
+    </el-config-provider>
   </div>
 </template>

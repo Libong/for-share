@@ -72,7 +72,7 @@
         <span :style="jumpSpanStyle" @click="">忘记密码?</span>
       </div>
 
-      <Button2 :text="loginChangeItem.loginType === FormTypeEnum.Phone?'注 册 / 登 录':'登 录'" @click="login()"/>
+      <Button1 :text="loginChangeItem.loginType === FormTypeEnum.Phone?'注 册 / 登 录':'登 录'" @click="login()"/>
     </div>
     <!--    <div v-if="!isLogin" class="form-container">-->
     <!--      <img :src="BackArrowImg" alt="" class="back-arrow" @click="toLogin"/>-->
@@ -152,12 +152,12 @@ import Phone from "@/assets/phone.svg";
 import Email from "@/assets/email.svg";
 import Account from "@/assets/username.svg";
 import {FormTypeEnum, ILoginInReq, loginInInterface, sendLoginSmsInterface,} from "./Login";
-import Button2 from "@/components/common/button/Button2.vue";
 import {CSSProperties} from "@vue/runtime-dom";
 import CustomInput from "@/components/common/input/CustomInput.vue";
 import {ElMessage, ElNotification} from "element-plus";
 import {ObjClear} from "@/tool/tool";
 import router from "@/router";
+import Button1 from "@/components/common/button/Button1.vue";
 
 defineComponent({
   components: {
