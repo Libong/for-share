@@ -482,7 +482,7 @@ button, a {
   }
 
   &.jsListView {
-    .project-box {
+    .box {
       display: flex;
       border-radius: 10px;
       position: relative;
@@ -543,7 +543,7 @@ button, a {
   }
 }
 
-.project-box {
+.box {
   --main-color-card: #dbf6fd;
   border-radius: 30px;
   padding: 16px;
@@ -889,7 +889,7 @@ button, a {
     text-align: center;
   }
 
-  .project-boxes.jsListView .project-box > * {
+  .project-boxes.jsListView .box > * {
     margin-right: 10px;
   }
 

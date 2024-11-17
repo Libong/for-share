@@ -2,11 +2,13 @@
 import SearchIcon from "@/assets/search.svg"
 import SearchRefresh from "@/assets/refresh.svg"
 import AddIcon from "@/assets/add-icon.svg"
-import {onMounted, reactive, ref} from "vue";
+import UpArrowIcon from "@/assets/up-arrow.svg"
+import {onMounted, onUnmounted, reactive, ref} from "vue";
 import {ISearchShoppingRecordsPageReq, IShoppingRecord, RecordType} from "@/views/record/index";
 import Box from "@/views/record/components/box/box.vue";
 import Form from "@/views/record/components/form/form.vue";
 import {testData} from "@/views/record/components/form/form";
+import {toSecondOrMilli} from "@/tool/tool";
 
 onMounted(() => {
   search();
@@ -38,14 +40,14 @@ async function search() {
 async function refreshSearch() {
   // const recordsResp = await searchShoppingRecordsPageInterface(searchShoppingRecordsPageReq);
   // shoppingRecords.value = recordsResp.list;
-  shoppingRecords.value = testData;
+  shoppingRecords.value = testData.slice();
 }
 
-const addShoppingRecordReq = reactive(<IShoppingRecord>{
-  establishAt: null, //创建时间
-  produceAt: null, //生产日期
-  overdueAt: null, //过期时间
-  buyAt: null, //购买日期
+let shoppingRecordObj = reactive(<IShoppingRecord>{
+  establishAt: 0, //创建时间
+  produceAt: 0, //生产日期
+  overdueAt: 0, //过期时间
+  buyAt: 0, //购买日期
   goodsName: "", //物品名称
   goodsTypes: [], //物品标签
   recordId: "", //记录编号
@@ -58,15 +60,66 @@ const selectGoodsType = reactive([
 ])
 
 
-const showAddModel = ref(true);
+const showModel = ref(false);
 
 function openAddModelDisplay() {
-  showAddModel.value = !showAddModel.value;
+  showModel.value = !showModel.value;
 }
 
 function addRecordCallback() {
-  shoppingRecords.value.push(addShoppingRecordReq);
+  //TODO 调接口
+  console.log(shoppingRecordObj);
+  shoppingRecordObj.overdueAt = Math.floor(shoppingRecordObj.overdueAt / 1000);
+  shoppingRecordObj.buyAt = Math.floor(shoppingRecordObj.buyAt / 1000);
+  shoppingRecordObj.produceAt = Math.floor(shoppingRecordObj.produceAt / 1000);
+  shoppingRecords.value.push(shoppingRecordObj);
 }
+
+function deleteRecordById(recordId: string) {
+  console.log("recordId", recordId);
+  shoppingRecords.value = shoppingRecords.value.filter(record => record.recordId !== recordId);
+}
+
+function showUpdateRecordModel(data: IShoppingRecord) {
+  data.overdueAt = toSecondOrMilli(data.overdueAt, false);
+  data.buyAt = toSecondOrMilli(data.buyAt, false);
+  data.produceAt = toSecondOrMilli(data.produceAt, false);
+  data.establishAt = toSecondOrMilli(data.establishAt, false);
+  shoppingRecordObj = data;
+  console.log(data);
+  shoppingRecordObj.goodsTypes = [{
+    id: "1",
+    name: "面包",
+  }];
+  showModel.value = !showModel.value;
+}
+
+/*滑动条*/
+const scrollableDivRef = ref<HTMLElement | null>(null);
+//回到顶部
+const scrollToTop = () => {
+  if (scrollableDivRef.value) {
+    scrollableDivRef.value.scrollTop = 0;
+  }
+};
+onMounted(() => {
+  if (scrollableDivRef.value) {
+    scrollableDivRef.value.addEventListener('scroll', handleScroll);
+  }
+});
+
+onUnmounted(() => {
+  if (scrollableDivRef.value) {
+    scrollableDivRef.value.removeEventListener('scroll', handleScroll);
+  }
+});
+const handleScroll = (event: Event) => {
+  const target = event.target as HTMLElement;
+  if (target.scrollHeight - target.scrollTop === target.clientHeight) {
+    // 到达底部，调用接口更新数据
+    // testRefreshRecords();
+  }
+};
 </script>
 
 <template>
@@ -80,22 +133,29 @@ function addRecordCallback() {
         <img :src="AddIcon" alt="" class="projects-tool-refresh" title="新增" @click="openAddModelDisplay">
         <img :src="SearchRefresh" alt="" class="projects-tool-refresh" title="刷新" @click="refreshSearch">
       </div>
-      <div class="project-boxes jsGridView">
+      <div ref="scrollableDivRef" class="project-boxes jsGridView">
         <!--v-infinite-scroll="search" :infinite-scroll-disabled="pageCondition.busy"-->
         <!--        <div class="project-box-wrapper">-->
-        <div v-for="item in shoppingRecords" :key="item.recordId" style="width: 33.3%">
-          <box :data="item"></box>
+        <div v-for="item in shoppingRecords" :key="item.recordId" style="width: 33.3%;height: 267px">
+          <box :data="item"
+               @delete="deleteRecordById(item.recordId)"
+               @update="showUpdateRecordModel"></box>
         </div>
         <!--        </div>-->
       </div>
+      <div class="projects-back2Top" @click="scrollToTop">
+        <img :src="UpArrowIcon" alt="" class="projects-back2Top-arrow">
+        <span class="projects-back2Top-text">回到顶部</span>
+      </div>
+      <span class="projects-showMoreText">下拉加载更多</span>
     </div>
   </div>
   <Form
-      :data=addShoppingRecordReq
-      :is-show="showAddModel"
+      :data=shoppingRecordObj
+      :is-show="showModel"
       :select-goods-types="selectGoodsType"
       @addRecord="addRecordCallback"
-      @update:isShow="showAddModel = $event"><!--子组件触发update:isShow事件后同步更新--></Form>
+      @update:isShow="showModel = $event"><!--子组件触发update:isShow事件后同步更新--></Form>
 </template>
 
 <style lang="scss" scoped>

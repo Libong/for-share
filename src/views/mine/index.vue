@@ -118,7 +118,7 @@ onMounted(() => {
         </div>
         <div class="project-boxes jsGridView">
           <div class="project-box-wrapper">
-            <div class="project-box" style="background-color: #fee4cb;">
+            <div class="box" style="background-color: #fee4cb;">
               <div class="project-box-header">
                 <span>December 10, 2020</span>
                 <div class="more-wrapper">
@@ -169,7 +169,7 @@ onMounted(() => {
             </div>
           </div>
           <div class="project-box-wrapper">
-            <div class="project-box" style="background-color: #e9e7fd;">
+            <div class="box" style="background-color: #e9e7fd;">
               <div class="project-box-header">
                 <span>December 10, 2020</span>
                 <div class="more-wrapper">
@@ -220,7 +220,7 @@ onMounted(() => {
             </div>
           </div>
           <div class="project-box-wrapper">
-            <div class="project-box">
+            <div class="box">
               <div class="project-box-header">
                 <span>December 10, 2020</span>
                 <div class="more-wrapper">
@@ -271,7 +271,7 @@ onMounted(() => {
             </div>
           </div>
           <div class="project-box-wrapper">
-            <div class="project-box" style="background-color: #ffd3e2;">
+            <div class="box" style="background-color: #ffd3e2;">
               <div class="project-box-header">
                 <span>December 10, 2020</span>
                 <div class="more-wrapper">
@@ -322,7 +322,7 @@ onMounted(() => {
             </div>
           </div>
           <div class="project-box-wrapper">
-            <div class="project-box" style="background-color: #c8f7dc;">
+            <div class="box" style="background-color: #c8f7dc;">
               <div class="project-box-header">
                 <span>December 10, 2020</span>
                 <div class="more-wrapper">
@@ -373,7 +373,7 @@ onMounted(() => {
             </div>
           </div>
           <div class="project-box-wrapper">
-            <div class="project-box" style="background-color: #d5deff;">
+            <div class="box" style="background-color: #d5deff;">
               <div class="project-box-header">
                 <span>December 10, 2020</span>
                 <div class="more-wrapper">

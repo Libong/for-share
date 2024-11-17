@@ -18,7 +18,7 @@
   max-width: 480px;
   color: var(--light-font);
   box-shadow: 0 2px 6px 0 rgba(136, 148, 171, .2), 0 24px 20px -24px rgba(71, 82, 107, .1);
-  overflow: hidden;
+  //overflow: hidden;
 
   .dark & {
     box-shadow: none;
@@ -42,8 +42,9 @@
 }
 
 .projects-section {
+  position: relative;
   display: flex;
-  height: 100%;
+  height: 85%;
   width: 80%;
   flex-direction: column;
 }
@@ -64,10 +65,41 @@
 
 .project-boxes {
   margin: 0 -8px;
+  /*设置后会使得y轴（竖着）会出现上下滑动条*/
   overflow-y: auto;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
 
   &.jsGridView {
     display: flex;
     flex-wrap: wrap;
   }
+}
+
+.projects-back2Top {
+  display: flex;
+  position: absolute;
+  right: -4%;
+  top: 10%;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+
+  &-arrow {
+    width: 30px;
+    height: 30px;
+    margin-bottom: 5px;
+  }
+
+  &-text {
+    writing-mode: vertical-lr;
+    letter-spacing: 2px;
+  }
+}
+
+.projects-showMoreText {
+  position: absolute;
+  right: 50%;
+  bottom: 0;
 }

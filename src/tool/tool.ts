@@ -41,3 +41,19 @@ export function toCamelCaseObject(obj: any): any {
     }
     return obj;
 }
+
+//毫秒和秒互转
+export function toSecondOrMilli(timestamp: number, toSecond: boolean): number {
+    if (timestamp % 1000 === 0) {
+        //如果是毫秒 转秒
+        if (toSecond) {
+            timestamp = Math.floor(timestamp / 1000);
+        }
+    } else {
+        if (!toSecond) {
+            timestamp *= 1000;
+        }
+    }
+    return timestamp;
+}
+

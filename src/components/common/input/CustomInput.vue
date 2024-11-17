@@ -1,5 +1,7 @@
 <script lang="ts" setup>
 import {PropType, reactive, ref} from "vue";
+import eyeClose from "@/assets/eye-hide.svg"
+import eyeOpen from "@/assets/eye-open.svg"
 
 interface NoticeSpanStyle {
   opacity: number;
@@ -52,15 +54,15 @@ let inputType = ref(props.type);
 let passwordEye = reactive({
   type: "password",
   //TODO 将src里的相对路径src../../assets/eye-hide.svg改为响应式后只能用绝对路径否则会找不到
-  src: "src/assets/eye-hide.svg",
+  src: eyeClose,
 });
 
 function showChange() {
   inputType.value = inputType.value == "text" ? "password" : "text";
   passwordEye.src =
-      passwordEye.src == "src/assets/eye-open.svg"
-          ? "src/assets/eye-hide.svg"
-          : "src/assets/eye-open.svg";
+      passwordEye.src == eyeOpen
+          ? eyeClose
+          : eyeOpen;
 }
 
 const emit = defineEmits(["update:inputValue"]);

@@ -391,7 +391,7 @@ async function login() {
     console.log("loginInInterface err", err, typeof err);
     if (typeof err == "string") {
       noticeAccountText.value = err as string;
-      showMessage(err);
+      showMessage(err as string);
     } else {
       //TODO
     }

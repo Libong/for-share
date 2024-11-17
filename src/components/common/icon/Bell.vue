@@ -1,27 +1,28 @@
 <template>
   <div class="wind-chime-container">
     <div class="rope"></div>
-    <img :src="img" :style="customStyle" alt="Wind Chime" />
+    <img :src="img" :style="customStyle" alt="Wind Chime"/>
+
     <!-- 其他模板代码 -->
   </div>
 </template>
 
 <script lang="ts" setup>
-import {ref, watch} from 'vue';
-
+import {reactive, watch} from 'vue';
+import {CSSProperties} from "@vue/runtime-dom";
 
 /*定义组件的入参 并使用ts规定类型*/
 const props = defineProps({
   img: String,
   ropeTop: {
-    type:String,
+    type: String,
     default: '0px'
   }
 })
 
-const customStyle = ref({
-  top: props.ropeTop,
-  left:'-1px',
+let customStyle = reactive<CSSProperties>({
+  top: '0px',
+  left: '-1px',
   position: 'relative',
   width: '30px',
   height: '30px',
@@ -29,7 +30,7 @@ const customStyle = ref({
 
 //必须要监听修改customStyle的top才能响应式的更新其值
 watch(() => props.ropeTop, (newValue) => {
-  customStyle.value.top = newValue;
+  customStyle.top = newValue;
 });
 </script>
 
@@ -47,8 +48,9 @@ watch(() => props.ropeTop, (newValue) => {
   background-color: #3f3f3f; /* 绳子的颜色 */
   margin-left: 14px;
 }
+
 @keyframes sway {
-  0%,100% {
+  0%, 100% {
     transform: rotate(10deg); /* 动画开始和结束时，不旋转 */
   }
   50% {

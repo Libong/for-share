@@ -27,34 +27,38 @@ const closeAddModel = () => {
   emits('update:isShow', !props.isShow);
 };
 const addConfirmed = async (formEl: FormInstance | undefined) => {
-  let showMsgType = "success"
-  let showMsg = "添加成功";
   if (formEl) {
     await formEl.validate((valid, fields) => {
       if (valid) {
+        ElMessage({
+          message: "记录成功",
+          type: "success",
+          plain: true,
+          customClass: "form-message",
+          duration: 1500
+        });
+        //先将表单隐藏不可用 然后再执行动画归位
+        setTimeout(function () {
+          isDisabledTeleport.value = !isDisabledTeleport.value;
+          closeAddModel();
+        }, 1000);
+        //再重置表单可用
+        setTimeout(function () {
+          isDisabledTeleport.value = !isDisabledTeleport.value;
+        }, 1000);
+        emits('addRecord');
       } else {
-        showMsgType = "warning";
-        showMsg = "校验失败";
+        ElMessage({
+          message: "请检查表单内容",
+          type: "warning",
+          plain: true,
+          customClass: "form-message",
+          duration: 1500
+        });
+        return;
       }
     })
   }
-  ElMessage({
-    message: showMsg,
-    // type: showMsgType,
-    plain: true,
-    customClass: "form-message",
-    duration: 1500
-  });
-  // //先将表单隐藏不可用 然后再执行动画归位
-  // setTimeout(function () {
-  //   isDisabledTeleport.value = !isDisabledTeleport.value;
-  //   closeAddModel();
-  // }, 1000);
-  // //再重置表单可用
-  // setTimeout(function () {
-  //   isDisabledTeleport.value = !isDisabledTeleport.value;
-  // }, 1000);
-  emits('addRecord');
 }
 
 function fixOverdueAt(value: number) {
@@ -66,34 +70,15 @@ function fixOverdueAt(value: number) {
 /*规则*/
 const ruleFormRef = ref<FormInstance>()
 
-const checkDateValidator = (rule: any, value: any, callback: any) => {
-  if (!value) {
-    return callback(new Error('请选择时间'))
-  }
-  if (props.data.produceAt != null && props.data.overdueAt != null) {
-    if (props.data.produceAt > props.data.overdueAt) {
-      return callback(new Error('生产时间不能大于过期时间'))
-    }
-  }
-  if (props.data.buyAt != null) {
-    console.log("props.data.overdueAt:", props.data.overdueAt);
-    console.log("props.data.produceAt:", props.data.produceAt);
-    if ((props.data.overdueAt != null && props.data.buyAt > props.data.overdueAt) || (props.data.produceAt != null && props.data.buyAt < props.data.produceAt)) {
-      return callback(new Error('请选择正确的购买时间'))
-    }
-  }
-  callback()
-}
-
 const rules = reactive<FormRules<typeof props.data>>({
   produceAt: [{
     required: true, validator: (rule: any, value: any, callback: any) => {
       if (!value) {
         callback(new Error('请输入生产时间'));
       }
-      if (props.data.overdueAt != null && value > props.data.overdueAt) {
+      if (props.data.overdueAt != null && props.data.overdueAt != 0 && value > props.data.overdueAt) {
         callback(new Error('生产日期必须小于过期时间'));
-      } else if (props.data.buyAt != null && value < props.data.buyAt) {
+      } else if (props.data.buyAt != null && props.data.buyAt != 0 && value > props.data.buyAt) {
         callback(new Error('生产日期必须小于购买日期'));
       } else {
         callback();
@@ -105,9 +90,9 @@ const rules = reactive<FormRules<typeof props.data>>({
       if (!value) {
         callback(new Error('请输入过期时间'));
       }
-      if (props.data.produceAt != null && value < props.data.produceAt) {
+      if (props.data.produceAt != null && props.data.produceAt != 0 && value < props.data.produceAt) {
         callback(new Error('过期时间必须大于生产日期'));
-      } else if (props.data.buyAt != null && value < props.data.buyAt) {
+      } else if (props.data.buyAt != null && props.data.buyAt != 0 && value < props.data.buyAt) {
         callback(new Error('过期时间必须大于购买日期'));
       } else {
         callback();
@@ -119,7 +104,7 @@ const rules = reactive<FormRules<typeof props.data>>({
       if (!value) {
         callback(new Error('请输入购买时间'));
       }
-      if ((props.data.produceAt != null && value < props.data.produceAt) || (props.data.overdueAt != null && value > props.data.overdueAt)) {
+      if ((props.data.produceAt != null && props.data.produceAt != 0 && value < props.data.produceAt) || (props.data.overdueAt != null && props.data.overdueAt != 0 && value > props.data.overdueAt)) {
         callback(new Error('购买日期必须大于等于生产日期，且小于过期时间'));
       } else {
         callback();
@@ -194,12 +179,13 @@ const rules = reactive<FormRules<typeof props.data>>({
                   multiple
                   placeholder="Select"
                   style="width: 230px"
+                  value-key="id"
               >
                 <el-option
                     v-for="item in selectGoodsTypes"
                     :key="item.id"
                     :label="item.name"
-                    :value="item.id"
+                    :value="item"
                 />
               </el-select>
             </el-form-item>

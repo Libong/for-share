@@ -5,6 +5,7 @@ import UpdateIcon from "@/assets/update-icon.svg";
 import MoreVertical from "@/assets/more-vertical.svg";
 import {computed, PropType, ref} from "vue";
 import {IShoppingRecord} from "@/views/record/index";
+import {toSecondOrMilli} from "@/tool/tool";
 
 const boxColorMap: Record<number, string> = {
   1: '#e9e7fd',
@@ -28,17 +29,23 @@ const boxColor = boxColorMap[Math.floor(Math.random() * 6) + 1];
 
 /*时间相关操作*/
 const insideEstablishTime = computed(() => {
-  const date = new Date(props.data.establishAt * 1000);
+  if (props.data.establishAt == 0) {
+    return "";
+  }
+  const date = new Date(toSecondOrMilli(props.data.establishAt, false));
 // 格式化为两位数
   const formatTwoDigits = (number: number) => number.toString().padStart(2, '0');
   return formatTwoDigits(date.getFullYear()) + ' ' + formatTwoDigits(date.getMonth() + 1) + ' ' + formatTwoDigits(date.getDate()) + ' '
-      + formatTwoDigits(date.getHours()) + ":" + formatTwoDigits(date.getMinutes()) + ":" + formatTwoDigits(date.getSeconds())
+      + formatTwoDigits(date.getHours()) + ":" + formatTwoDigits(date.getMinutes()) + ":" + formatTwoDigits(date.getSeconds());
 })
 
 function timestamp2Date(timestamp: number): string {
-  const date = new Date(timestamp * 1000);
+  if (timestamp == 0) {
+    return "";
+  }
+  const date = new Date(toSecondOrMilli(timestamp, false));
   const formatTwoDigits = (number: number) => number.toString().padStart(2, '0');
-  return formatTwoDigits(date.getFullYear()) + ' ' + formatTwoDigits(date.getMonth() + 1) + ' ' + formatTwoDigits(date.getDate())
+  return formatTwoDigits(date.getFullYear()) + ' ' + formatTwoDigits(date.getMonth() + 1) + ' ' + formatTwoDigits(date.getDate());
 }
 
 const insideBugTime = computed(() => {
@@ -55,13 +62,13 @@ const buyTimeTextAlignItems = ref('normal');
 
 /*进度条相关操作*/
 //当前时间的偏移量
-let currentTimeOffsetPercent = Math.floor((new Date().getTime() / 1000 - props.data.produceAt) / (props.data.overdueAt - props.data.produceAt) * 100)
+let currentTimeOffsetPercent = Math.floor((new Date().getTime() / 1000 - props.data.produceAt) / (props.data.overdueAt - props.data.produceAt) * 100);
 if (currentTimeOffsetPercent > 100) {
   currentTimeOffsetPercent = 100;
 }
 
 //购买时间下标的偏移量
-const triangleOffsetPercent = Math.floor((props.data.buyAt - props.data.produceAt) / (props.data.overdueAt - props.data.produceAt) / 86400 * 100)
+const triangleOffsetPercent = Math.floor((props.data.buyAt - props.data.produceAt) / (props.data.overdueAt - props.data.produceAt) / 86400 * 100);
 //购买时间文字的偏移量
 let buyTimeOffsetPercent = 0;
 if (triangleOffsetPercent > 10) {
@@ -69,7 +76,7 @@ if (triangleOffsetPercent > 10) {
   buyTimeTextAlignItems.value = 'center';
 }
 
-let leftDay = Math.ceil((props.data.overdueAt - new Date().getTime() / 1000) / 86400)
+let leftDay = Math.ceil((props.data.overdueAt - new Date().getTime() / 1000) / 86400);
 if (leftDay < 0) {
   leftDay = 0;
 }
@@ -77,41 +84,76 @@ if (leftDay < 0) {
 /*菜单操作*/
 // const showDeleteIcon = ref(false)
 // const showUpdateIcon = ref(false)
-const showMenuIcon = ref(false)
+const isEnteringOrLeaving = ref(false);
+const showMenuIcon = ref(false);
 
 function showMenus() {
   // showDeleteIcon.value = !showDeleteIcon.value;
   showMenuIcon.value = !showMenuIcon.value;
 }
 
+function closePoint() {
+  isEnteringOrLeaving.value = true;
+}
+
+function openPoint() {
+  isEnteringOrLeaving.value = false;
+}
+
+
 // function startSecondAnimation() {
 //   showUpdateIcon.value = !showUpdateIcon.value
 // }
+
+const emits = defineEmits(['delete', 'update']);
+const boxDelete = () => {
+  console.log("boxDelete");
+  emits('delete');
+}
+const boxUpdate = () => {
+  emits('update', props.data);
+}
 </script>
 
 <template>
-  <div :style="{backgroundColor: boxColor}" class="project-box">
-    <div class="project-box-header">
+  <div :style="{backgroundColor: boxColor}" class="box">
+    <div class="box-header">
       <span>{{ insideEstablishTime }}</span>
-      <div class="more-wrapper">
-        <div v-if="showMenu" class="more-wrapper-menu">
-          <transition-group name="fade" tag="div">
+      <div class="box-header-more-wrapper">
+        <div v-if="showMenu" class="box-header-more-wrapper-menu">
+          <transition-group name="fade" tag="div"
+                            @before-enter="closePoint"
+                            @before-leave="closePoint"
+                            @after-enter="openPoint"
+                            @after-leave="openPoint">
             <!--          <transition name="fadeUpdate">-->
-            <img v-if="showMenuIcon" :src="UpdateIcon" alt="" class="more-wrapper-menu-update" title="编辑" @click="">
+            <img v-if="showMenuIcon" :src="UpdateIcon" :style="{pointerEvents: isEnteringOrLeaving ? 'none':'auto'}"
+                 alt="" class="box-header-more-wrapper-menu-update"
+                 title="编辑"
+                 @click="boxUpdate">
             <!--          </transition>-->
             <!--          <transition name="fadeDelete" @after-enter="startSecondAnimation">-->
-            <img v-if="showMenuIcon" :src="DeleteIcon" alt="" class="more-wrapper-menu-delete" title="删除" @click="">
+            <img v-if="showMenuIcon" :src="DeleteIcon" :style="{pointerEvents: isEnteringOrLeaving ? 'none':'auto'}"
+                 alt="" class="box-header-more-wrapper-menu-delete" title="删除"
+                 @click="boxDelete">
             <!--          </transition>-->
           </transition-group>
         </div>
-        <button class="project-btn-more">
+        <button class="box-header-btn-more">
           <img :src="MoreVertical" alt="" class="" @click="showMenus">
         </button>
       </div>
     </div>
-    <div class="project-box-content-header">
-      <p class="box-content-header">{{ data.goodsName }}</p>
-      <p class="box-content-subheader">{{ data.goodsTypes[0].name }}</p>
+    <div class="box-content-name">
+      <p>{{ data.goodsName }}</p>
+      <div class="box-content-category">
+        <div v-for="item in data.goodsTypes" :key="item.id" class="box-content-category-child">
+        <span class="box-content-subheader">{{
+            item.name
+          }}</span>
+        </div>
+      </div>
+
     </div>
     <div class="box-progress-wrapper">
       <div class="box-progress-top-date">
@@ -137,27 +179,8 @@ function showMenus() {
       </div>
     </div>
     <div class="project-box-footer">
-      <!--            <div class="participants">-->
-      <!--              <img-->
-      <!--                  alt="participant"-->
-      <!--                  src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=2550&q=80">-->
-      <!--              <img-->
-      <!--                  alt="participant"-->
-      <!--                  src="https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?ixid=MXwxMjA3fDB8MHxzZWFyY2h8MTB8fG1hbnxlbnwwfHwwfA%3D%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=900&q=60">-->
-      <!--              <button class="add-participant" style="color: #ff942e;">-->
-      <!--                <svg class="feather feather-plus" fill="none" height="12" stroke="currentColor"-->
-      <!--                     stroke-linecap="round"-->
-      <!--                     stroke-linejoin="round" stroke-width="3" viewBox="0 0 24 24" width="12"-->
-      <!--                     xmlns="http://www.w3.org/2000/svg">-->
-      <!--                  <path d="M12 5v14M5 12h14"/>-->
-      <!--                </svg>-->
-      <!--              </button>-->
-      <!--            </div>-->
       <div class="days-left" style="color: #ff942e;">
         {{ leftDay }} Days Left
-      </div>
-      <div class="box-over">
-        <!--        <Button2></Button2>-->
       </div>
     </div>
   </div>

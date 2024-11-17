@@ -49,16 +49,6 @@ function mouseleave() {
                 <span>{{ item.label }}</span>
               </a>
             </li>
-            <!--        <li class="navbar__li" @click="toMine">-->
-            <!--          <a class="navbar__link">-->
-            <!--            <i data-feather="user"></i>-->
-            <!--            <span>我的</span></a>-->
-            <!--        </li>-->
-            <!--        <li class="navbar__li" @click="toHome">-->
-            <!--          <a class="navbar__link">-->
-            <!--            <i data-feather="slack"></i>-->
-            <!--            <span>分享</span></a>-->
-            <!--        </li>-->
           </ul>
         </nav>
       </div>
