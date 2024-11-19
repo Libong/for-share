@@ -21,14 +21,18 @@
   flex-direction: column;
 
   .addText {
+    display: flex;
     font-size: larger;
-    width: 80%;
     margin-bottom: 20px;
   }
 
   &-form {
     width: 80%;
     height: 60%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
   }
 
   .bottom-btn {
@@ -62,7 +66,7 @@
 /*动画刚开始时的效果 相当于从这个状态变成展示的状态*/
 .slide-and-grow-enter-from, .slide-and-grow-leave-to {
   opacity: 0; //透明
-  transform: translateX(-37%) translateY(-27%) scale(0.1); //缩小
+  transform: translateX(-37%) translateY(-27%) scale(0.5); //缩小
 }
 
 .slide-and-grow-enter-active, .slide-and-grow-leave-active {

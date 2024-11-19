@@ -16,6 +16,10 @@ let props = defineProps({
   },
   selectGoodsTypes: {
     type: Array as PropType<Label[]>,
+  },
+  isAddForm: {
+    type: Boolean,
+    default: false,
   }
 })
 
@@ -120,11 +124,12 @@ const rules = reactive<FormRules<typeof props.data>>({
 
 <template>
   <Teleport v-if="isDisabledTeleport" to="body">
-    <transition name="slide-and-grow">
+    <transition mode="out-in"
+                name="slide-and-grow">
       <div v-if="isShow"
            class="model">
         <div class="container">
-          <p class="addText">新增</p>
+          <p class="addText">{{ isAddForm ? '新增' : '更新' }}</p>
           <el-form
               ref="ruleFormRef"
               :label-position="'right'"
@@ -196,7 +201,7 @@ const rules = reactive<FormRules<typeof props.data>>({
                 @click="closeAddModel">
               <span>等一下!</span>
             </button>
-            <Button2 :text="'记录'"
+            <Button2 :text="isAddForm?'记录':'更新'"
                      class="bottom-btn-confirm"
                      @click="addConfirmed(ruleFormRef)">
             </Button2>

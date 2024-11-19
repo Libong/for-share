@@ -6,6 +6,7 @@ import MoreVertical from "@/assets/more-vertical.svg";
 import {computed, PropType, ref} from "vue";
 import {IShoppingRecord} from "@/views/record/index";
 import {toSecondOrMilli} from "@/tool/tool";
+import {ElMessage, ElMessageBox} from "element-plus";
 
 const boxColorMap: Record<number, string> = {
   1: '#e9e7fd',
@@ -107,8 +108,30 @@ function openPoint() {
 
 const emits = defineEmits(['delete', 'update']);
 const boxDelete = () => {
-  console.log("boxDelete");
-  emits('delete');
+  ElMessageBox.confirm(
+      '确认删除该记录吗？',
+      // 'Warning',
+      {
+        confirmButtonText: '删除',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+  )
+      .then(() => {
+        //TODO 提示需要放到外面去
+        ElMessage({
+          type: 'success',
+          message: 'Delete completed',
+        })
+        emits('delete');
+      })
+      .catch(() => {
+        //TODO 提示需要放到外面去
+        ElMessage({
+          type: 'info',
+          message: 'Delete canceled',
+        })
+      })
 }
 const boxUpdate = () => {
   emits('update', props.data);
@@ -213,7 +236,7 @@ const boxUpdate = () => {
 
 //效果2 整体淡入淡出
 .fade-leave-active, .fade-enter-active {
-  transition: opacity 1s, transform 1s;
+  transition: opacity 0.5s, transform 0.5s;
 }
 
 .fade-enter-from, .fade-leave-to {

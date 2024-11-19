@@ -61,8 +61,10 @@ const selectGoodsType = reactive([
 
 
 const showModel = ref(false);
+const isAddFormType = ref(true);
 
 function openAddModelDisplay() {
+  isAddFormType.value = true;
   showModel.value = !showModel.value;
 }
 
@@ -91,6 +93,7 @@ function showUpdateRecordModel(data: IShoppingRecord) {
     id: "1",
     name: "面包",
   }];
+  isAddFormType.value = false;
   showModel.value = !showModel.value;
 }
 
@@ -152,6 +155,7 @@ const handleScroll = (event: Event) => {
   </div>
   <Form
       :data=shoppingRecordObj
+      :is-add-form="isAddFormType"
       :is-show="showModel"
       :select-goods-types="selectGoodsType"
       @addRecord="addRecordCallback"
