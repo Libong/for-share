@@ -118,11 +118,6 @@ const boxDelete = () => {
       }
   )
       .then(() => {
-        //TODO 提示需要放到外面去
-        ElMessage({
-          type: 'success',
-          message: 'Delete completed',
-        })
         emits('delete');
       })
       .catch(() => {
