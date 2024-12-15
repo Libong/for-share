@@ -11,13 +11,26 @@ export interface Label {
     name: string,
 }
 
-export interface ISearchShoppingRecordsPageReq {
+export interface TimeRange {
+    startAt: number,
+    endAt: number,
+}
+
+export interface ISearchRecordsPageReq {
     pageSize: number,
     pageNum: number,
     recordType: RecordType,
+    fuzzyGoodName: string,
+    recordIds: string[],
+    status: number,
+    buyAtRange: TimeRange,
+    produceAtRange: TimeRange,
+    overdueAtRange: TimeRange,
+    establishAtRange: TimeRange,
+    starLevels: number[],
 }
 
-export interface IShoppingRecord {
+export interface IRecord {
     establishAt: number, //创建时间
     produceAt: number, //生产日期
     overdueAt: number, //过期时间
@@ -27,17 +40,17 @@ export interface IShoppingRecord {
     recordId: string, //记录编号
 }
 
-export interface ISearchShoppingRecordsPageResp {
-    list: IShoppingRecord[],
+export interface ISearchRecordsPageResp {
+    list: IRecord[],
     total: number,
 }
 
-export function searchShoppingRecordsPageInterface(req: ISearchShoppingRecordsPageReq): Promise<ISearchShoppingRecordsPageResp> {
+export function searchRecordsPageInterface(req: ISearchRecordsPageReq): Promise<ISearchRecordsPageResp> {
     return new Promise((resolve, reject) => {
         http
-            .post("/libong/xxxx", false, req)
+            .post("/libong/record/search/page", true, req)
             .then((res) => {
-                resolve(toCamelCaseObject(res.data) as ISearchShoppingRecordsPageResp);
+                resolve(toCamelCaseObject(res.data) as ISearchRecordsPageResp);
             })
             .catch((err) => {
                 reject(err);

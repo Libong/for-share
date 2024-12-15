@@ -4,48 +4,63 @@ import SearchRefresh from "@/assets/refresh.svg"
 import AddIcon from "@/assets/add-icon.svg"
 import UpArrowIcon from "@/assets/up-arrow.svg"
 import {onMounted, onUnmounted, reactive, ref} from "vue";
-import {ISearchShoppingRecordsPageReq, IShoppingRecord, RecordType} from "@/views/record/index";
+import {IRecord, ISearchRecordsPageReq, RecordType, searchRecordsPageInterface} from "@/views/record/index";
 import Box from "@/views/record/components/box/box.vue";
 import Form from "@/views/record/components/form/form.vue";
-import {testData} from "@/views/record/components/form/form";
 import {toSecondOrMilli} from "@/tool/tool";
 import {ElMessage} from "element-plus";
 import WaitPoint from "@/components/common/waitPoint/waitPoint.vue";
 
+let defaultRecordObj = reactive(<IRecord>{
+  establishAt: 0, //创建时间
+  produceAt: 0, //生产日期
+  overdueAt: 0, //过期时间
+  buyAt: 0, //购买日期
+  goodsName: "", //物品名称
+  goodsTypes: [], //物品标签
+  recordId: "", //记录编号
+})
+
 onMounted(() => {
-  search();
+  // searchMore();
+  if (shoppingRecords.value.length < 6) {
+    while (shoppingRecords.value.length != 6) {
+      shoppingRecords.value.push(defaultRecordObj);
+    }
+  }
 })
 //数据
 const pageCondition = reactive({
-  total: 20,
-  busy: false,
+  total: 0,
 })
 const recordType = ref(RecordType.Current)
-const searchShoppingRecordsPageReq = reactive(<ISearchShoppingRecordsPageReq>{
+const searchRecordsPageReq = reactive(<ISearchRecordsPageReq>{
   pageSize: 6,
-  pageNum: 1,
+  pageNum: 0,
   recordType: recordType.value,
 })
-const shoppingRecords = ref<IShoppingRecord[]>([])
+const shoppingRecords = ref<IRecord[]>([])
 
-async function search() {
-  if (pageCondition.busy || (searchShoppingRecordsPageReq.pageNum * searchShoppingRecordsPageReq.pageSize >= pageCondition.total)) {
-    return;
-  }
-  pageCondition.busy = true;
-  // 模拟加载数据
+async function searchMore() {
+  // if ((searchRecordsPageReq.pageNum * searchRecordsPageReq.pageSize >= pageCondition.total)) {
+  //   return;
+  // }
+  searchRecordsPageReq.pageNum++;
   await refreshSearch();
-  searchShoppingRecordsPageReq.pageNum += 1;
-  pageCondition.busy = false;
+  if (shoppingRecords.value.length > 6) {
+    for (let i = shoppingRecords.value.length; i <= 6; i++) {
+      shoppingRecords.value.push(defaultRecordObj);
+    }
+  }
 }
 
 async function refreshSearch() {
-  // const recordsResp = await searchShoppingRecordsPageInterface(searchShoppingRecordsPageReq);
-  // shoppingRecords.value = recordsResp.list;
-  shoppingRecords.value = testData.slice();
+  const recordsResp = await searchRecordsPageInterface(searchRecordsPageReq);
+  shoppingRecords.value = recordsResp.list;
+  pageCondition.total = recordsResp.total;
 }
 
-let shoppingRecordObj = reactive(<IShoppingRecord>{
+let shoppingRecordObj = reactive(<IRecord>{
   establishAt: 0, //创建时间
   produceAt: 0, //生产日期
   overdueAt: 0, //过期时间
@@ -71,8 +86,6 @@ function openAddModelDisplay() {
 }
 
 async function addRecordCallback() {
-  //TODO 调接口
-  console.log(shoppingRecordObj);
   shoppingRecordObj.overdueAt = Math.floor(shoppingRecordObj.overdueAt / 1000);
   shoppingRecordObj.buyAt = Math.floor(shoppingRecordObj.buyAt / 1000);
   shoppingRecordObj.produceAt = Math.floor(shoppingRecordObj.produceAt / 1000);
@@ -80,7 +93,6 @@ async function addRecordCallback() {
 }
 
 async function deleteRecordById(recordId: string) {
-  //TODO 调接口
   shoppingRecords.value = shoppingRecords.value.filter(record => record.recordId !== recordId);
   ElMessage({
     type: 'success',
@@ -89,7 +101,7 @@ async function deleteRecordById(recordId: string) {
   await refreshSearch();
 }
 
-function showUpdateRecordModel(data: IShoppingRecord) {
+function showUpdateRecordModel(data: IRecord) {
   data.overdueAt = toSecondOrMilli(data.overdueAt, false);
   data.buyAt = toSecondOrMilli(data.buyAt, false);
   data.produceAt = toSecondOrMilli(data.produceAt, false);
@@ -99,29 +111,8 @@ function showUpdateRecordModel(data: IShoppingRecord) {
   showModel.value = !showModel.value;
 }
 
-let testId = 10;
-
-function testPullRefreshData() {
-  testId++
-  for (let i = 0; i < 3; i++) {
-    shoppingRecords.value.push({
-      establishAt: 1732206188, //创建时间
-      produceAt: 1732206188, //生产日期
-      overdueAt: 1732206188, //过期时间
-      buyAt: 1732206188, //购买日期
-      goodsName: "测试", //物品名称
-      goodsTypes: [{
-        id: "1",
-        name: "",
-      }], //物品标签
-      recordId: testId + "", //记录编号
-    })
-  }
-}
-
 /*滑动条*/
 const scrollableDivRef = ref<HTMLElement | null>(null);
-const total = 30;
 const hasMoreText = ref("下拉加载更多")
 const hasMoreIcon = ref(true);
 const hasScrollToTopText = ref(false);
@@ -153,12 +144,12 @@ const handleScroll = (event: Event) => {
   }
   if (target.scrollHeight - target.scrollTop - target.clientHeight < 1) {
     // 到达底部，调用接口更新数据
-    if (shoppingRecords.value.length == total) {
+    if (shoppingRecords.value.length == pageCondition.total) {
       hasMoreText.value = "没有更多数据了～";
       hasMoreIcon.value = false;
       return;
     } else {
-      testPullRefreshData();
+      searchMore();
     }
   }
 };

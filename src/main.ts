@@ -33,3 +33,12 @@ app.config.errorHandler = (err, vm, info) => {
     });
     return true;
 };
+// 在全局范围内捕获未处理的Promise错误
+// Promise.reject('An unhandled promise rejection.').catch(error => {
+//     app.config.errorHandler(error, null, 'unhandled promise rejection');
+// });
+// window.onunhandledrejection = (event) => {
+//     console.error('Unhandled Rejection:', event.promise, 'reason:', event.reason);
+//     手动抛出错误，使其进入Vue的全局错误处理器
+//     throw event.reason;
+// };
