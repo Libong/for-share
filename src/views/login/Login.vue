@@ -158,6 +158,7 @@ import {ElMessage, ElNotification} from "element-plus";
 import {ObjClear} from "@/tool/tool";
 import router from "@/router";
 import Button1 from "@/components/common/button/Button1.vue";
+import {localStorage_tokenObj_label} from "@/config/localStorage";
 
 defineComponent({
   components: {
@@ -374,9 +375,9 @@ async function login() {
   loginReq.loginInType = loginChangeItem.loginType;
   try {
     let loginResp = await loginInInterface(loginReq);
-    localStorage.setItem("token", JSON.stringify({
-      "token": loginResp.accessToken,
-      "refresh_token": loginResp.refreshToken
+    localStorage.setItem(localStorage_tokenObj_label, JSON.stringify({
+      localStorage_token_label: loginResp.accessToken,
+      localStorage_refresh_token_label: loginResp.refreshToken
     }));
     ElNotification({
       title: "",
@@ -388,12 +389,13 @@ async function login() {
     });
     ObjClear(loginReq);
   } catch (err) {
-    console.log("loginInInterface err", err, typeof err);
+    //接口返回错误
     if (typeof err == "string") {
       noticeAccountText.value = err as string;
       showMessage(err as string);
     } else {
-      //TODO
+      //其他错误
+      return Promise.reject(err);
     }
   }
 }

@@ -22,7 +22,7 @@ let defaultRecordObj = reactive(<IRecord>{
 })
 
 onMounted(() => {
-  // searchMore();
+  searchMore();
   if (shoppingRecords.value.length < 6) {
     while (shoppingRecords.value.length != 6) {
       shoppingRecords.value.push(defaultRecordObj);

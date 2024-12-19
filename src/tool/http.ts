@@ -1,5 +1,6 @@
 import axios, {AxiosRequestConfig} from "axios";
 import {toSnakeCase} from "@/tool/tool";
+import router from "@/router";
 
 export interface IApiResponse {
     code: number;
@@ -16,6 +17,15 @@ axios.defaults.headers.common = {
 //请求拦截器
 axios.interceptors.request.use((config: AxiosRequestConfig | any) => config);
 
+function handleAuthenticationError(redirectPath: string) {
+    // 执行一些登出操作，比如清除token等
+    // ...
+
+    // 跳转到登录页面，并附带重定向路径
+    router.push({path: '/login', query: {redirect: redirectPath}}).then(r => {
+    });
+}
+
 //响应拦截器
 axios.interceptors.response.use(
     //成功时调用
@@ -28,6 +38,13 @@ axios.interceptors.response.use(
     },
     //失败时调用 返回Promise.reject可以使得在链路的catch中捕获该err
     (err) => {
+        //未授权的话就直接返回到登录页面
+        if (err.response && err.response.status == 401) {
+            if (err.response.data) {
+                handleAuthenticationError(router.currentRoute.value.path);
+                return Promise.reject(err.response.data.error);
+            }
+        }
         return Promise.reject(err);
     },
 );
@@ -46,11 +63,7 @@ const http: IHttp = {
             axios
                 .get(url, {params})
                 .then((res) => {
-                    if (res.data.error != "") {
-                        reject(res.data.error);
-                    } else {
-                        resolve(res.data);
-                    }
+                    resolve(res.data);
                 })
                 .catch((err) => {
                     reject(err);
@@ -58,7 +71,13 @@ const http: IHttp = {
         });
     },
     post(url, auth, data) {
-
+        // if (auth) {
+        //     let tokenObjStr = localStorage.getItem(localStorage_tokenObj_label);
+        //     if (tokenObjStr != null) {
+        //         let tokenObj = JSON.parse(tokenObjStr);
+        //         axios.defaults.headers.common['li-token'] = tokenObj.localStorage_token_label;
+        //     }
+        // }
         return new Promise((resolve, reject) => {
             axios
                 .post(url, toSnakeCase(data), {})

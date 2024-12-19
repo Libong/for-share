@@ -13,10 +13,8 @@ import ElementPlus, {ElNotification} from 'element-plus'
 
 const app = createApp(App);
 app.use(ElementPlus);
-//TODO没用移到app.vue里设置了
-// app.use(ElementPlus, {locale: zhCn})
 //相当于把页面挂载到index.html上 div的id为app
-app.use(router).mount("#app");
+app.use(router).mount("#app")
 // 设置全局错误处理器
 app.config.errorHandler = (err, vm, info) => {
     console.error("Global error handler:", err, vm, info);
@@ -33,12 +31,12 @@ app.config.errorHandler = (err, vm, info) => {
     });
     return true;
 };
-// 在全局范围内捕获未处理的Promise错误
-// Promise.reject('An unhandled promise rejection.').catch(error => {
-//     app.config.errorHandler(error, null, 'unhandled promise rejection');
-// });
-// window.onunhandledrejection = (event) => {
-//     console.error('Unhandled Rejection:', event.promise, 'reason:', event.reason);
-//     手动抛出错误，使其进入Vue的全局错误处理器
-//     throw event.reason;
-// };
+// 在全局范围内捕获未处理的Promise错误reject
+window.onunhandledrejection = (event) => {
+    console.error('Unhandled Rejection:', event.promise, 'reason:', event.reason);
+    event.preventDefault();
+    //TODO 说是window比app挂载快会导致app.config.errorHandler为null 但是没找到解决方法
+    if (app.config.errorHandler != null) {
+        app.config.errorHandler(event.reason, null, "Unhandled Rejection");
+    }
+};
