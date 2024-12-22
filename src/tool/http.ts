@@ -1,6 +1,7 @@
 import axios, {AxiosRequestConfig} from "axios";
 import {toSnakeCase} from "@/tool/tool";
 import router from "@/router";
+import {localStorage_roleObj_label, localStorage_tokenObj_label} from "@/config/localStorage";
 
 export interface IApiResponse {
     code: number;
@@ -9,7 +10,7 @@ export interface IApiResponse {
 }
 
 axios.defaults.timeout = 25000;
-axios.defaults.baseURL = "http://192.168.10.100:8001";
+axios.defaults.baseURL = "http://192.168.10.100:8001/libong";
 axios.defaults.headers.common = {
     "Content-Type": "application/json",
     app_id: "1231",
@@ -58,6 +59,11 @@ interface IHttp {
 const http: IHttp = {
     get(url, auth, params) {
         if (auth) {
+            let tokenObjStr = localStorage.getItem(localStorage_tokenObj_label);
+            if (tokenObjStr != null) {
+                let tokenObj = JSON.parse(tokenObjStr);
+                axios.defaults.headers.common['li-token'] = tokenObj.localStorage_token_label;
+            }
         }
         return new Promise((resolve, reject) => {
             axios
@@ -71,13 +77,18 @@ const http: IHttp = {
         });
     },
     post(url, auth, data) {
-        // if (auth) {
-        //     let tokenObjStr = localStorage.getItem(localStorage_tokenObj_label);
-        //     if (tokenObjStr != null) {
-        //         let tokenObj = JSON.parse(tokenObjStr);
-        //         axios.defaults.headers.common['li-token'] = tokenObj.localStorage_token_label;
-        //     }
-        // }
+        if (auth) {
+            let tokenObjStr = localStorage.getItem(localStorage_tokenObj_label);
+            if (tokenObjStr != null) {
+                let tokenObj = JSON.parse(tokenObjStr);
+                axios.defaults.headers.common['li-token'] = tokenObj.localStorage_token_label;
+            }
+        }
+        let roleObjStr = localStorage.getItem(localStorage_roleObj_label);
+        if (roleObjStr != null) {
+            let roleObj = JSON.parse(roleObjStr);
+            axios.defaults.headers.common['li-role'] = roleObj.id;
+        }
         return new Promise((resolve, reject) => {
             axios
                 .post(url, toSnakeCase(data), {})

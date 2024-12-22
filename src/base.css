@@ -3,7 +3,7 @@
 *::after {
     box-sizing: border-box;
     margin: 0;
-    font-weight: normal;
+    /*font-weight: normal;*/
 }
 
 body {
@@ -27,4 +27,11 @@ body {
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+@font-face {
+    font-family: "阿里妈妈方圆体 VF Regular";
+    src: url("../src/assets/font/AlimamaFangYuanTiVF-Thin.woff2") format("woff2"),
+    url("../src/assets/font/AlimamaFangYuanTiVF-Thin.woff") format("woff");
+    font-display: swap;
 }

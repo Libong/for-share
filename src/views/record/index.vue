@@ -4,10 +4,17 @@ import SearchRefresh from "@/assets/refresh.svg"
 import AddIcon from "@/assets/add-icon.svg"
 import UpArrowIcon from "@/assets/up-arrow.svg"
 import {onMounted, onUnmounted, reactive, ref} from "vue";
-import {IRecord, ISearchRecordsPageReq, RecordType, searchRecordsPageInterface} from "@/views/record/index";
+import {
+  addRecordInterface,
+  deleteRecordInterface,
+  IRecord,
+  ISearchRecordsPageReq,
+  RecordType,
+  searchRecordsPageInterface
+} from "@/views/record/index";
 import Box from "@/views/record/components/box/box.vue";
 import Form from "@/views/record/components/form/form.vue";
-import {toSecondOrMilli} from "@/tool/tool";
+import {ObjClear, toSecondOrMilli} from "@/tool/tool";
 import {ElMessage} from "element-plus";
 import WaitPoint from "@/components/common/waitPoint/waitPoint.vue";
 
@@ -23,11 +30,6 @@ let defaultRecordObj = reactive(<IRecord>{
 
 onMounted(() => {
   searchMore();
-  if (shoppingRecords.value.length < 6) {
-    while (shoppingRecords.value.length != 6) {
-      shoppingRecords.value.push(defaultRecordObj);
-    }
-  }
 })
 //数据
 const pageCondition = reactive({
@@ -47,17 +49,21 @@ async function searchMore() {
   // }
   searchRecordsPageReq.pageNum++;
   await refreshSearch();
-  if (shoppingRecords.value.length > 6) {
-    for (let i = shoppingRecords.value.length; i <= 6; i++) {
-      shoppingRecords.value.push(defaultRecordObj);
-    }
-  }
 }
 
 async function refreshSearch() {
   const recordsResp = await searchRecordsPageInterface(searchRecordsPageReq);
-  shoppingRecords.value = recordsResp.list;
+  //TODO 很抽象不能进行recordsResp.list的undefined判断
+  // if (recordsResp.list === undefined) {
+  //
+  // }
+  shoppingRecords.value = recordsResp.list || [];
   pageCondition.total = recordsResp.total;
+  if (shoppingRecords.value.length < 6) {
+    while (shoppingRecords.value.length != 6) {
+      shoppingRecords.value.push(defaultRecordObj);
+    }
+  }
 }
 
 let shoppingRecordObj = reactive(<IRecord>{
@@ -83,20 +89,46 @@ const isAddFormType = ref(true);
 function openAddModelDisplay() {
   isAddFormType.value = true;
   showModel.value = !showModel.value;
+  console.log("openAddModelDisplay", shoppingRecordObj);
 }
 
-async function addRecordCallback() {
-  shoppingRecordObj.overdueAt = Math.floor(shoppingRecordObj.overdueAt / 1000);
-  shoppingRecordObj.buyAt = Math.floor(shoppingRecordObj.buyAt / 1000);
-  shoppingRecordObj.produceAt = Math.floor(shoppingRecordObj.produceAt / 1000);
+async function addRecordCallback(callback: () => void) {
   shoppingRecords.value.push(shoppingRecordObj);
+
+  let categoryIds: string[] = [];
+  shoppingRecordObj.goodsTypes.forEach((item, index) => {
+    categoryIds.push(item.id);
+  });
+
+  await addRecordInterface({
+    buyAt: toSecondOrMilli(shoppingRecordObj.buyAt, true),
+    categoryIds: categoryIds,
+    goodsName: shoppingRecordObj.goodsName,
+    overdueAt: toSecondOrMilli(shoppingRecordObj.overdueAt, true),
+    produceAt: toSecondOrMilli(shoppingRecordObj.produceAt, true),
+  });
+  ElMessage({
+    message: "记录成功",
+    type: "success",
+    plain: true,
+    customClass: "global-message",
+    duration: 1000
+  });
+  callback();
+  ObjClear(shoppingRecordObj);
+  await refreshSearch();
 }
 
 async function deleteRecordById(recordId: string) {
-  shoppingRecords.value = shoppingRecords.value.filter(record => record.recordId !== recordId);
+  await deleteRecordInterface({
+    recordId: recordId,
+  });
   ElMessage({
-    type: 'success',
-    message: 'Delete completed',
+    message: "删除成功",
+    type: "success",
+    plain: true,
+    customClass: "global-message",
+    duration: 1000
   })
   await refreshSearch();
 }

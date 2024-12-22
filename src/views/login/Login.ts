@@ -1,5 +1,6 @@
 import http from "@/tool/http";
 import {toCamelCaseObject, toSnakeCase} from "@/tool/tool";
+import {Meta} from "@/config/common";
 
 export enum FormTypeEnum {
     Phone = 1,
@@ -25,7 +26,7 @@ export interface ILoginInResp {
 export function loginInInterface(req: ILoginInReq): Promise<ILoginInResp> {
     return new Promise((resolve, reject) => {
         http
-            .post("/libong/login/in", false, req)
+            .post("/login/in", false, req)
             .then((res) => {
                 resolve(toCamelCaseObject(res.data) as ILoginInResp);
             })
@@ -42,9 +43,48 @@ export interface ISendLoginSmsReq {
 export function sendLoginSmsInterface(req: ISendLoginSmsReq): Promise<void> {
     return new Promise((resolve, reject) => {
         http
-            .get("/libong/login/login/sms/send", false, toSnakeCase(req))
+            .get("/login/login/sms/send", false, toSnakeCase(req))
             .then((res) => {
                 resolve();
+            })
+            .catch((err) => {
+                reject(err);
+            });
+    });
+}
+
+export interface IUserInfoResp {
+    roles: Meta[];
+    account: string;
+    sex: number;
+    avatar: string;
+    departments: Meta[];
+    has_password: boolean;
+}
+
+export function userInfoInterface(): Promise<IUserInfoResp> {
+    return new Promise((resolve, reject) => {
+        http
+            .get("/login/user/info", true, null)
+            .then((res) => {
+                resolve(toCamelCaseObject(res.data) as IUserInfoResp);
+            })
+            .catch((err) => {
+                reject(err);
+            });
+    });
+}
+
+export interface IUserRolesResp {
+    roles: Meta[];
+}
+
+export function userRolesInterface(): Promise<IUserRolesResp> {
+    return new Promise((resolve, reject) => {
+        http
+            .get("/login/user/roles", true, null)
+            .then((res) => {
+                resolve(toCamelCaseObject(res.data) as IUserRolesResp);
             })
             .catch((err) => {
                 reject(err);

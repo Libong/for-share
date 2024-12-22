@@ -1,13 +1,13 @@
 <script lang="ts" setup>
 
 import {PropType, reactive, ref} from "vue";
-import {IShoppingRecord, Label} from "@/views/record/index";
+import {IRecord, Label} from "@/views/record/index";
 import {ElMessage, FormInstance, FormRules} from "element-plus";
 import Button2 from "@/components/common/button/Button2.vue";
 
 let props = defineProps({
   data: {
-    type: Object as PropType<IShoppingRecord>,
+    type: Object as PropType<IRecord>,
     default: {},
   },
   isShow: {
@@ -25,7 +25,11 @@ let props = defineProps({
 
 let isDisabledTeleport = ref(true)
 //定义事件 用于给父组件获取
-const emits = defineEmits(['update:isShow', 'addRecord']);
+// const emits = defineEmits(['update:isShow', 'addRecord']);
+const emits = defineEmits<{
+  (event: 'update:isShow', value: boolean): void;
+  (event: 'addRecord', callback: () => void): void;
+}>();
 
 const closeAddModel = () => {
   emits('update:isShow', !props.isShow);
@@ -34,23 +38,15 @@ const addConfirmed = async (formEl: FormInstance | undefined) => {
   if (formEl) {
     await formEl.validate((valid, fields) => {
       if (valid) {
-        ElMessage({
-          message: "记录成功",
-          type: "success",
-          plain: true,
-          customClass: "form-message",
-          duration: 1500
-        });
-        //先将表单隐藏不可用 然后再执行动画归位
-        setTimeout(function () {
+        emits('addRecord', () => {
+          //先将表单隐藏不可用 然后再执行动画归位
           isDisabledTeleport.value = !isDisabledTeleport.value;
           closeAddModel();
-        }, 1000);
-        //再重置表单可用
-        setTimeout(function () {
-          isDisabledTeleport.value = !isDisabledTeleport.value;
-        }, 1000);
-        emits('addRecord');
+          //再重置表单可用
+          setTimeout(function () {
+            isDisabledTeleport.value = !isDisabledTeleport.value;
+          }, 500);
+        });
       } else {
         ElMessage({
           message: "请检查表单内容",

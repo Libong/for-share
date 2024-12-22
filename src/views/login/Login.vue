@@ -151,14 +151,21 @@ import LogoImg from "@/assets/logo.png";
 import Phone from "@/assets/phone.svg";
 import Email from "@/assets/email.svg";
 import Account from "@/assets/username.svg";
-import {FormTypeEnum, ILoginInReq, loginInInterface, sendLoginSmsInterface,} from "./Login";
+import {
+  FormTypeEnum,
+  ILoginInReq,
+  loginInInterface,
+  sendLoginSmsInterface,
+  userInfoInterface,
+  userRolesInterface,
+} from "./Login";
 import {CSSProperties} from "@vue/runtime-dom";
 import CustomInput from "@/components/common/input/CustomInput.vue";
 import {ElMessage, ElNotification} from "element-plus";
 import {ObjClear} from "@/tool/tool";
 import router from "@/router";
 import Button1 from "@/components/common/button/Button1.vue";
-import {localStorage_tokenObj_label} from "@/config/localStorage";
+import {localStorage_roleObj_label, localStorage_tokenObj_label} from "@/config/localStorage";
 
 defineComponent({
   components: {
@@ -379,12 +386,19 @@ async function login() {
       localStorage_token_label: loginResp.accessToken,
       localStorage_refresh_token_label: loginResp.refreshToken
     }));
+    let userRolesResp = await userRolesInterface();
+    //TODO 默认获取第一个角色 后续在进行选择如果有多个的话
+    if (userRolesResp.roles.length > 0) {
+      localStorage.setItem(localStorage_roleObj_label, JSON.stringify(userRolesResp.roles[0]));
+    }
+    let userInfoResp = await userInfoInterface();
+
     ElNotification({
       title: "",
       message: "登录成功",
       duration: 1000,
       onClose: () => {
-        router.push('/home'); // 关闭后跳转
+        router.push('/navbar'); // 关闭后跳转
       },
     });
     ObjClear(loginReq);

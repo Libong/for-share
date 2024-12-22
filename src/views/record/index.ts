@@ -48,9 +48,53 @@ export interface ISearchRecordsPageResp {
 export function searchRecordsPageInterface(req: ISearchRecordsPageReq): Promise<ISearchRecordsPageResp> {
     return new Promise((resolve, reject) => {
         http
-            .post("/libong/record/search/page", true, req)
+            .post("/record/search/page", true, req)
             .then((res) => {
                 resolve(toCamelCaseObject(res.data) as ISearchRecordsPageResp);
+            })
+            .catch((err) => {
+                reject(err);
+            });
+    });
+}
+
+export interface IAddRecordReq {
+    goodsName: string, //物品名称
+    buyAt: number, //购买日期
+    produceAt: number, //生产日期
+    overdueAt: number, //过期时间
+    categoryIds: string[], //物品标签编号
+}
+
+export interface IAddRecordResp {
+    recordId: string, //记录编号
+}
+
+export function addRecordInterface(req: IAddRecordReq): Promise<IAddRecordResp> {
+    console.log(req);
+    return new Promise((resolve, reject) => {
+        http
+            .post("/record/add", true, req)
+            .then((res) => {
+                resolve(toCamelCaseObject(res.data) as IAddRecordResp);
+            })
+            .catch((err) => {
+                reject(err);
+            });
+    });
+}
+
+export interface IDeleteRecordReq {
+    recordId: string, //记录编号
+}
+
+export function deleteRecordInterface(req: IDeleteRecordReq): Promise<void> {
+    console.log(req);
+    return new Promise((resolve, reject) => {
+        http
+            .post("/record/delete", true, req)
+            .then((res) => {
+                resolve();
             })
             .catch((err) => {
                 reject(err);

@@ -30,7 +30,7 @@ const boxColor = boxColorMap[Math.floor(Math.random() * 6) + 1];
 
 /*时间相关操作*/
 const insideEstablishTime = computed(() => {
-  if (props.data.establishAt == 0) {
+  if (!props.data.establishAt || props.data.establishAt == 0) {
     return "";
   }
   const date = new Date(toSecondOrMilli(props.data.establishAt, false));
@@ -49,7 +49,7 @@ function timestamp2Date(timestamp: number): string {
   return formatTwoDigits(date.getFullYear()) + ' ' + formatTwoDigits(date.getMonth() + 1) + ' ' + formatTwoDigits(date.getDate());
 }
 
-const insideBugTime = computed(() => {
+const insideBuyTime = computed(() => {
   return timestamp2Date(props.data.buyAt);
 })
 const insideOverdueTime = computed(() => {
@@ -108,11 +108,12 @@ function openPoint() {
 
 const emits = defineEmits(['delete', 'update']);
 const boxDelete = () => {
+  //TODO 待优化 使用自定义
   ElMessageBox.confirm(
       '确认删除该记录吗？',
       // 'Warning',
       {
-        confirmButtonText: '删除',
+        confirmButtonText: '确认',
         cancelButtonText: '取消',
         type: 'warning',
       }
@@ -192,7 +193,7 @@ const boxUpdate = () => {
         <div :style="{left: buyTimeOffsetPercent + '%',alignItems:buyTimeTextAlignItems}"
              class="box-progress-bottom-date-text">
           <span class="box-progress-header">购买时间</span>
-          <span class="box-progress-header">{{ insideBugTime }}</span>
+          <span class="box-progress-header">{{ insideBuyTime }}</span>
         </div>
       </div>
     </div>
