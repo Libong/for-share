@@ -9,8 +9,10 @@ import {
   deleteRecordInterface,
   IRecord,
   ISearchRecordsPageReq,
+  IUpdateRecordReq,
   RecordType,
-  searchRecordsPageInterface
+  searchRecordsPageInterface,
+  updateRecordInterface
 } from "@/views/record/index";
 import Box from "@/views/record/components/box/box.vue";
 import Form from "@/views/record/components/form/form.vue";
@@ -86,15 +88,22 @@ const selectGoodsType = reactive([
 const showModel = ref(false);
 const isAddFormType = ref(true);
 
-function openAddModelDisplay() {
+function showAddModel() {
   isAddFormType.value = true;
   showModel.value = !showModel.value;
-  console.log("openAddModelDisplay", shoppingRecordObj);
+}
+
+function showUpdateRecordModel(data: IRecord) {
+  Object.assign(shoppingRecordObj, data);
+  shoppingRecordObj.overdueAt = toSecondOrMilli(shoppingRecordObj.overdueAt, false);
+  shoppingRecordObj.buyAt = toSecondOrMilli(shoppingRecordObj.buyAt, false);
+  shoppingRecordObj.produceAt = toSecondOrMilli(shoppingRecordObj.produceAt, false);
+  shoppingRecordObj.establishAt = toSecondOrMilli(shoppingRecordObj.establishAt, false);
+  isAddFormType.value = false;
+  showModel.value = !showModel.value;
 }
 
 async function addRecordCallback(callback: () => void) {
-  shoppingRecords.value.push(shoppingRecordObj);
-
   let categoryIds: string[] = [];
   shoppingRecordObj.goodsTypes.forEach((item, index) => {
     categoryIds.push(item.id);
@@ -119,6 +128,30 @@ async function addRecordCallback(callback: () => void) {
   await refreshSearch();
 }
 
+async function updateRecordCallback(callback: () => void) {
+  const req = {} as IUpdateRecordReq;
+  Object.assign(req, shoppingRecordObj);
+  let categoryIds: string[] = [];
+  shoppingRecordObj.goodsTypes.forEach((item, index) => {
+    categoryIds.push(item.id);
+  });
+  req.overdueAt = toSecondOrMilli(req.overdueAt, true);
+  req.buyAt = toSecondOrMilli(req.buyAt, true);
+  req.produceAt = toSecondOrMilli(req.produceAt, true);
+  req.categoryIds = categoryIds;
+  await updateRecordInterface(req);
+  ElMessage({
+    message: "修改成功",
+    type: "success",
+    plain: true,
+    customClass: "global-message",
+    duration: 1000
+  });
+  callback();
+  ObjClear(shoppingRecordObj);
+  await refreshSearch();
+}
+
 async function deleteRecordById(recordId: string) {
   await deleteRecordInterface({
     recordId: recordId,
@@ -131,16 +164,6 @@ async function deleteRecordById(recordId: string) {
     duration: 1000
   })
   await refreshSearch();
-}
-
-function showUpdateRecordModel(data: IRecord) {
-  data.overdueAt = toSecondOrMilli(data.overdueAt, false);
-  data.buyAt = toSecondOrMilli(data.buyAt, false);
-  data.produceAt = toSecondOrMilli(data.produceAt, false);
-  data.establishAt = toSecondOrMilli(data.establishAt, false);
-  shoppingRecordObj = data;
-  isAddFormType.value = false;
-  showModel.value = !showModel.value;
 }
 
 /*滑动条*/
@@ -195,7 +218,7 @@ const handleScroll = (event: Event) => {
     </div>
     <div class="projects-section">
       <div class="projects-tool">
-        <img :src="AddIcon" alt="" class="projects-tool-refresh" title="新增" @click="openAddModelDisplay">
+        <img :src="AddIcon" alt="" class="projects-tool-refresh" title="新增" @click="showAddModel">
         <img :src="SearchRefresh" alt="" class="projects-tool-refresh" title="刷新" @click="refreshSearch">
       </div>
       <div ref="scrollableDivRef" class="project-boxes jsGridView">
@@ -225,6 +248,7 @@ const handleScroll = (event: Event) => {
       :is-show="showModel"
       :select-goods-types="selectGoodsType"
       @addRecord="addRecordCallback"
+      @updateRecord="updateRecordCallback"
       @update:isShow="showModel = $event"><!--子组件触发update:isShow事件后同步更新--></Form>
 </template>
 

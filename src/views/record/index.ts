@@ -71,7 +71,6 @@ export interface IAddRecordResp {
 }
 
 export function addRecordInterface(req: IAddRecordReq): Promise<IAddRecordResp> {
-    console.log(req);
     return new Promise((resolve, reject) => {
         http
             .post("/record/add", true, req)
@@ -89,10 +88,31 @@ export interface IDeleteRecordReq {
 }
 
 export function deleteRecordInterface(req: IDeleteRecordReq): Promise<void> {
-    console.log(req);
     return new Promise((resolve, reject) => {
         http
             .post("/record/delete", true, req)
+            .then((res) => {
+                resolve();
+            })
+            .catch((err) => {
+                reject(err);
+            });
+    });
+}
+
+export interface IUpdateRecordReq {
+    produceAt: number, //生产日期
+    overdueAt: number, //过期时间
+    buyAt: number, //购买日期
+    goodsName: string, //物品名称
+    categoryIds: string[], //物品标签
+    recordId: string, //记录编号
+}
+
+export function updateRecordInterface(req: IUpdateRecordReq): Promise<void> {
+    return new Promise((resolve, reject) => {
+        http
+            .post("/record/update", true, req)
             .then((res) => {
                 resolve();
             })

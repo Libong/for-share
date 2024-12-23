@@ -25,20 +25,20 @@ let props = defineProps({
 
 let isDisabledTeleport = ref(true)
 //定义事件 用于给父组件获取
-// const emits = defineEmits(['update:isShow', 'addRecord']);
 const emits = defineEmits<{
   (event: 'update:isShow', value: boolean): void;
   (event: 'addRecord', callback: () => void): void;
+  (event: 'updateRecord', callback: () => void): void;
 }>();
 
 const closeAddModel = () => {
   emits('update:isShow', !props.isShow);
 };
-const addConfirmed = async (formEl: FormInstance | undefined) => {
+const formConfirmed = async (formEl: FormInstance | undefined) => {
   if (formEl) {
     await formEl.validate((valid, fields) => {
       if (valid) {
-        emits('addRecord', () => {
+        const callback = () => {
           //先将表单隐藏不可用 然后再执行动画归位
           isDisabledTeleport.value = !isDisabledTeleport.value;
           closeAddModel();
@@ -46,7 +46,12 @@ const addConfirmed = async (formEl: FormInstance | undefined) => {
           setTimeout(function () {
             isDisabledTeleport.value = !isDisabledTeleport.value;
           }, 500);
-        });
+        }
+        if (props.isAddForm) {
+          emits('addRecord', callback);
+        } else {
+          emits('updateRecord', callback);
+        }
       } else {
         ElMessage({
           message: "请检查表单内容",
@@ -199,7 +204,7 @@ const rules = reactive<FormRules<typeof props.data>>({
             </button>
             <Button2 :text="isAddForm?'记录':'更新'"
                      class="bottom-btn-confirm"
-                     @click="addConfirmed(ruleFormRef)">
+                     @click="formConfirmed(ruleFormRef)">
             </Button2>
           </div>
         </div>
