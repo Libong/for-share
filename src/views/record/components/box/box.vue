@@ -81,6 +81,19 @@ let leftDay = Math.ceil((props.data.overdueAt - new Date().getTime() / 1000) / 8
 if (leftDay < 0) {
   leftDay = 0;
 }
+let year = Math.floor(leftDay / 360);
+let month = Math.floor(leftDay % 360 / 30);
+let day = leftDay % 360 % 30;
+let leftDayStr = "";
+if (year != 0) {
+  leftDayStr += year + "年";
+}
+if (month != 0) {
+  leftDayStr += month + "个月";
+}
+if (day != 0) {
+  leftDayStr += day + "日";
+}
 
 /*菜单操作*/
 // const showDeleteIcon = ref(false)
@@ -199,7 +212,7 @@ const boxUpdate = () => {
     </div>
     <div class="project-box-footer">
       <div class="days-left" style="color: #ff942e;">
-        {{ leftDay }} Days Left
+        剩余 {{ leftDayStr }}
       </div>
     </div>
   </div>

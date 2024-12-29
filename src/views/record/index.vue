@@ -31,7 +31,7 @@ let defaultRecordObj = reactive(<IRecord>{
 })
 
 onMounted(() => {
-  searchMore();
+  refreshSearch();
 })
 //数据
 const pageCondition = reactive({
@@ -50,10 +50,12 @@ async function searchMore() {
   //   return;
   // }
   searchRecordsPageReq.pageNum++;
-  await refreshSearch();
+  const recordsResp = await searchRecordsPageInterface(searchRecordsPageReq);
+  shoppingRecords.value.push(...recordsResp.list);
 }
 
 async function refreshSearch() {
+  searchRecordsPageReq.pageNum = 1;
   const recordsResp = await searchRecordsPageInterface(searchRecordsPageReq);
   //TODO 很抽象不能进行recordsResp.list的undefined判断
   // if (recordsResp.list === undefined) {

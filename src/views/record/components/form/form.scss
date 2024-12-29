@@ -63,6 +63,14 @@
   }
 }
 
+.switch-btn {
+  position: absolute;
+  right: -25px;
+  height: 20px;
+  width: 20px;
+  cursor: pointer;
+}
+
 /*动画刚开始时的效果 相当于从这个状态变成展示的状态*/
 .slide-and-grow-enter-from, .slide-and-grow-leave-to {
   opacity: 0; //透明
