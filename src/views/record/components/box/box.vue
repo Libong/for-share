@@ -4,9 +4,9 @@ import DeleteIcon from "@/assets/delete-icon.svg";
 import UpdateIcon from "@/assets/update-icon.svg";
 import MoreVertical from "@/assets/more-vertical.svg";
 import {computed, PropType, ref} from "vue";
-import {IShoppingRecord} from "@/views/record/index";
 import {toSecondOrMilli} from "@/tool/tool";
 import {ElMessage, ElMessageBox} from "element-plus";
+import {IRecord} from "@/views/record/index";
 
 const boxColorMap: Record<number, string> = {
   1: '#e9e7fd',
@@ -20,7 +20,7 @@ const boxColorMap: Record<number, string> = {
 const showMenu = ref(true)
 let props = defineProps({
   data: {
-    type: Object as PropType<IShoppingRecord>,
+    type: Object as PropType<IRecord>,
     default: {},
   },
   insideEstablishTime: String,
@@ -77,23 +77,26 @@ if (triangleOffsetPercent > 10) {
   buyTimeTextAlignItems.value = 'center';
 }
 
+let leftDayStr = "剩余 ";
 let leftDay = Math.ceil((props.data.overdueAt - new Date().getTime() / 1000) / 86400);
-if (leftDay < 0) {
-  leftDay = 0;
+if (leftDay >= 0) {
+  let year = Math.floor(leftDay / 360);
+  let month = Math.floor(leftDay % 360 / 30);
+  let day = leftDay % 360 % 30;
+
+  if (year != 0) {
+    leftDayStr += year + "年";
+  }
+  if (month != 0) {
+    leftDayStr += month + "个月";
+  }
+  if (day != 0) {
+    leftDayStr += day + "日";
+  }
+} else {
+  leftDayStr = "已过期";
 }
-let year = Math.floor(leftDay / 360);
-let month = Math.floor(leftDay % 360 / 30);
-let day = leftDay % 360 % 30;
-let leftDayStr = "";
-if (year != 0) {
-  leftDayStr += year + "年";
-}
-if (month != 0) {
-  leftDayStr += month + "个月";
-}
-if (day != 0) {
-  leftDayStr += day + "日";
-}
+
 
 /*菜单操作*/
 // const showDeleteIcon = ref(false)
@@ -212,7 +215,7 @@ const boxUpdate = () => {
     </div>
     <div class="project-box-footer">
       <div class="days-left" style="color: #ff942e;">
-        剩余 {{ leftDayStr }}
+        {{ leftDayStr }}
       </div>
     </div>
   </div>

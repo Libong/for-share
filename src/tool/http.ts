@@ -10,6 +10,7 @@ export interface IApiResponse {
 }
 
 axios.defaults.timeout = 25000;
+// axios.defaults.baseURL = "http://47.98.123.53:8000/libong";
 axios.defaults.baseURL = "http://localhost:8001/libong";
 axios.defaults.headers.common = {
     "Content-Type": "application/json",

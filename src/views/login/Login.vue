@@ -145,20 +145,13 @@
 </template>
 
 <script lang="ts" setup>
-import {defineComponent, reactive, ref} from "vue";
+import {defineComponent, onMounted, reactive, ref} from "vue";
 import Bell from "@/components/common/icon/Bell.vue";
 import LogoImg from "@/assets/logo.png";
 import Phone from "@/assets/phone.svg";
 import Email from "@/assets/email.svg";
 import Account from "@/assets/username.svg";
-import {
-  FormTypeEnum,
-  ILoginInReq,
-  loginInInterface,
-  sendLoginSmsInterface,
-  userInfoInterface,
-  userRolesInterface,
-} from "./Login";
+import {FormTypeEnum, ILoginInReq, loginInInterface, sendLoginSmsInterface, userRolesInterface,} from "./Login";
 import {CSSProperties} from "@vue/runtime-dom";
 import CustomInput from "@/components/common/input/CustomInput.vue";
 import {ElMessage, ElNotification} from "element-plus";
@@ -166,7 +159,18 @@ import {ObjClear} from "@/tool/tool";
 import router from "@/router";
 import Button1 from "@/components/common/button/Button1.vue";
 import {localStorage_roleObj_label, localStorage_tokenObj_label} from "@/config/localStorage";
+import {isDev, isProd} from "@/tool/env";
 
+onMounted(() => {
+  if (isDev) {
+    loginReq.account = "18888888888";
+    loginReq.phone = "18888888888";
+  } else if (isProd) {
+
+  } else {
+    showMessage('未知环境');
+  }
+})
 defineComponent({
   components: {
     Bell,
@@ -336,15 +340,6 @@ async function sendPhoneCaptcha() {
 
 //登录
 async function login() {
-  // ElNotification({
-  //   title: "",
-  //   message: "登录成功",
-  //   duration: 1000,
-  //   onClose: () => {
-  //     router.push('/navbar'); // 关闭后跳转
-  //   },
-  // });
-  // return;
   switch (loginChangeItem.loginType) {
     case FormTypeEnum.Email:
       if (loginReq.email == "") {
@@ -391,7 +386,6 @@ async function login() {
     if (userRolesResp.roles.length > 0) {
       localStorage.setItem(localStorage_roleObj_label, JSON.stringify(userRolesResp.roles[0]));
     }
-    let userInfoResp = await userInfoInterface();
 
     ElNotification({
       title: "",
@@ -399,9 +393,10 @@ async function login() {
       duration: 1000,
       onClose: () => {
         router.push('/navbar'); // 关闭后跳转
+        ObjClear(loginReq);
       },
     });
-    ObjClear(loginReq);
+
   } catch (err) {
     //接口返回错误
     if (typeof err == "string") {

@@ -1,21 +1,35 @@
 <script lang="ts" setup>
 import feather from 'feather-icons';
-import {onMounted, ref} from "vue";
+import {onMounted, reactive, ref} from "vue";
 import router from "@/router";
 import Moon from "@/assets/moon.svg"
 import Settings from "@/assets/settings.svg"
 import Bell from "@/assets/bell.svg"
+import {userInfoInterface} from "@/views/login/Login";
 
 const navbarEl = ref()
 
+const userInfo = reactive({
+  account: "",
+  avatar: "",
+  has_password: false
+})
 onMounted(() => {
   feather.replace();
+  initUserInfo();
+
 });
+
+async function initUserInfo() {
+  let userInfoResp = await userInfoInterface();
+  userInfo.avatar = userInfoResp.avatar;
+  userInfo.account = userInfoResp.account;
+  userInfo.has_password = userInfoResp.has_password;
+}
 
 function to(path: string) {
   router.push(path)
 }
-
 
 const options = [
   {label: '首页', path: '/home', feather: 'home'},
@@ -63,8 +77,8 @@ function mouseleave() {
           <img :src="Bell" alt=""/>
         </button>
         <button class="profile-btn">
-          <img src="https://assets.codepen.io/3306515/IMG_2025.jpg"/>
-          <span>Aybüke C.</span>
+          <img :src="userInfo.avatar" alt=""/>
+          <span>{{ userInfo.account }}</span>
         </button>
       </div>
     </div>
