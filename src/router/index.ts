@@ -31,6 +31,11 @@ const routes: Array<RouteRecordRaw> = [
                 name: "Record",
                 component: () => import("@/views/record/index.vue"),
             },
+            {
+                path: "edit-profile",
+                name: "EditProfile",
+                component: () => import("@/views/mine/edit-profile/index.vue"),
+            }
         ]
     },
     // 可以添加更多的路由配置

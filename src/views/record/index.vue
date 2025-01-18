@@ -20,6 +20,10 @@ import {ObjClear, toSecondOrMilli} from "@/tool/tool";
 import {ElMessage} from "element-plus";
 import WaitPoint from "@/components/common/waitPoint/waitPoint.vue";
 
+onMounted(() => {
+  refreshSearch();
+})
+//数据
 let defaultRecordObj = reactive(<IRecord>{
   establishAt: 0, //创建时间
   produceAt: 0, //生产日期
@@ -30,10 +34,6 @@ let defaultRecordObj = reactive(<IRecord>{
   recordId: "", //记录编号
 })
 
-onMounted(() => {
-  refreshSearch();
-})
-//数据
 const pageCondition = reactive({
   total: 0,
 })
@@ -44,6 +44,16 @@ const searchRecordsPageReq = reactive(<ISearchRecordsPageReq>{
   recordType: recordType.value,
 })
 const shoppingRecords = ref<IRecord[]>([])
+
+function showMessage(msg: string) {
+  ElMessage({
+    message: msg,
+    type: "success",
+    plain: true,
+    customClass: "global-message",
+    duration: 1000
+  });
+}
 
 async function searchMore() {
   // if ((searchRecordsPageReq.pageNum * searchRecordsPageReq.pageSize >= pageCondition.total)) {
@@ -118,13 +128,7 @@ async function addRecordCallback(callback: () => void) {
     overdueAt: toSecondOrMilli(shoppingRecordObj.overdueAt, true),
     produceAt: toSecondOrMilli(shoppingRecordObj.produceAt, true),
   });
-  ElMessage({
-    message: "记录成功",
-    type: "success",
-    plain: true,
-    customClass: "global-message",
-    duration: 1000
-  });
+  showMessage("记录成功");
   callback();
   ObjClear(shoppingRecordObj);
   await refreshSearch();
@@ -142,13 +146,7 @@ async function updateRecordCallback(callback: () => void) {
   req.produceAt = toSecondOrMilli(req.produceAt, true);
   req.categoryIds = categoryIds;
   await updateRecordInterface(req);
-  ElMessage({
-    message: "修改成功",
-    type: "success",
-    plain: true,
-    customClass: "global-message",
-    duration: 1000
-  });
+  showMessage("修改成功");
   callback();
   ObjClear(shoppingRecordObj);
   await refreshSearch();
@@ -158,13 +156,7 @@ async function deleteRecordById(recordId: string) {
   await deleteRecordInterface({
     recordId: recordId,
   });
-  ElMessage({
-    message: "删除成功",
-    type: "success",
-    plain: true,
-    customClass: "global-message",
-    duration: 1000
-  })
+  showMessage("删除成功");
   await refreshSearch();
 }
 

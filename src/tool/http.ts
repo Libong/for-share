@@ -1,7 +1,8 @@
-import axios, {AxiosRequestConfig} from "axios";
+import axios, {AxiosInstance, AxiosRequestConfig} from "axios";
 import {toSnakeCase} from "@/tool/tool";
 import router from "@/router";
 import {localStorage_roleObj_label, localStorage_tokenObj_label} from "@/config/localStorage";
+import env from "@/config/env/env";
 
 export interface IApiResponse {
     code: number;
@@ -9,47 +10,65 @@ export interface IApiResponse {
     data: object;
 }
 
-axios.defaults.timeout = 25000;
-// axios.defaults.baseURL = "http://47.98.123.53:8000/libong";
-axios.defaults.baseURL = "http://localhost:8001/libong";
-axios.defaults.headers.common = {
-    "Content-Type": "application/json",
-    app_id: "1231",
-};
-//请求拦截器
-axios.interceptors.request.use((config: AxiosRequestConfig | any) => config);
-
-function handleAuthenticationError(redirectPath: string) {
-    // 执行一些登出操作，比如清除token等
-    // ...
-
-    // 跳转到登录页面，并附带重定向路径
-    router.push({path: '/login', query: {redirect: redirectPath}}).then(r => {
-    });
-}
-
-//响应拦截器
-axios.interceptors.response.use(
-    //成功时调用
-    (res) => {
-        const apiResponse = res.data as IApiResponse;
-        if (apiResponse.error != "") {
-            return Promise.reject(apiResponse.error);
+// 创建axios实例
+const createAxiosInstance = (auth: boolean): AxiosInstance => {
+    const instance = axios.create({
+        timeout: 25000,
+        baseURL: env.BASE_API,
+        headers: {
+            "Content-Type": "application/json",
+            "app_id": env.APP_ID
         }
-        return res;
-    },
-    //失败时调用 返回Promise.reject可以使得在链路的catch中捕获该err
-    (err) => {
-        //未授权的话就直接返回到登录页面
-        if (err.response && err.response.status == 401) {
-            if (err.response.data) {
-                handleAuthenticationError(router.currentRoute.value.path);
-                return Promise.reject(err.response.data.error);
+    });
+
+    // 请求拦截器
+    instance.interceptors.request.use((config: AxiosRequestConfig | any) => {
+        // 只有在需要认证的情况下才添加token
+        if (auth) {
+            const tokenObjStr = localStorage.getItem(localStorage_tokenObj_label);
+            if (tokenObjStr) {
+                const tokenObj = JSON.parse(tokenObjStr);
+                config.headers['li-token'] = tokenObj.localStorage_token_label;
+            }
+
+            const roleObjStr = localStorage.getItem(localStorage_roleObj_label);
+            if (roleObjStr) {
+                const roleObj = JSON.parse(roleObjStr);
+                config.headers['li-role'] = roleObj.id;
             }
         }
-        return Promise.reject(err);
-    },
-);
+
+        return config;
+    });
+
+    // 响应拦截器
+    instance.interceptors.response.use(
+        (res) => {
+            const apiResponse = res.data as IApiResponse;
+            if (apiResponse.error !== "") {
+                return Promise.reject(apiResponse.error);
+            }
+            return res;
+        },
+        (err) => {
+            if (err.response?.status === 401 && auth) {
+                if (err.response.data) {
+                    handleAuthenticationError(router.currentRoute.value.path);
+                    return Promise.reject(err.response.data.error);
+                }
+            }
+            return Promise.reject(err);
+        }
+    );
+
+    return instance;
+};
+
+function handleAuthenticationError(redirectPath: string) {
+    router.push({path: '/login', query: {redirect: redirectPath}}).then(r => {
+        // 可以添加额外的清理逻辑
+    });
+}
 
 interface IHttp {
     get<T>(url: string, auth: boolean, param?: unknown): Promise<IApiResponse>;
@@ -58,49 +77,25 @@ interface IHttp {
 }
 
 const http: IHttp = {
-    get(url, auth, params) {
-        if (auth) {
-            let tokenObjStr = localStorage.getItem(localStorage_tokenObj_label);
-            if (tokenObjStr != null) {
-                let tokenObj = JSON.parse(tokenObjStr);
-                axios.defaults.headers.common['li-token'] = tokenObj.localStorage_token_label;
-            }
+    async get(url, auth, params) {
+        const axiosInstance = createAxiosInstance(auth);
+        try {
+            const response = await axiosInstance.get(url, {params});
+            return response.data;
+        } catch (err) {
+            return Promise.reject(err);
         }
-        return new Promise((resolve, reject) => {
-            axios
-                .get(url, {params})
-                .then((res) => {
-                    resolve(res.data);
-                })
-                .catch((err) => {
-                    reject(err);
-                });
-        });
     },
-    post(url, auth, data) {
-        if (auth) {
-            let tokenObjStr = localStorage.getItem(localStorage_tokenObj_label);
-            if (tokenObjStr != null) {
-                let tokenObj = JSON.parse(tokenObjStr);
-                axios.defaults.headers.common['li-token'] = tokenObj.localStorage_token_label;
-            }
+
+    async post(url, auth, data) {
+        const axiosInstance = createAxiosInstance(auth);
+        try {
+            const response = await axiosInstance.post(url, toSnakeCase(data));
+            return response.data;
+        } catch (err) {
+            return Promise.reject(err);
         }
-        let roleObjStr = localStorage.getItem(localStorage_roleObj_label);
-        if (roleObjStr != null) {
-            let roleObj = JSON.parse(roleObjStr);
-            axios.defaults.headers.common['li-role'] = roleObj.id;
-        }
-        return new Promise((resolve, reject) => {
-            axios
-                .post(url, toSnakeCase(data), {})
-                .then((res) => {
-                    resolve(res.data);
-                })
-                .catch((err) => {
-                    reject(err);
-                });
-        });
-    },
+    }
 };
 
 export default http;
