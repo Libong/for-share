@@ -6,7 +6,6 @@ import Moon from "@/assets/moon.svg"
 import Settings from "@/assets/settings.svg"
 import Bell from "@/assets/bell.svg"
 import {userInfoInterface} from "@/views/login/Login";
-import { ArrowLeft } from '@element-plus/icons-vue'
 import EditProfile from '@/views/mine/edit-profile/index.vue'
 
 const navbarEl = ref()
@@ -24,6 +23,7 @@ const toggleDropdown = () => {
 }
 
 const showProfileEdit = ref(false)
+const isClosing = ref(false)
 
 const handleEditProfile = () => {
   showDropdown.value = false
@@ -31,7 +31,11 @@ const handleEditProfile = () => {
 }
 
 const handleCloseProfile = () => {
-  showProfileEdit.value = false
+  isClosing.value = true
+  setTimeout(() => {
+    showProfileEdit.value = false
+    isClosing.value = false
+  }, 300) // 动画持续时间
 }
 
 const profileDropdownRef = ref<HTMLElement | null>(null)
@@ -113,11 +117,12 @@ function mouseleave() {
           <img :src="Bell" alt=""/>
         </button>
         <div ref="profileDropdownRef" class="profile-dropdown">
-          <button class="profile-btn" @click.stop="toggleDropdown">
+          <!--          -->
+          <button class="profile-btn" @click="toggleDropdown">
             <img :src="userInfo.avatar" alt=""/>
             <span>{{ userInfo.account }}</span>
           </button>
-          <div v-show="showDropdown" class="dropdown-menu" @click.stop>
+          <div v-show="showDropdown" class="dropdown-menu">
             <div class="dropdown-item" @click="handleEditProfile">
               <i class="iconfont icon-edit"></i>
               <span>编辑个人信息</span>
@@ -131,17 +136,10 @@ function mouseleave() {
     <div class="main-content">
       <router-view/>
     </div>
-
-    <div class="profile-modal" v-if="showProfileEdit">
+    <div v-if="showProfileEdit" class="profile-modal">
       <div class="modal-backdrop" @click="handleCloseProfile"></div>
-      <div class="modal-content">
-        <div class="modal-header">
-          <el-button class="back-btn" @click="handleCloseProfile">
-            <el-icon><ArrowLeft /></el-icon>
-          </el-button>
-          <span>个人信息</span>
-        </div>
-        <EditProfile />
+      <div :class="{ 'slide-out': isClosing }" class="modal-content">
+        <EditProfile/>
       </div>
     </div>
   </div>
@@ -263,54 +261,62 @@ function mouseleave() {
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease;
 }
 
 .modal-content {
   position: relative;
-  width: 100%;
+  width: 40%;
   height: 100%;
   max-width: 500px;
   background: var(--app-background);
   z-index: 1;
   animation: slideIn 0.3s ease;
-}
 
-.modal-header {
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--header-bg);
-
-  .back-btn {
-    padding: 8px;
-    margin-right: 12px;
-    border: none;
-    background: transparent;
-    color: var(--main-color);
-
-    &:hover {
-      background: rgba(0, 0, 0, 0.05);
-    }
-
-    .el-icon {
-      font-size: 20px;
-    }
-  }
-
-  span {
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--main-color);
+  &.slide-out {
+    animation: slideOut 0.3s ease forwards;
   }
 }
 
 @keyframes slideIn {
   from {
     transform: translateX(100%);
+    opacity: 0;
   }
   to {
     transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 

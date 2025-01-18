@@ -1,8 +1,10 @@
 <script lang="ts" setup>
+
+
 import {reactive, ref} from 'vue'
 import {useRouter} from 'vue-router'
-import {ElMessage, ElDialog} from "element-plus";
-import { Edit, ArrowRight, Camera } from '@element-plus/icons-vue'
+import {ElDialog, ElMessage} from "element-plus";
+import {Camera, Edit} from '@element-plus/icons-vue'
 
 const router = useRouter()
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -104,12 +106,22 @@ const savePassword = async () => {
 
 <template>
   <div class="edit-profile-body">
+    <div class="edit-profile-header">
+      <!--      <el-button class="back-btn" @click="handleCloseProfile">-->
+      <!--        <el-icon>-->
+      <!--          <ArrowRight/>-->
+      <!--        </el-icon>-->
+      <!--      </el-button>-->
+      <span>个人信息</span>
+    </div>
     <div class="profile-container">
       <div class="avatar-section">
         <div class="avatar-wrapper" @click="triggerUpload">
           <img :src="userInfo.avatar || defaultAvatar" class="avatar-image"/>
           <div class="avatar-overlay">
-            <el-icon><Camera /></el-icon>
+            <el-icon>
+              <Camera/>
+            </el-icon>
           </div>
         </div>
         <input
@@ -127,7 +139,9 @@ const savePassword = async () => {
           <div class="info-content">
             <span class="info-value">{{ userInfo.username }}</span>
             <el-button class="edit-btn" @click="openNicknameDialog">
-              <el-icon><Edit /></el-icon>
+              <el-icon>
+                <Edit/>
+              </el-icon>
             </el-button>
           </div>
         </div>
@@ -137,7 +151,9 @@ const savePassword = async () => {
           <div class="info-content">
             <span class="info-value">{{ userInfo.phone || '未绑定' }}</span>
             <el-button class="edit-btn" @click="openPhoneDialog">
-              <el-icon><Edit /></el-icon>
+              <el-icon>
+                <Edit/>
+              </el-icon>
             </el-button>
           </div>
         </div>
@@ -153,9 +169,9 @@ const savePassword = async () => {
     <!-- 修改昵称弹窗 -->
     <el-dialog
         v-model="showNicknameDialog"
+        :close-on-click-modal="false"
         title="修改昵称"
         width="30%"
-        :close-on-click-modal="false"
     >
       <div class="dialog-content">
         <input
@@ -175,28 +191,28 @@ const savePassword = async () => {
     <!-- 修改密码弹窗 -->
     <el-dialog
         v-model="showPasswordDialog"
+        :close-on-click-modal="false"
         title="修改密码"
         width="30%"
-        :close-on-click-modal="false"
     >
       <div class="dialog-content">
         <input
             v-model="passwords.current"
-            type="password"
             class="dialog-input"
             placeholder="请输入当前密码"
+            type="password"
         />
         <input
             v-model="passwords.new"
-            type="password"
             class="dialog-input"
             placeholder="请输入新密码"
+            type="password"
         />
         <input
             v-model="passwords.confirm"
-            type="password"
             class="dialog-input"
             placeholder="请确认新密码"
+            type="password"
         />
       </div>
       <template #footer>
