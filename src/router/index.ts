@@ -30,11 +30,6 @@ const routes: Array<RouteRecordRaw> = [
                 path: "",
                 name: "Record",
                 component: () => import("@/views/record/index.vue"),
-            },
-            {
-                path: "edit-profile",
-                name: "EditProfile",
-                component: () => import("@/views/mine/edit-profile/index.vue"),
             }
         ]
     },

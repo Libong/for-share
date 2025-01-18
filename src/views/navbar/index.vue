@@ -6,6 +6,8 @@ import Moon from "@/assets/moon.svg"
 import Settings from "@/assets/settings.svg"
 import Bell from "@/assets/bell.svg"
 import {userInfoInterface} from "@/views/login/Login";
+import { ArrowLeft } from '@element-plus/icons-vue'
+import EditProfile from '@/views/mine/edit-profile/index.vue'
 
 const navbarEl = ref()
 
@@ -21,9 +23,15 @@ const toggleDropdown = () => {
   showDropdown.value = !showDropdown.value
 }
 
+const showProfileEdit = ref(false)
+
 const handleEditProfile = () => {
   showDropdown.value = false
-  router.push('/navbar/edit-profile')
+  showProfileEdit.value = true
+}
+
+const handleCloseProfile = () => {
+  showProfileEdit.value = false
 }
 
 const profileDropdownRef = ref<HTMLElement | null>(null)
@@ -123,6 +131,19 @@ function mouseleave() {
     <div class="main-content">
       <router-view/>
     </div>
+
+    <div class="profile-modal" v-if="showProfileEdit">
+      <div class="modal-backdrop" @click="handleCloseProfile"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <el-button class="back-btn" @click="handleCloseProfile">
+            <el-icon><ArrowLeft /></el-icon>
+          </el-button>
+          <span>个人信息</span>
+        </div>
+        <EditProfile />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -218,6 +239,93 @@ function mouseleave() {
 
     &:hover {
       background: rgba(142, 68, 173, 0.2);
+    }
+  }
+}
+
+.profile-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 500px;
+  background: var(--app-background);
+  z-index: 1;
+  animation: slideIn 0.3s ease;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--header-bg);
+
+  .back-btn {
+    padding: 8px;
+    margin-right: 12px;
+    border: none;
+    background: transparent;
+    color: var(--main-color);
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .el-icon {
+      font-size: 20px;
+    }
+  }
+
+  span {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--main-color);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+// 暗色主题支持
+:root[class='dark'] {
+  .modal-content {
+    background: var(--background-dark);
+  }
+
+  .modal-header {
+    background: var(--background-dark);
+    border-color: var(--border-color-dark);
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
     }
   }
 }

@@ -1,15 +1,22 @@
 <script lang="ts" setup>
 import {reactive, ref} from 'vue'
 import {useRouter} from 'vue-router'
-import {ElMessage} from "element-plus";
+import {ElMessage, ElDialog} from "element-plus";
+import { Edit, ArrowRight, Camera } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const fileInput = ref<HTMLInputElement | null>(null)
 const defaultAvatar = '/src/assets/default-avatar.png'
 
+// 控制修改弹窗的显示
+const showNicknameDialog = ref(false)
+const showPasswordDialog = ref(false)
+
 interface UserInfo {
   username: string
   avatar: string
+  tempUsername?: string // 用于临时存储修改的昵称
+  phone?: string
 }
 
 interface Passwords {
@@ -19,8 +26,9 @@ interface Passwords {
 }
 
 const userInfo = reactive<UserInfo>({
-  username: '',
-  avatar: ''
+  username: '测试用户',
+  avatar: '',
+  tempUsername: ''
 })
 
 const passwords = reactive<Passwords>({
@@ -55,34 +63,53 @@ const handleAvatarUpload = (event: Event) => {
   }
 }
 
-const handleSave = async () => {
+const openNicknameDialog = () => {
+  userInfo.tempUsername = userInfo.username
+  showNicknameDialog.value = true
+}
+
+const saveNickname = async () => {
+  try {
+    // 这里添加保存昵称的API调用
+    userInfo.username = userInfo.tempUsername || userInfo.username
+    showMessage('保存成功', CommonMessageState.Success)
+    showNicknameDialog.value = false
+  } catch (error) {
+    showMessage('保存失败，请重试', CommonMessageState.Error)
+  }
+}
+
+const openPasswordDialog = () => {
+  passwords.current = ''
+  passwords.new = ''
+  passwords.confirm = ''
+  showPasswordDialog.value = true
+}
+
+const savePassword = async () => {
   if (passwords.new !== passwords.confirm) {
     showMessage('两次输入的密码不一致', CommonMessageState.Error)
     return
   }
 
   try {
-    // 这里添加保存信息的API调用
-    showMessage('保存成功', CommonMessageState.Success)
-    router.back()
+    // 这里添加修改密码的API调用
+    showMessage('密码修改成功', CommonMessageState.Success)
+    showPasswordDialog.value = false
   } catch (error) {
-    showMessage('保存失败，请重试', CommonMessageState.Error)
+    showMessage('修改失败，请重试', CommonMessageState.Error)
   }
-}
-
-const handleCancel = () => {
-  router.back()
 }
 </script>
 
 <template>
   <div class="edit-profile-body">
-    <div class="edit-profile-container">
-      <div class="profile-header">
+    <div class="profile-container">
+      <div class="avatar-section">
         <div class="avatar-wrapper" @click="triggerUpload">
           <img :src="userInfo.avatar || defaultAvatar" class="avatar-image"/>
           <div class="avatar-overlay">
-            <i class="iconfont icon-camera"></i>
+            <el-icon><Camera /></el-icon>
           </div>
         </div>
         <input
@@ -94,75 +121,132 @@ const handleCancel = () => {
         />
       </div>
 
-      <div class="form-section">
+      <div class="info-section">
         <div class="info-item">
-          <label>用户名</label>
+          <div class="info-label">昵称</div>
           <div class="info-content">
-            <input
-                v-model="userInfo.username"
-                class="info-value"
-                placeholder="请输入用户名"
-            />
-            <button class="edit-btn">
-              <i class="iconfont icon-edit"></i>
-            </button>
+            <span class="info-value">{{ userInfo.username }}</span>
+            <el-button class="edit-btn" @click="openNicknameDialog">
+              <el-icon><Edit /></el-icon>
+            </el-button>
           </div>
         </div>
 
         <div class="info-item">
-          <label>当前密码</label>
+          <div class="info-label">手机号</div>
           <div class="info-content">
-            <input
-                v-model="passwords.current"
-                class="info-value"
-                placeholder="请输入当前密码"
-                type="password"
-            />
-            <button class="edit-btn">
-              <i class="iconfont icon-edit"></i>
-            </button>
+            <span class="info-value">{{ userInfo.phone || '未绑定' }}</span>
+            <el-button class="edit-btn" @click="openPhoneDialog">
+              <el-icon><Edit /></el-icon>
+            </el-button>
           </div>
-        </div>
-
-        <div class="info-item">
-          <label>新密码</label>
-          <div class="info-content">
-            <input
-                v-model="passwords.new"
-                class="info-value"
-                placeholder="请输入新密码"
-                type="password"
-            />
-            <button class="edit-btn">
-              <i class="iconfont icon-edit"></i>
-            </button>
-          </div>
-        </div>
-
-        <div class="info-item">
-          <label>确认密码</label>
-          <div class="info-content">
-            <input
-                v-model="passwords.confirm"
-                class="info-value"
-                placeholder="请确认新密码"
-                type="password"
-            />
-            <button class="edit-btn">
-              <i class="iconfont icon-edit"></i>
-            </button>
-          </div>
-        </div>
-
-        <div class="button-group">
-          <button class="cancel-btn" @click="handleCancel">取消</button>
-          <button class="save-btn" @click="handleSave">保存修改</button>
         </div>
       </div>
+
+      <div class="action-section">
+        <el-button class="password-btn" @click="openPasswordDialog">
+          修改密码
+        </el-button>
+      </div>
     </div>
+
+    <!-- 修改昵称弹窗 -->
+    <el-dialog
+        v-model="showNicknameDialog"
+        title="修改昵称"
+        width="30%"
+        :close-on-click-modal="false"
+    >
+      <div class="dialog-content">
+        <input
+            v-model="userInfo.tempUsername"
+            class="dialog-input"
+            placeholder="请输入新的昵称"
+        />
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="showNicknameDialog = false">取消</el-button>
+          <el-button type="primary" @click="saveNickname">确认</el-button>
+        </span>
+      </template>
+    </el-dialog>
+
+    <!-- 修改密码弹窗 -->
+    <el-dialog
+        v-model="showPasswordDialog"
+        title="修改密码"
+        width="30%"
+        :close-on-click-modal="false"
+    >
+      <div class="dialog-content">
+        <input
+            v-model="passwords.current"
+            type="password"
+            class="dialog-input"
+            placeholder="请输入当前密码"
+        />
+        <input
+            v-model="passwords.new"
+            type="password"
+            class="dialog-input"
+            placeholder="请输入新密码"
+        />
+        <input
+            v-model="passwords.confirm"
+            type="password"
+            class="dialog-input"
+            placeholder="请确认新密码"
+        />
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="showPasswordDialog = false">取消</el-button>
+          <el-button type="primary" @click="savePassword">确认</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <style lang="scss">
 @import "./index.scss";
+
+.edit-btn.el-button {
+  padding: 4px 8px;
+  height: auto;
+  border: none;
+  background: transparent;
+  color: #8e44ad;
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+    background: rgba(142, 68, 173, 0.1);
+  }
+
+  .el-icon {
+    font-size: 16px;
+  }
+}
+
+.password-btn.el-button {
+  width: 100%;
+  height: 40px;
+  border: none;
+  background: #8e44ad;
+  color: white;
+  font-size: 14px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #7d3c98;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
 </style> 
