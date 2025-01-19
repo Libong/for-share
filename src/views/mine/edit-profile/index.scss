@@ -260,4 +260,39 @@
       box-shadow: 0 4px 15px rgba(179, 136, 255, 0.2);
     }
   }
-} 
+
+  :deep(.el-dialog) {
+    .el-dialog__close {
+      color: #999; // 暗色主题下的默认颜色
+
+      &:hover {
+        color: #b388ff; // 暗色主题下悬浮时的颜色
+      }
+    }
+  }
+}
+
+/*应用于全局 否则将无法替换el组件内部的样式*/
+:root {
+  .edit-profile-update-dialog {
+    width: 25%;
+
+    .el-dialog__header {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+
+      .el-dialog__header {
+        display: flex;
+      }
+
+      .el-dialog__headerbtn {
+        display: flex;
+        position: unset;
+        height: auto;
+        width: auto;
+      }
+    }
+  }
+}

@@ -192,6 +192,7 @@ const savePassword = async () => {
     <el-dialog
         v-model="showPasswordDialog"
         :close-on-click-modal="false"
+        class="edit-profile-update-dialog"
         title="修改密码"
         width="30%"
     >

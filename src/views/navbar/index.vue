@@ -8,7 +8,16 @@ import Bell from "@/assets/bell.svg"
 import {userInfoInterface} from "@/views/login/Login";
 import EditProfile from '@/views/mine/edit-profile/index.vue'
 
-const navbarEl = ref()
+function initModeSwitch() {
+  let modeSwitch = document.querySelector('.mode-switch');
+  if (modeSwitch === null) {
+    return;
+  }
+  modeSwitch.addEventListener('click', function () {
+    document.documentElement.classList.toggle('dark');
+    modeSwitch.classList.toggle('active');
+  });
+}
 
 const userInfo = reactive({
   account: "",
@@ -53,6 +62,7 @@ const handleClickOutside = (event: MouseEvent) => {
 onMounted(() => {
   feather.replace();
   initUserInfo();
+  initModeSwitch();
   document.addEventListener('click', handleClickOutside)
 });
 
@@ -77,6 +87,7 @@ const options = [
   {label: '分享', path: '/share', feather: 'slack'}
 ]
 
+const navbarEl = ref()
 
 function mouseenter() {
   navbarEl.value.at(-1).classList.add('navbar__transition')
@@ -125,7 +136,7 @@ function mouseleave() {
           <div v-show="showDropdown" class="dropdown-menu">
             <div class="dropdown-item" @click="handleEditProfile">
               <i class="iconfont icon-edit"></i>
-              <span>编辑个人信息</span>
+              <span>个人信息</span>
             </div>
             <!-- 可以添加更多下拉选项 -->
           </div>
@@ -147,192 +158,5 @@ function mouseleave() {
 
 <style lang="scss" scoped>
 @import "index";
-
-.profile-dropdown {
-  position: relative;
-
-  .profile-btn {
-    display: flex;
-    align-items: center;
-    padding: 0 15px;
-    background: transparent;
-    border: 0;
-    cursor: pointer;
-
-    img {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-right: 8px;
-    }
-
-    span {
-      color: var(--main-color);
-      font-size: 14px;
-    }
-  }
-}
-
-.dropdown-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 8px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  padding: 8px 0;
-  min-width: 150px;
-  z-index: 1000;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: -4px;
-    right: 20px;
-    width: 8px;
-    height: 8px;
-    background: white;
-    transform: rotate(45deg);
-    box-shadow: -2px -2px 2px rgba(0, 0, 0, 0.02);
-  }
-}
-
-.dropdown-item {
-  display: flex;
-  align-items: center;
-  padding: 10px 15px;
-  color: var(--main-color);
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  i {
-    margin-right: 8px;
-    font-size: 16px;
-  }
-
-  span {
-    font-size: 14px;
-  }
-
-  &:hover {
-    background: rgba(142, 68, 173, 0.1);
-    color: #8e44ad;
-  }
-}
-
-// 添加暗色主题支持
-:root[class='dark'] {
-  .dropdown-menu {
-    background: var(--background-dark);
-
-    &::before {
-      background: var(--background-dark);
-    }
-  }
-
-  .dropdown-item {
-    color: var(--main-color-dark);
-
-    &:hover {
-      background: rgba(142, 68, 173, 0.2);
-    }
-  }
-}
-
-.profile-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.modal-backdrop {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.3s ease;
-}
-
-.modal-content {
-  position: relative;
-  width: 40%;
-  height: 100%;
-  max-width: 500px;
-  background: var(--app-background);
-  z-index: 1;
-  animation: slideIn 0.3s ease;
-
-  &.slide-out {
-    animation: slideOut 0.3s ease forwards;
-  }
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideOut {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-}
-
-.modal-backdrop {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-// 暗色主题支持
-:root[class='dark'] {
-  .modal-content {
-    background: var(--background-dark);
-  }
-
-  .modal-header {
-    background: var(--background-dark);
-    border-color: var(--border-color-dark);
-
-    .back-btn:hover {
-      background: rgba(255, 255, 255, 0.05);
-    }
-  }
-}
+@import "mineDropDown";
 </style>
