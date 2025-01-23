@@ -8,6 +8,16 @@ import Bell from "@/assets/bell.svg"
 import {userInfoInterface} from "@/views/login/Login";
 import EditProfile from '@/views/mine/edit-profile/index.vue'
 
+onMounted(() => {
+  feather.replace();
+  initUserInfo();
+  initModeSwitch();
+});
+
+onUnmounted(() => {
+  // No need to remove event listeners as we're not using handleClickOutside
+});
+
 function initModeSwitch() {
   let modeSwitch = document.querySelector('.mode-switch');
   if (modeSwitch === null) {
@@ -22,59 +32,35 @@ function initModeSwitch() {
 const userInfo = reactive({
   account: "",
   avatar: "",
-  has_password: false
+  encryptPhone: "",
+  hasPassword: false
 })
 
-const showDropdown = ref(false)
 
-const toggleDropdown = () => {
-  showDropdown.value = !showDropdown.value
-}
-
-const showProfileEdit = ref(false)
-const isClosing = ref(false)
+const showProfileEditModel = ref(false)
+const isProfileEditModelLeave = ref(false)
 
 const handleEditProfile = () => {
-  showDropdown.value = false
-  showProfileEdit.value = true
+  showProfileEditModel.value = true
 }
 
 const handleCloseProfile = () => {
-  isClosing.value = true
+  isProfileEditModelLeave.value = true
   setTimeout(() => {
-    showProfileEdit.value = false
-    isClosing.value = false
+    showProfileEditModel.value = false
+    isProfileEditModelLeave.value = false
   }, 300) // 动画持续时间
 }
 
 const profileDropdownRef = ref<HTMLElement | null>(null)
 
-const handleClickOutside = (event: MouseEvent) => {
-  if (
-      profileDropdownRef.value &&
-      !profileDropdownRef.value.contains(event.target as Node) &&
-      showDropdown.value
-  ) {
-    showDropdown.value = false
-  }
-}
-
-onMounted(() => {
-  feather.replace();
-  initUserInfo();
-  initModeSwitch();
-  document.addEventListener('click', handleClickOutside)
-});
-
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
-
 async function initUserInfo() {
   let userInfoResp = await userInfoInterface();
+  console.log(userInfoResp)
   userInfo.avatar = userInfoResp.avatar;
   userInfo.account = userInfoResp.account;
-  userInfo.has_password = userInfoResp.has_password;
+  userInfo.hasPassword = userInfoResp.hasPassword;
+  userInfo.encryptPhone = userInfoResp.encryptPhone;
 }
 
 function to(path: string) {
@@ -91,11 +77,56 @@ const navbarEl = ref()
 
 function mouseenter() {
   navbarEl.value.at(-1).classList.add('navbar__transition')
-
 }
 
 function mouseleave() {
   navbarEl.value.at(-1).classList.remove('navbar__transition')
+}
+
+const handleUpdateNickname = async (nickname: string, callback: (success: boolean) => void) => {
+  try {
+    // 调用 API 更新昵称
+    // await updateNicknameAPI(nickname)  // 假设这是你的 API 调用
+    userInfo.account = nickname
+    callback(true)  // 成功时调用回调
+  } catch (error) {
+    callback(false)  // 失败时调用回调
+  }
+}
+
+const handleUpdateAvatar = async (avatar: string, callback: (success: boolean) => void) => {
+  try {
+    // 调用 API 更新头像
+    //await updateAvatarAPI(avatar)  // 假设这是你的 API 调用
+    userInfo.avatar = avatar
+    callback(true)
+  } catch (error) {
+    callback(false)
+  }
+}
+
+const handleUpdatePassword = async (
+    passwords: { current: string, new: string },
+    callback: (success: boolean) => void
+) => {
+  try {
+    // 调用 API 更新密码
+    //await updatePasswordAPI(passwords)  // 假设这是你的 API 调用
+    callback(true)
+  } catch (error) {
+    callback(false)
+  }
+}
+
+const handleUpdatePhone = async (phone: string, callback: (success: boolean) => void) => {
+  try {
+    // 调用 API 更新手机号
+    // await updatePhoneAPI(phone)  // 假设这是你的 API 调用
+    userInfo.phone = phone
+    callback(true)
+  } catch (error) {
+    callback(false)
+  }
 }
 </script>
 
@@ -127,18 +158,17 @@ function mouseleave() {
         <button class="notification-btn">
           <img :src="Bell" alt=""/>
         </button>
-        <div ref="profileDropdownRef" class="profile-dropdown">
-          <!--          -->
-          <button class="profile-btn" @click="toggleDropdown">
+        <div ref="profileDropdownRef"
+             class="profile-dropdown">
+          <button class="profile-btn">
             <img :src="userInfo.avatar" alt=""/>
             <span>{{ userInfo.account }}</span>
           </button>
-          <div v-show="showDropdown" class="dropdown-menu">
+          <div class="dropdown-menu">
             <div class="dropdown-item" @click="handleEditProfile">
               <i class="iconfont icon-edit"></i>
               <span>个人信息</span>
             </div>
-            <!-- 可以添加更多下拉选项 -->
           </div>
         </div>
       </div>
@@ -147,10 +177,16 @@ function mouseleave() {
     <div class="main-content">
       <router-view/>
     </div>
-    <div v-if="showProfileEdit" class="profile-modal">
+    <div v-if="showProfileEditModel" class="profile-modal">
       <div class="modal-backdrop" @click="handleCloseProfile"></div>
-      <div :class="{ 'slide-out': isClosing }" class="modal-content">
-        <EditProfile/>
+      <div :class="{ 'slide-out': isProfileEditModelLeave }" class="modal-content">
+        <EditProfile
+            :user-info="userInfo"
+            @update-nickname="handleUpdateNickname"
+            @update-avatar="handleUpdateAvatar"
+            @update-password="handleUpdatePassword"
+            @update-phone="handleUpdatePhone"
+        />
       </div>
     </div>
   </div>

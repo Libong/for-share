@@ -1,6 +1,7 @@
 .profile-dropdown {
   position: relative;
 
+
   .profile-btn {
     display: flex;
     align-items: center;
@@ -26,8 +27,8 @@
 
 .dropdown-menu {
   position: absolute;
-  top: 100%;
-  right: 10px;
+  top: calc(100% - 5px); // 减去padding-bottom的值
+  right: 20%;
   margin-top: 8px;
   background: white;
   border-radius: 8px;
@@ -35,12 +36,20 @@
   padding: 8px 0;
   z-index: 1000;
   max-width: 100px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  transform: scale(0.95);
+  opacity: 0;
+
+  .profile-dropdown:hover & {
+    opacity: 1;
+    transform: scale(1);
+  }
 
   &::before {
     content: '';
     position: absolute;
     top: -4px;
-    left: 50%;
+    left: 45%;
     width: 8px;
     height: 8px;
     background: white;
@@ -52,7 +61,7 @@
 .dropdown-item {
   display: flex;
   align-items: center;
-  padding: 5px 10px;
+  padding: 3px 10px;
   color: var(--main-color);
   cursor: pointer;
   transition: all 0.3s ease;

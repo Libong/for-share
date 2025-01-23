@@ -1,43 +1,56 @@
 <script lang="ts" setup>
-
-
 import {reactive, ref} from 'vue'
-import {useRouter} from 'vue-router'
 import {ElDialog, ElMessage} from "element-plus";
 import {Camera, Edit} from '@element-plus/icons-vue'
 
-const router = useRouter()
+// 定义 props
+let props = defineProps<{
+  userInfo: {
+    account: string
+    avatar: string
+    encryptPhone: string,
+    hasPassword: boolean
+  }
+}>()
+
+// 修改 emit 定义，添加回调函数参数
+const emit = defineEmits<{
+  'update-nickname': [
+    nickname: string,
+    callback: (success: boolean) => void
+  ]
+  'update-avatar': [
+    avatar: string,
+    callback: (success: boolean) => void
+  ]
+  'update-password': [
+    passwords: { current: string, new: string },
+    callback: (success: boolean) => void
+  ]
+  'update-phone': [
+    phone: string,
+    callback: (success: boolean) => void
+  ]
+}>()
 const fileInput = ref<HTMLInputElement | null>(null)
-const defaultAvatar = '/src/assets/default-avatar.png'
 
 // 控制修改弹窗的显示
 const showNicknameDialog = ref(false)
 const showPasswordDialog = ref(false)
+const showPhoneDialog = ref(false)
 
-interface UserInfo {
-  username: string
-  avatar: string
-  tempUsername?: string // 用于临时存储修改的昵称
-  phone?: string
-}
-
-interface Passwords {
-  current: string
-  new: string
-  confirm: string
-}
-
-const userInfo = reactive<UserInfo>({
-  username: '测试用户',
-  avatar: '',
-  tempUsername: ''
+// 临时存储修改的值
+const tempUserInfo = reactive({
+  account: '',
 })
 
-const passwords = reactive<Passwords>({
+const passwords = reactive({
   current: '',
   new: '',
   confirm: ''
 })
+
+const tempPhone = ref('')
 
 function showMessage(msg: string, state: CommonMessageState) {
   ElMessage({
@@ -59,26 +72,32 @@ const handleAvatarUpload = (event: Event) => {
   if (file) {
     const reader = new FileReader()
     reader.onload = (e) => {
-      userInfo.avatar = e.target?.result as string
+      emit('update-avatar', e.target?.result as string, (success) => {
+        if (success) {
+          showMessage('头像更新成功', CommonMessageState.Success)
+        } else {
+          showMessage('头像更新失败', CommonMessageState.Error)
+        }
+      })
     }
     reader.readAsDataURL(file)
   }
 }
 
 const openNicknameDialog = () => {
-  userInfo.tempUsername = userInfo.username
+  tempUserInfo.account = props.userInfo.account
   showNicknameDialog.value = true
 }
 
 const saveNickname = async () => {
-  try {
-    // 这里添加保存昵称的API调用
-    userInfo.username = userInfo.tempUsername || userInfo.username
-    showMessage('保存成功', CommonMessageState.Success)
-    showNicknameDialog.value = false
-  } catch (error) {
-    showMessage('保存失败，请重试', CommonMessageState.Error)
-  }
+  emit('update-nickname', tempUserInfo.account, (success) => {
+    if (success) {
+      showMessage('保存成功', CommonMessageState.Success)
+      showNicknameDialog.value = false
+    } else {
+      showMessage('保存失败，请重试', CommonMessageState.Error)
+    }
+  })
 }
 
 const openPasswordDialog = () => {
@@ -94,30 +113,55 @@ const savePassword = async () => {
     return
   }
 
-  try {
-    // 这里添加修改密码的API调用
-    showMessage('密码修改成功', CommonMessageState.Success)
-    showPasswordDialog.value = false
-  } catch (error) {
-    showMessage('修改失败，请重试', CommonMessageState.Error)
+  emit('update-password',
+      {
+        current: passwords.current,
+        new: passwords.new
+      },
+      (success) => {
+        if (success) {
+          showMessage('密码修改成功', CommonMessageState.Success)
+          showPasswordDialog.value = false
+        } else {
+          showMessage('修改失败，请重试', CommonMessageState.Error)
+        }
+      }
+  )
+}
+
+const openPhoneDialog = () => {
+  tempPhone.value = props.userInfo.encryptPhone || ''
+  showPhoneDialog.value = true
+}
+
+const savePhone = () => {
+  // 简单的手机号格式验证
+  const phoneRegex = /^1[3-9]\d{9}$/
+  if (!phoneRegex.test(tempPhone.value)) {
+    showMessage('请输入正确的手机号', CommonMessageState.Error)
+    return
   }
+
+  emit('update-phone', tempPhone.value, (success) => {
+    if (success) {
+      showMessage('手机号更新成功', CommonMessageState.Success)
+      showPhoneDialog.value = false
+    } else {
+      showMessage('更新失败，请重试', CommonMessageState.Error)
+    }
+  })
 }
 </script>
 
 <template>
   <div class="edit-profile-body">
     <div class="edit-profile-header">
-      <!--      <el-button class="back-btn" @click="handleCloseProfile">-->
-      <!--        <el-icon>-->
-      <!--          <ArrowRight/>-->
-      <!--        </el-icon>-->
-      <!--      </el-button>-->
       <span>个人信息</span>
     </div>
     <div class="profile-container">
       <div class="avatar-section">
         <div class="avatar-wrapper" @click="triggerUpload">
-          <img :src="userInfo.avatar || defaultAvatar" class="avatar-image"/>
+          <img :src="props.userInfo.avatar" alt="" class="avatar-image"/>
           <div class="avatar-overlay">
             <el-icon>
               <Camera/>
@@ -137,7 +181,7 @@ const savePassword = async () => {
         <div class="info-item">
           <div class="info-label">昵称</div>
           <div class="info-content">
-            <span class="info-value">{{ userInfo.username }}</span>
+            <span class="info-value">{{ props.userInfo.account }}</span>
             <el-button class="edit-btn" @click="openNicknameDialog">
               <el-icon>
                 <Edit/>
@@ -149,7 +193,7 @@ const savePassword = async () => {
         <div class="info-item">
           <div class="info-label">手机号</div>
           <div class="info-content">
-            <span class="info-value">{{ userInfo.phone || '未绑定' }}</span>
+            <span class="info-value">{{ props.userInfo.encryptPhone || '未绑定' }}</span>
             <el-button class="edit-btn" @click="openPhoneDialog">
               <el-icon>
                 <Edit/>
@@ -175,7 +219,7 @@ const savePassword = async () => {
     >
       <div class="dialog-content">
         <input
-            v-model="userInfo.tempUsername"
+            v-model="tempUserInfo.account"
             class="dialog-input"
             placeholder="请输入新的昵称"
         />
@@ -223,47 +267,34 @@ const savePassword = async () => {
         </span>
       </template>
     </el-dialog>
+
+    <!-- 添加手机号修改弹窗 -->
+    <el-dialog
+        v-model="showPhoneDialog"
+        :close-on-click-modal="false"
+        class="edit-profile-update-dialog"
+        title="修改手机号"
+        width="30%"
+    >
+      <div class="dialog-content">
+        <input
+            v-model="tempPhone"
+            class="dialog-input"
+            maxlength="11"
+            placeholder="请输入新的手机号"
+            type="tel"
+        />
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="showPhoneDialog = false">取消</el-button>
+          <el-button type="primary" @click="savePhone">确认</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <style lang="scss">
 @import "./index.scss";
-
-.edit-btn.el-button {
-  padding: 4px 8px;
-  height: auto;
-  border: none;
-  background: transparent;
-  color: #8e44ad;
-  opacity: 0.7;
-
-  &:hover {
-    opacity: 1;
-    background: rgba(142, 68, 173, 0.1);
-  }
-
-  .el-icon {
-    font-size: 16px;
-  }
-}
-
-.password-btn.el-button {
-  width: 100%;
-  height: 40px;
-  border: none;
-  background: #8e44ad;
-  color: white;
-  font-size: 14px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: #7d3c98;
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-}
-</style> 
+</style>

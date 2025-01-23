@@ -59,7 +59,8 @@ export interface IUserInfoResp {
     sex: number;
     avatar: string;
     departments: Meta[];
-    has_password: boolean;
+    hasPassword: boolean;
+    encryptPhone: string,
 }
 
 export function userInfoInterface(): Promise<IUserInfoResp> {
