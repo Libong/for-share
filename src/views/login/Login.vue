@@ -151,7 +151,6 @@ import LogoImg from "@/assets/logo.png";
 import Phone from "@/assets/phone.svg";
 import Email from "@/assets/email.svg";
 import Account from "@/assets/username.svg";
-import {FormTypeEnum, ILoginInReq, loginInInterface, sendLoginSmsInterface, userRolesInterface,} from "./Login";
 import {CSSProperties} from "@vue/runtime-dom";
 import CustomInput from "@/components/common/input/CustomInput.vue";
 import {ElMessage, ElNotification} from "element-plus";
@@ -160,6 +159,13 @@ import router from "@/router";
 import Button1 from "@/components/common/button/Button1.vue";
 import {localStorage_roleObj_label, localStorage_tokenObj_label} from "@/config/localStorage";
 import {isDev, isProd} from "@/tool/env";
+import {
+  FormTypeEnum,
+  ILoginInReq,
+  loginInInterface,
+  sendLoginSmsInterface,
+  userRolesInterface
+} from "@/api/proto/loginInterface";
 
 onMounted(() => {
   if (isDev) {

@@ -5,7 +5,7 @@ import router from "@/router";
 import Moon from "@/assets/moon.svg"
 import Settings from "@/assets/settings.svg"
 import Bell from "@/assets/bell.svg"
-import {userInfoInterface} from "@/views/login/Login";
+import {updateUserInfoInterface, userInfoInterface} from "@/api/proto/loginInterface";
 import EditProfile from '@/views/mine/edit-profile/index.vue'
 
 onMounted(() => {
@@ -56,7 +56,6 @@ const profileDropdownRef = ref<HTMLElement | null>(null)
 
 async function initUserInfo() {
   let userInfoResp = await userInfoInterface();
-  console.log(userInfoResp)
   userInfo.avatar = userInfoResp.avatar;
   userInfo.account = userInfoResp.account;
   userInfo.hasPassword = userInfoResp.hasPassword;
@@ -85,23 +84,21 @@ function mouseleave() {
 
 const handleUpdateNickname = async (nickname: string, callback: (success: boolean) => void) => {
   try {
-    // 调用 API 更新昵称
-    // await updateNicknameAPI(nickname)  // 假设这是你的 API 调用
-    userInfo.account = nickname
-    callback(true)  // 成功时调用回调
+    await updateUserInfoInterface({account: nickname});
+    userInfo.account = nickname;
+    callback(true);
   } catch (error) {
-    callback(false)  // 失败时调用回调
+    callback(false);
   }
 }
 
 const handleUpdateAvatar = async (avatar: string, callback: (success: boolean) => void) => {
   try {
-    // 调用 API 更新头像
-    //await updateAvatarAPI(avatar)  // 假设这是你的 API 调用
-    userInfo.avatar = avatar
-    callback(true)
+    await updateUserInfoInterface({avatar});
+    userInfo.avatar = avatar;
+    callback(true);
   } catch (error) {
-    callback(false)
+    callback(false);
   }
 }
 
@@ -110,22 +107,10 @@ const handleUpdatePassword = async (
     callback: (success: boolean) => void
 ) => {
   try {
-    // 调用 API 更新密码
-    //await updatePasswordAPI(passwords)  // 假设这是你的 API 调用
-    callback(true)
+    await updateUserInfoInterface({password: passwords.new});
+    callback(true);
   } catch (error) {
-    callback(false)
-  }
-}
-
-const handleUpdatePhone = async (phone: string, callback: (success: boolean) => void) => {
-  try {
-    // 调用 API 更新手机号
-    // await updatePhoneAPI(phone)  // 假设这是你的 API 调用
-    userInfo.phone = phone
-    callback(true)
-  } catch (error) {
-    callback(false)
+    callback(false);
   }
 }
 </script>
@@ -185,7 +170,6 @@ const handleUpdatePhone = async (phone: string, callback: (success: boolean) => 
             @update-nickname="handleUpdateNickname"
             @update-avatar="handleUpdateAvatar"
             @update-password="handleUpdatePassword"
-            @update-phone="handleUpdatePhone"
         />
       </div>
     </div>

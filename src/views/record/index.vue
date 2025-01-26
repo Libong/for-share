@@ -13,7 +13,7 @@ import {
   RecordType,
   searchRecordsPageInterface,
   updateRecordInterface
-} from "@/views/record/index";
+} from "@/api/proto/recordinterface";
 import Box from "@/views/record/components/box/box.vue";
 import Form from "@/views/record/components/form/form.vue";
 import {ObjClear, toSecondOrMilli} from "@/tool/tool";
@@ -117,7 +117,7 @@ function showUpdateRecordModel(data: IRecord) {
 
 async function addRecordCallback(callback: () => void) {
   let categoryIds: string[] = [];
-  shoppingRecordObj.goodsTypes.forEach((item, index) => {
+  shoppingRecordObj.goodsTypes.forEach((item) => {
     categoryIds.push(item.id);
   });
 
@@ -138,7 +138,7 @@ async function updateRecordCallback(callback: () => void) {
   const req = {} as IUpdateRecordReq;
   Object.assign(req, shoppingRecordObj);
   let categoryIds: string[] = [];
-  shoppingRecordObj.goodsTypes.forEach((item, index) => {
+  shoppingRecordObj.goodsTypes.forEach((item) => {
     categoryIds.push(item.id);
   });
   req.overdueAt = toSecondOrMilli(req.overdueAt, true);
@@ -186,11 +186,7 @@ const handleScroll = (event: Event) => {
   const target = event.target as HTMLElement;
   hasMoreText.value = "下拉加载更多";
   hasMoreIcon.value = true;
-  if (target.scrollTop > target.clientHeight) {
-    hasScrollToTopText.value = true;
-  } else {
-    hasScrollToTopText.value = false;
-  }
+  hasScrollToTopText.value = target.scrollTop > target.clientHeight;
   if (target.scrollHeight - target.scrollTop - target.clientHeight < 1) {
     // 到达底部，调用接口更新数据
     if (shoppingRecords.value.length == pageCondition.total) {

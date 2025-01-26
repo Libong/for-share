@@ -92,3 +92,66 @@ export function userRolesInterface(): Promise<IUserRolesResp> {
             });
     });
 }
+
+// 根据 proto 的 UpdateUserInfoReq 定义
+export interface IUpdateUserInfoReq {
+    account?: string;
+    sex?: number;
+    avatar?: string;
+    password?: string;
+}
+
+// 根据 proto 的 rpc updateUserInfo 定义
+export function updateUserInfoInterface(req: IUpdateUserInfoReq): Promise<void> {
+    return new Promise((resolve, reject) => {
+        http
+            .post("/login/user/info/update", true, req)
+            .then((res) => {
+                resolve();
+            })
+            .catch((err) => {
+                reject(err);
+            });
+    });
+}
+
+// 根据 proto 的 RegisterReq 定义
+export interface IRegisterReq {
+    phone: string;
+    verifyCode: string;
+}
+
+// 根据 proto 的 RegisterResp 定义
+export interface IRegisterResp {
+    accountId: string;
+    accessToken: string;
+    refreshToken: string;
+}
+
+// 根据 proto 的 rpc register 定义
+export function registerInterface(req: IRegisterReq): Promise<IRegisterResp> {
+    return new Promise((resolve, reject) => {
+        http
+            .post("/login/register", false, req)
+            .then((res) => {
+                resolve(toCamelCaseObject(res.data) as IRegisterResp);
+            })
+            .catch((err) => {
+                reject(err);
+            });
+    });
+}
+
+// 根据 proto 的 rpc signOut 定义
+export function signOutInterface(): Promise<void> {
+    return new Promise((resolve, reject) => {
+        http
+            .post("/login/out", true, null)
+            .then((res) => {
+                resolve();
+            })
+            .catch((err) => {
+                reject(err);
+            });
+    });
+}
