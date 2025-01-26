@@ -151,7 +151,6 @@ const handleUpdatePassword = async (
           </button>
           <div class="dropdown-menu">
             <div class="dropdown-item" @click="handleEditProfile">
-              <i class="iconfont icon-edit"></i>
               <span>个人信息</span>
             </div>
           </div>

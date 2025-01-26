@@ -27,42 +27,39 @@
 
 .dropdown-menu {
   position: absolute;
-  top: calc(100% - 5px); // 减去padding-bottom的值
+  top: calc(100% - 45px); // 减去padding-bottom的值
   right: 20%;
   margin-top: 8px;
-  background: white;
+  background: rgba(255, 255, 255, 0);
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   padding: 8px 0;
   z-index: 1000;
   max-width: 100px;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  transform: scale(0.95);
-  opacity: 0;
+  transition: opacity 0.2s ease;
+  opacity: 1;
 
   .profile-dropdown:hover & {
     opacity: 1;
-    transform: scale(1);
   }
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: -4px;
-    left: 45%;
-    width: 8px;
-    height: 8px;
-    background: white;
-    transform: rotate(45deg);
-    box-shadow: -2px -2px 2px rgba(0, 0, 0, 0.02);
-  }
+  //&::before {
+  //  content: '';
+  //  position: absolute;
+  //  top: -4px;
+  //  left: 45%;
+  //  width: 8px;
+  //  height: 8px;
+  //  background: white;
+  //  transform: rotate(45deg);
+  //  box-shadow: -2px -2px 2px rgba(0, 0, 0, 0.02);
+  //}
 }
 
 .dropdown-item {
   display: flex;
   align-items: center;
   padding: 3px 10px;
-  color: var(--main-color);
   cursor: pointer;
   transition: all 0.3s ease;
 
