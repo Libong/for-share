@@ -1,4 +1,4 @@
-enum CommonMessageState {
+export enum CommonMessageState {
     Success = 'success',
     Info = 'info',
     Warning = 'warning',

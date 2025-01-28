@@ -2,6 +2,9 @@
 import {reactive, ref} from 'vue'
 import {ElDialog, ElMessage} from "element-plus";
 import {Camera, Edit} from '@element-plus/icons-vue'
+import {fileUploadInterface, UploadFileType} from "@/api/proto/fileinterface";
+import {CommonMessageState} from "@/config/enum";
+import {UploadFileTypeText} from "@/config/common";
 
 // 定义 props
 let props = defineProps<{
@@ -66,21 +69,39 @@ const triggerUpload = () => {
   fileInput.value?.click()
 }
 
-const handleAvatarUpload = (event: Event) => {
+const handleAvatarUpload = async (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
-  if (file) {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      emit('update-avatar', e.target?.result as string, (success) => {
-        if (success) {
-          showMessage('头像更新成功', CommonMessageState.Success)
-        } else {
-          showMessage('头像更新失败', CommonMessageState.Error)
-        }
-      })
+  if (!file) return
+  try {
+    // 创建 FormData 对象
+    const formData = new FormData()
+    formData.append('file', file)
+    const params = {
+      [UploadFileTypeText]: UploadFileType.UploadFileTypeImage
     }
-    reader.readAsDataURL(file)
+    // 调用上传接口
+    const resp = await fileUploadInterface(formData, params);
+
+    // 假设接口返回的数据格式为 { url: string }
+    const avatarUrl = resp.Url;
+
+    // 更新用户头像
+    emit('update-avatar', avatarUrl, (success) => {
+      if (success) {
+        showMessage('头像更新成功', CommonMessageState.Success)
+      } else {
+        showMessage('头像更新失败', CommonMessageState.Error)
+      }
+    })
+  } catch (error) {
+    console.error('Upload failed:', error)
+    showMessage('文件上传失败', CommonMessageState.Error)
+  } finally {
+    // 无论成功还是失败，都清空 input 的值
+    if (fileInput.value) {
+      fileInput.value.value = ''
+    }
   }
 }
 
