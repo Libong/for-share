@@ -19,6 +19,7 @@ import Form from "@/views/record/components/form/form.vue";
 import {ObjClear, toSecondOrMilli} from "@/tool/tool";
 import {ElMessage} from "element-plus";
 import WaitPoint from "@/components/common/waitPoint/waitPoint.vue";
+import CustomConfirmDialog from "@/components/common/confirm/CustomConfirmDialog.vue";
 
 onMounted(() => {
   refreshSearch();
@@ -152,9 +153,28 @@ async function updateRecordCallback(callback: () => void) {
   await refreshSearch();
 }
 
-async function deleteRecordById(recordId: string) {
+const confirmDialogParam = reactive({
+  message: "",
+  enable: false,
+  title: "",
+  id: ""
+});
+
+async function showDeleteConfirmDialog(recordId: string) {
+  //打开删除确认框
+  confirmDialogParam.enable = true;
+  confirmDialogParam.message = "";
+  confirmDialogParam.title = "确认要删除该记录吗？";
+  confirmDialogParam.id = recordId;
+}
+
+async function confirmDialogCanceled() {
+  ObjClear(confirmDialogParam);
+}
+
+async function confirmDialogConfirmed() {
   await deleteRecordInterface({
-    recordId: recordId,
+    recordId: confirmDialogParam.id,
   });
   showMessage("删除成功");
   await refreshSearch();
@@ -216,7 +236,7 @@ const handleScroll = (event: Event) => {
         <!--        <div class="project-box-wrapper">-->
         <div v-for="item in shoppingRecords" :key="item.recordId" style="width: 33.3%;height: 267px">
           <box :data="item"
-               @delete="deleteRecordById(item.recordId)"
+               @delete="showDeleteConfirmDialog(item.recordId)"
                @update="showUpdateRecordModel"></box>
         </div>
         <!--        </div>-->
@@ -240,6 +260,12 @@ const handleScroll = (event: Event) => {
       @addRecord="addRecordCallback"
       @updateRecord="updateRecordCallback"
       @update:isShow="showModel = $event"><!--子组件触发update:isShow事件后同步更新--></Form>
+  <CustomConfirmDialog
+      :enable="confirmDialogParam.enable"
+      :message="confirmDialogParam.message"
+      :title="confirmDialogParam.title"
+      @cancel="confirmDialogCanceled"
+      @confirm="confirmDialogConfirmed"></CustomConfirmDialog>
 </template>
 
 <style lang="scss" scoped>

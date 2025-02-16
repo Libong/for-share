@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 
-import {computed, PropType, reactive, ref} from "vue";
-import {IRecord, Label} from "@/views/record/index";
+import {computed, PropType, reactive, ref, watch} from "vue";
+import {IRecord, Label} from "@/api/proto/recordinterface";
 import {ElMessage, FormInstance, FormRules} from "element-plus";
 import Button2 from "@/components/common/button/Button2.vue";
 import SwitchIcon from "@/assets/switch.svg";
+import {calculateShelfLife} from "@/tool/tool";
 
 let props = defineProps({
   data: {
@@ -43,6 +44,16 @@ const selectDateType = ref("");
 let selectDateNum = ref(0);
 
 const overdueDataIsDate = ref(false);
+
+//将过期时间转为保质期
+watch(() => props.data.overdueAt, (newVal) => {
+  if (props.data.overdueAt != 0 && props.data.produceAt != 0) {
+    let shelfLife = calculateShelfLife(props.data.produceAt, props.data.overdueAt);
+    selectDateNum.value = shelfLife.Num;
+    selectDateType.value = shelfLife.DateType;
+  }
+});
+
 
 function overdueItemSwitch() {
   overdueDataIsDate.value = !overdueDataIsDate.value;
@@ -285,7 +296,6 @@ const rules = computed(() => {
                   style="width: 145px;"
                   type="number"
               />
-              <!--                  @input="handleInput"-->
               <el-select
                   v-model="selectDateType"
                   placeholder="单位"

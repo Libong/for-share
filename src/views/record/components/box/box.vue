@@ -5,8 +5,7 @@ import UpdateIcon from "@/assets/update-icon.svg";
 import MoreVertical from "@/assets/more-vertical.svg";
 import {computed, PropType, ref} from "vue";
 import {toSecondOrMilli} from "@/tool/tool";
-import {ElMessage, ElMessageBox} from "element-plus";
-import {IRecord} from "@/views/record/index";
+import {IRecord} from "@/api/proto/recordinterface";
 
 const boxColorMap: Record<number, string> = {
   1: '#e9e7fd',
@@ -27,7 +26,7 @@ let props = defineProps({
 })
 
 const boxColor = boxColorMap[Math.floor(Math.random() * 6) + 1];
-
+let boxOpacity = 1;
 /*时间相关操作*/
 const insideEstablishTime = computed(() => {
   if (!props.data.establishAt || props.data.establishAt == 0) {
@@ -78,6 +77,7 @@ if (triangleOffsetPercent > 10) {
 }
 
 let leftDayStr = "剩余 ";
+const hasOverDue = ref(false);
 let leftDay = Math.ceil((props.data.overdueAt - new Date().getTime() / 1000) / 86400);
 if (leftDay >= 0) {
   let year = Math.floor(leftDay / 360);
@@ -94,18 +94,22 @@ if (leftDay >= 0) {
     leftDayStr += day + "日";
   }
 } else {
-  leftDayStr = "已过期";
+  handleOverdue();
 }
 
+/*过期状态处理*/
+
+function handleOverdue() {
+  leftDayStr = "已过期";
+  boxOpacity = 0.5;
+  hasOverDue.value = true;
+}
 
 /*菜单操作*/
-// const showDeleteIcon = ref(false)
-// const showUpdateIcon = ref(false)
 const isEnteringOrLeaving = ref(false);
 const showMenuIcon = ref(false);
 
 function showMenus() {
-  // showDeleteIcon.value = !showDeleteIcon.value;
   showMenuIcon.value = !showMenuIcon.value;
 }
 
@@ -117,33 +121,9 @@ function openPoint() {
   isEnteringOrLeaving.value = false;
 }
 
-
-// function startSecondAnimation() {
-//   showUpdateIcon.value = !showUpdateIcon.value
-// }
-
 const emits = defineEmits(['delete', 'update']);
 const boxDelete = () => {
-  //TODO 待优化 使用自定义
-  ElMessageBox.confirm(
-      '确认删除该记录吗？',
-      // 'Warning',
-      {
-        confirmButtonText: '确认',
-        cancelButtonText: '取消',
-        type: 'warning',
-      }
-  )
-      .then(() => {
-        emits('delete');
-      })
-      .catch(() => {
-        //TODO 提示需要放到外面去
-        ElMessage({
-          type: 'info',
-          message: 'Delete canceled',
-        })
-      })
+  emits('delete');
 }
 const boxUpdate = () => {
   emits('update', props.data);
@@ -151,7 +131,7 @@ const boxUpdate = () => {
 </script>
 
 <template>
-  <div :style="{backgroundColor: boxColor}" class="box">
+  <div :style="{backgroundColor: boxColor,opacity:boxOpacity}" class="box">
     <div class="box-header">
       <span>{{ insideEstablishTime }}</span>
       <div class="box-header-more-wrapper">
@@ -161,17 +141,14 @@ const boxUpdate = () => {
                             @before-leave="closePoint"
                             @after-enter="openPoint"
                             @after-leave="openPoint">
-            <!--          <transition name="fadeUpdate">-->
-            <img v-if="showMenuIcon" :src="UpdateIcon" :style="{pointerEvents: isEnteringOrLeaving ? 'none':'auto'}"
+            <img v-if="showMenuIcon && !hasOverDue" :src="UpdateIcon"
+                 :style="{pointerEvents: isEnteringOrLeaving ? 'none':'auto'}"
                  alt="" class="box-header-more-wrapper-menu-update"
                  title="编辑"
                  @click="boxUpdate">
-            <!--          </transition>-->
-            <!--          <transition name="fadeDelete" @after-enter="startSecondAnimation">-->
             <img v-if="showMenuIcon" :src="DeleteIcon" :style="{pointerEvents: isEnteringOrLeaving ? 'none':'auto'}"
                  alt="" class="box-header-more-wrapper-menu-delete" title="删除"
                  @click="boxDelete">
-            <!--          </transition>-->
           </transition-group>
         </div>
         <button class="box-header-btn-more">

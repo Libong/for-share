@@ -1,5 +1,9 @@
 export function ObjClear(obj: any) {
     for (let key in obj) {
+        if (typeof obj[key] === "boolean") {
+            obj[key] = false;
+            continue
+        }
         obj[key] = typeof obj[key as keyof typeof obj] === "number" ? 0 : "";
     }
 }
@@ -53,3 +57,42 @@ export function toSecondOrMilli(timestamp: number, toSecond: boolean): number {
     return timestamp;
 }
 
+export interface ShelfLife {
+    DateType: string;
+    Num: number;
+}
+
+//时间戳转换为保质期
+export function calculateShelfLife(production: number, expiry: number): ShelfLife {
+    let shelfLife: ShelfLife = {
+        DateType: "",
+        Num: 0,
+    };
+    const differenceInMilliseconds = expiry - production;
+
+    if (differenceInMilliseconds < 0) {
+        return shelfLife;
+    }
+
+    const oneDayInMilliseconds = 24 * 60 * 60 * 1000; // 1 day in milliseconds
+    const totalDays = Math.floor(differenceInMilliseconds / oneDayInMilliseconds);
+
+    if (totalDays === 0) {
+        return shelfLife;
+    }
+
+    // Check for exactly divisible by a year
+    if (totalDays % 365 === 0) {
+        const years = totalDays / 365;
+        shelfLife.DateType = "年";
+        shelfLife.Num = years;
+    } else if (totalDays % 30 === 0) {
+        const months = totalDays / 30;
+        shelfLife.DateType = "月";
+        shelfLife.Num = months;
+    } else {
+        shelfLife.DateType = "日";
+        shelfLife.Num = totalDays;
+    }
+    return shelfLife;
+}
