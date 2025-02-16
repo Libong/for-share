@@ -158,7 +158,7 @@ import {ObjClear} from "@/tool/tool";
 import router from "@/router";
 import Button1 from "@/components/common/button/Button1.vue";
 import {localStorage_roleObj_label, localStorage_tokenObj_label} from "@/config/localStorage";
-import {isDev, isProd} from "@/tool/env";
+import {isDev, isProd} from "@/config/env/envConfig";
 import {
   FormTypeEnum,
   ILoginInReq,

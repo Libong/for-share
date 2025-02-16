@@ -5,7 +5,7 @@ import router from "@/router";
 import Moon from "@/assets/moon.svg"
 import Settings from "@/assets/settings.svg"
 import Bell from "@/assets/bell.svg"
-import {updateUserInfoInterface, userInfoInterface} from "@/api/proto/loginInterface";
+import {loginOutInterface, updateUserInfoInterface, userInfoInterface} from "@/api/proto/loginInterface";
 import EditProfile from '@/views/mine/edit-profile/index.vue'
 
 onMounted(() => {
@@ -42,6 +42,11 @@ const isProfileEditModelLeave = ref(false)
 
 const handleEditProfile = () => {
   showProfileEditModel.value = true
+}
+
+async function handleLoginOut() {
+  await loginOutInterface();
+  await router.push("login");
 }
 
 const handleCloseProfile = () => {
@@ -107,7 +112,7 @@ const handleUpdatePassword = async (
     callback: (success: boolean) => void
 ) => {
   try {
-    await updateUserInfoInterface({password: passwords.new});
+    await updateUserInfoInterface({curPassword: passwords.current, newPassword: passwords.new});
     callback(true);
   } catch (error) {
     callback(false);
@@ -152,6 +157,9 @@ const handleUpdatePassword = async (
           <div class="dropdown-menu">
             <div class="dropdown-item" @click="handleEditProfile">
               <span>个人信息</span>
+            </div>
+            <div class="dropdown-item" @click="handleLoginOut">
+              <span>退  出</span>
             </div>
           </div>
         </div>

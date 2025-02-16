@@ -98,7 +98,8 @@ export interface IUpdateUserInfoReq {
     account?: string;
     sex?: number;
     avatar?: string;
-    password?: string;
+    curPassword?: string;
+    newPassword?: string;
 }
 
 // 根据 proto 的 rpc updateUserInfo 定义
@@ -117,6 +118,9 @@ export function updateUserInfoInterface(req: IUpdateUserInfoReq): Promise<void> 
 
 // 根据 proto 的 RegisterReq 定义
 export interface IRegisterReq {
+    registerType: RegisterType;
+    username: string;
+    password: string;
     phone: string;
     verifyCode: string;
 }
@@ -143,7 +147,7 @@ export function registerInterface(req: IRegisterReq): Promise<IRegisterResp> {
 }
 
 // 根据 proto 的 rpc signOut 定义
-export function signOutInterface(): Promise<void> {
+export function loginOutInterface(): Promise<void> {
     return new Promise((resolve, reject) => {
         http
             .post("/login/out", true, null)
@@ -154,4 +158,20 @@ export function signOutInterface(): Promise<void> {
                 reject(err);
             });
     });
+}
+
+// 添加登录类型枚举
+export enum LoginType {
+    LoginTypeUnknown = 0,
+    LoginTypeByPhoneSms = 1,           // 手机短信
+    LoginTypeByAccountOrPhonePwd = 2,  // 账户密码
+    LoginTypeByEmailPwd = 3            // 邮箱密码
+}
+
+// 添加注册类型枚举
+export enum RegisterType {
+    RegisterTypeUnknown = 0,
+    RegisterTypeByPhoneSms = 1,           // 手机短信
+    RegisterTypeByAccountOrPhonePwd = 2,  // 账户密码
+    RegisterTypeByEmailPwd = 3            // 邮箱密码
 }

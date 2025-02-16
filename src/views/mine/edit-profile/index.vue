@@ -84,8 +84,7 @@ const handleAvatarUpload = async (event: Event) => {
     const resp = await fileUploadInterface(formData, params);
 
     // 假设接口返回的数据格式为 { url: string }
-    const avatarUrl = resp.Url;
-
+    const avatarUrl = resp.url;
     // 更新用户头像
     emit('update-avatar', avatarUrl, (success) => {
       if (success) {
@@ -226,7 +225,7 @@ const savePhone = () => {
 
       <div class="action-section">
         <el-button class="password-btn" @click="openPasswordDialog">
-          修改密码
+          {{ props.userInfo.hasPassword ? '修改密码' : '设置密码' }}
         </el-button>
       </div>
     </div>
@@ -257,16 +256,16 @@ const savePhone = () => {
     <el-dialog
         v-model="showPasswordDialog"
         :close-on-click-modal="false"
+        :title="props.userInfo.hasPassword ? '修改密码' : '设置密码'"
         class="edit-profile-update-dialog"
-        title="修改密码"
         width="30%"
     >
       <div class="dialog-content">
-        <input
-            v-model="passwords.current"
-            class="dialog-input"
-            placeholder="请输入当前密码"
-            type="password"
+        <input v-if="props.userInfo.hasPassword"
+               v-model="passwords.current"
+               class="dialog-input"
+               placeholder="请输入当前密码"
+               type="password"
         />
         <input
             v-model="passwords.new"

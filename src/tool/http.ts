@@ -2,7 +2,7 @@ import axios, {AxiosInstance, AxiosRequestConfig} from "axios";
 import {toSnakeCase} from "@/tool/tool";
 import router from "@/router";
 import {localStorage_roleObj_label, localStorage_tokenObj_label} from "@/config/localStorage";
-import env from "@/config/env/env";
+import {envConfig} from "@/config/env/envConfig";
 
 export interface IApiResponse {
     code: number;
@@ -14,10 +14,10 @@ export interface IApiResponse {
 const createAxiosInstance = (auth: boolean, contentType?: string, baseUrl?: string): AxiosInstance => {
     let axiosParam = {
         timeout: 25000,
-        baseURL: env.BASE_URL,
+        baseURL: envConfig.BASE_URL,
         headers: {
             "Content-Type": "application/json",
-            "app_id": env.APP_ID
+            "app_id": envConfig.APP_ID
         }
     }
     if (contentType) {
@@ -60,7 +60,7 @@ const createAxiosInstance = (auth: boolean, contentType?: string, baseUrl?: stri
             if (err.response?.status === 401 && auth) {
                 if (err.response.data) {
                     handleAuthenticationError(router.currentRoute.value.path);
-                    return Promise.reject(err.response.data.error);
+                    return Promise.reject("登录过期，请重新登录");
                 }
             }
             return Promise.reject(err);
@@ -105,7 +105,7 @@ const http: IHttp = {
         }
     },
     async filePost(url, auth, data, params) {
-        const axiosInstance = createAxiosInstance(auth, "multipart/form-data", env.FILE_UPLOAD_URL);
+        const axiosInstance = createAxiosInstance(auth, "multipart/form-data", envConfig.FILE_UPLOAD_URL);
         try {
             const response = await axiosInstance.post(url, data, {params});
             return response.data;

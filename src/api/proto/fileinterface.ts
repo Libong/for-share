@@ -7,8 +7,8 @@ export enum UploadFileType {
 }
 
 export interface IFileUpdateResp {
-    Name: string,
-    Url: string,
+    name: string,
+    url: string,
 }
 
 export function fileUploadInterface(fileData: FormData, params: object): Promise<IFileUpdateResp> {

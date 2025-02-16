@@ -46,6 +46,8 @@ router.beforeEach((to, from, next) => {
     ElNotification.closeAll(); // 关闭所有通知
     next();
 });
+
+// 路由守卫
 router.beforeEach((to, from, next) => {
     // 假设我们通过localStorage判断用户是否登录
     // if (to.name !== 'Login' && !localStorage.getItem('token')) {
