@@ -25,6 +25,13 @@
   }
 }
 
+.search-wrapper:hover,
+.search-wrapper:focus {
+  border: 2px solid #000000;
+  box-shadow: 0px 0px 0px 4px rgba(0, 0, 0, 0.1);
+  //background-color: white;
+}
+
 .search-input {
   border: none;
   flex: 1;
