@@ -6,7 +6,7 @@ import MoreVertical from "@/assets/more-vertical.svg";
 import {computed, PropType, ref} from "vue";
 import {toSecondOrMilli} from "@/tool/tool";
 import {IRecord} from "@/api/proto/recordinterface";
-import CustomTick from "@/components/common/tick/CustomTick.vue";
+import Button5 from "@/components/common/button/Button5.vue";
 
 const boxColorMap: Record<number, string> = {
   1: '#e9e7fd',
@@ -195,7 +195,10 @@ const boxUpdate = () => {
       <div class="days-left" style="color: #ff942e;">
         {{ leftDayStr }}
       </div>
-      <CustomTick class="customTick"></CustomTick>
+      <div class="record-complete">
+        <Button5></Button5>
+      </div>
+      <!--      <CustomTick class="customTick"></CustomTick>-->
     </div>
   </div>
 </template>
@@ -205,7 +208,7 @@ const boxUpdate = () => {
 
 .customTick {
   scale: 0.2;
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 //效果1 不够连贯 TODO 先淡入第一个图标 再接着淡入第二个图标
