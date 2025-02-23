@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 
-import Test from "@/components/common/button/test.vue";
+// import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
+import CardView from "@/components/common/card/cardView.vue";
 </script>
 
 <template>
   <div>
-    <test></test>
+    <CardView></CardView>
     <!--    <el-config-provider :locale="zhCn">-->
     <!--      <router-view :key="$route.fullPath"></router-view>-->
     <!--    </el-config-provider>-->

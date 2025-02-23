@@ -6,7 +6,7 @@ import MoreVertical from "@/assets/more-vertical.svg";
 import {computed, PropType, ref} from "vue";
 import {toSecondOrMilli} from "@/tool/tool";
 import {IRecord} from "@/api/proto/recordinterface";
-import Button5 from "@/components/common/button/Button5.vue";
+import Test from "@/components/common/button/test.vue";
 
 const boxColorMap: Record<number, string> = {
   1: '#e9e7fd',
@@ -196,7 +196,7 @@ const boxUpdate = () => {
         {{ leftDayStr }}
       </div>
       <div class="record-complete">
-        <Button5></Button5>
+        <test></test>
       </div>
       <!--      <CustomTick class="customTick"></CustomTick>-->
     </div>

@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <button id="button" class="ready" @click="clickButton">
+    <button id="container-button" class="container-button ready" @click="clickButton">
       <div class="message submitMessage">
         <svg viewBox="0 0 13 12.2" xmlns="http://www.w3.org/2000/svg">
           <polyline points="2,7.1 6.5,11.1 11,7.1" stroke="currentColor"/>
@@ -26,27 +26,10 @@
     </button>
 
     <canvas id="canvas"></canvas>
-
-    <!-- Website Corner Link -->
-    <a
-        class="website-link"
-        href="https://codepen.io/coopergoeke"
-        rel="noopener noreferrer"
-        target="_blank"
-    >
-      <svg class="website-link__icon" viewBox="0 0 936.86 1054.94">
-        <!-- SVG paths omitted for brevity -->
-      </svg>
-      <span class="website-link__name">
-        Cooper <span class="website-link__last-name">Goeke</span>
-      </span>
-      <span class="website-link__message">Check out more of my work</span>
-    </a>
   </div>
 </template>
 
 <script setup>
-import "./test.css"
 import {onMounted} from "vue";
 
 // ammount to add on each button press
@@ -82,12 +65,12 @@ function clickButton() {
       setTimeout(() => {
         initBurst()
         render();
-        setTimeout(() => {
-          // Reset button so user can select it again
-          disabled = false
-          button.classList.add('ready')
-          button.classList.remove('complete')
-        }, 3000)
+        // setTimeout(() => {
+        //   // Reset button so user can select it again
+        //   disabled = false
+        //   button.classList.add('ready')
+        //   button.classList.remove('complete')
+        // }, 3000)
       }, 320)
     }, 1000)
   }
@@ -252,7 +235,7 @@ const render = () => {
 onMounted(() => {
 
 // init other global elements
-  button = document.getElementById('button')
+  button = document.getElementById('container-button')
   canvas = document.getElementById('canvas')
   ctx = canvas.getContext('2d')
   canvas.width = window.innerWidth
@@ -293,11 +276,9 @@ onMounted(() => {
     element.innerHTML = characterHTML
   })
 
-// kick off the render loop
-//   window.initBurst()
-//   render()
 });
 </script>
 
-<style scoped>
+<style lang="scss">
+@import "test";
 </style>
