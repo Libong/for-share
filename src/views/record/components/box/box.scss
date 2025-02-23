@@ -1,8 +1,8 @@
 .box {
-  --main-color-card: #dbf6fd;
+  //--main-color-card: #dbf6fd;
   border-radius: 30px;
   padding: 16px;
-  background-color: var(--main-color-card);
+  //background-color: var(--main-color-card);
   margin: 0 5px;
   display: flex;
   height: 98%;
@@ -17,7 +17,7 @@
     color: var(--main-color);
 
     span {
-      color: #4A4A4A;
+      color: #000000;
       opacity: .7;
       font-size: 14px;
       line-height: 16px;
@@ -101,7 +101,7 @@
     height: 0; /* 箭头高度 */
     border-left: 3px solid transparent; /* 箭头左侧透明 */
     border-right: 3px solid transparent; /* 箭头右侧透明 */
-    border-bottom: 3px solid #1f1b1b; /* 箭头颜色与进度条颜色一致 */
+    border-bottom: 3px solid #f8f3f3; /* 箭头颜色与进度条颜色一致 */
   }
 
   &-bar {
@@ -154,7 +154,7 @@
   &:after {
     content: '';
     position: absolute;
-    background-color: rgba(255, 255, 255, 0.6);;
+    background-color: rgb(255, 255, 255);;
     width: calc(100% + 32px);
     top: 0;
     left: -16px;
@@ -164,7 +164,7 @@
 
 .days-left {
   position: absolute;
-  background-color: rgba(255, 255, 255, 0.6);
+  background-color: rgba(2, 2, 2, 0.6);
   font-size: 12px;
   border-radius: 20px;
   flex-shrink: 0;

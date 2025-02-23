@@ -14,12 +14,14 @@ import {
   searchRecordsPageInterface,
   updateRecordInterface
 } from "@/api/proto/recordinterface";
-import Box from "@/views/record/components/box/box.vue";
 import Form from "@/views/record/components/form/form.vue";
 import {ObjClear, toSecondOrMilli} from "@/tool/tool";
 import {ElMessage} from "element-plus";
 import WaitPoint from "@/components/common/waitPoint/waitPoint.vue";
 import CustomConfirmDialog from "@/components/common/confirm/CustomConfirmDialog.vue";
+import Card from "@/components/common/card/card.vue";
+import Box from "@/views/record/components/box/box.vue";
+import TestBG from "@/assets/record-bg/milaotou.jpeg"
 
 onMounted(() => {
   refreshSearch();
@@ -232,14 +234,17 @@ const handleScroll = (event: Event) => {
         <img :src="SearchRefresh" alt="" class="projects-tool-refresh" title="刷新" @click="refreshSearch">
       </div>
       <div ref="scrollableDivRef" class="project-boxes jsGridView">
-        <!--v-infinite-scroll="search" :infinite-scroll-disabled="pageCondition.busy"-->
-        <!--        <div class="project-box-wrapper">-->
         <div v-for="item in shoppingRecords" :key="item.recordId" style="width: 33.3%;height: 267px">
-          <box :data="item"
-               @delete="showDeleteConfirmDialog(item.recordId)"
-               @update="showUpdateRecordModel"></box>
+          <card
+              :data-image="TestBG">
+            <template #content>
+              <box :data="item"
+                   @delete="showDeleteConfirmDialog(item.recordId)"
+                   @update="showUpdateRecordModel"></box>
+            </template>
+          </card>
+
         </div>
-        <!--        </div>-->
       </div>
       <div v-show="hasScrollToTopText" class="projects-back2Top" @click="scrollToTop">
         <img :src="UpArrowIcon" alt="" class="projects-back2Top-arrow">

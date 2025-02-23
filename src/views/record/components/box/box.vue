@@ -6,7 +6,6 @@ import MoreVertical from "@/assets/more-vertical.svg";
 import {computed, PropType, ref} from "vue";
 import {toSecondOrMilli} from "@/tool/tool";
 import {IRecord} from "@/api/proto/recordinterface";
-import Test from "@/components/common/button/test.vue";
 
 const boxColorMap: Record<number, string> = {
   1: '#e9e7fd',
@@ -132,7 +131,7 @@ const boxUpdate = () => {
 </script>
 
 <template>
-  <div :style="{backgroundColor: boxColor,opacity:boxOpacity}" class="box">
+  <div class="box">
     <div class="box-header">
       <span>{{ insideEstablishTime }}</span>
       <div class="box-header-more-wrapper">
@@ -196,7 +195,7 @@ const boxUpdate = () => {
         {{ leftDayStr }}
       </div>
       <div class="record-complete">
-        <test></test>
+        <!--        <test></test>-->
       </div>
       <!--      <CustomTick class="customTick"></CustomTick>-->
     </div>
