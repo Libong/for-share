@@ -6,7 +6,12 @@
           <polyline points="2,7.1 6.5,11.1 11,7.1" stroke="currentColor"/>
           <line stroke="currentColor" x1="6.5" x2="6.5" y1="1.2" y2="10.3"/>
         </svg>
-        <span class="button-text">完成记录</span>
+        <span class="button-text">
+               <span class="char0" style="--d:0ms; --dr:90ms;">完</span>
+          <span class="char1" style="--d:30ms; --dr:60ms;">成</span>
+               <span class="char2" style="--d:60ms; --dr:30ms;">记</span>
+          <span class="char3" style="--d:90ms; --dr:0ms;">录</span>
+          </span>
       </div>
 
       <div class="message loadingMessage">
@@ -21,7 +26,11 @@
         <svg viewBox="0 0 13 11" xmlns="http://www.w3.org/2000/svg">
           <polyline points="1.4,5.8 5.1,9.5 11.6,2.1" stroke="currentColor"/>
         </svg>
-        <span class="button-text">已完成</span>
+        <span class="button-text">
+          <span class="char0" style="--d:0ms; --dr:60ms;">已</span>
+          <span class="char1" style="--d:30ms; --dr:30ms;">完</span>
+          <span class="char2" style="--d:60ms; --dr:0ms;">成</span>
+          </span>
       </div>
     </button>
 
@@ -236,6 +245,7 @@ onMounted(() => {
 
 // init other global elements
   button = document.getElementById('container-button')
+
   canvas = document.getElementById('canvas')
   ctx = canvas.getContext('2d')
   canvas.width = window.innerWidth
@@ -266,19 +276,21 @@ onMounted(() => {
 //   }
 
 // Set up button text transition timings on page load
-  const textElements = button.querySelectorAll('.button-text')
-  textElements.forEach((element) => {
-    const characters = element.innerText.split('')
-    let characterHTML = ''
-    characters.forEach((letter, index) => {
-      characterHTML += `<span class="char${index}" style="--d:${index * 30}ms; --dr:${(characters.length - index - 1) * 30}ms;">${letter}</span>`
-    })
-    element.innerHTML = characterHTML
-  })
+//   const textElements = button.querySelectorAll('.button-text')
+
+  // textElements.forEach((element) => {
+  //   const characters = element.innerText.split('')
+  //
+  //   let characterHTML = ''
+  //   characters.forEach((letter, index) => {
+  //     characterHTML += `<span class="char${index}" style="--d:${index * 30}ms; --dr:${(characters.length - index - 1) * 30}ms;">${letter}</span>`
+  //   })
+  //
+  //   element.innerHTML = characterHTML
+  // })
 
 });
 </script>
 
-<style lang="scss">
-@import "test";
+<style lang="scss" scoped src="./test.scss">
 </style>

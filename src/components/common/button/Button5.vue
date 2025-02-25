@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container" style="width: 500px;height: 500px">
     <button id="button" :class="buttonClass" @click="clickButton">
       <div v-if="state === 'ready'" class="message submitMessage">
         <!--        <svg viewBox="0 0 13 12.2" xmlns="http://www.w3.org/2000/svg">-->
@@ -264,7 +264,7 @@ onUnmounted(() => {
 });
 
 </script>
-<style lang="scss" scoped>
+<style scoped lang="scss" >
 @keyframes loading {
   0% {
     cy: 10;
