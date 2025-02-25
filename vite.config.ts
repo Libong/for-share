@@ -15,6 +15,6 @@ export default defineConfig({
         alias: {
             '@': fileURLToPath(new URL('./src', import.meta.url))
         },
-        extensions: ['.vue', '.js', '.ts', '.pug'],
+        // extensions: ['.vue', '.js', '.ts', '.pug'],
     },
 })
