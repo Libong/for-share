@@ -1,12 +1,17 @@
 <template>
-  <div class="container">
+  <div class="btn5-container">
     <button id="button" :class="buttonClass" @click="clickButton">
       <div v-if="state === 'ready'" class="message submitMessage">
         <!--        <svg viewBox="0 0 13 12.2" xmlns="http://www.w3.org/2000/svg">-->
         <!--          <polyline points="2,7.1 6.5,11.1 11,7.1" stroke="currentColor"/>-->
         <!--          <line stroke="currentColor" x1="6.5" x2="6.5" y1="1.2" y2="10.3"/>-->
         <!--        </svg>-->
-        <span class="button-text">完成</span>
+        <span class="button-text">
+          <span class="char0" style="--d:0ms; --dr:90ms;">完</span>
+          <span class="char1" style="--d:30ms; --dr:60ms;">成</span>
+          <span class="char2" style="--d:60ms; --dr:30ms;">记</span>
+          <span class="char3" style="--d:90ms; --dr:0ms;">录</span>
+        </span>
       </div>
       <div v-if="state === 'loading'" class="message loadingMessage">
         <svg viewBox="0 0 19 17" xmlns="http://www.w3.org/2000/svg">
@@ -19,7 +24,11 @@
         <svg viewBox="0 0 13 11" xmlns="http://www.w3.org/2000/svg">
           <polyline points="1.4,5.8 5.1,9.5 11.6,2.1" stroke="currentColor"/>
         </svg>
-        <span class="button-text">已完成</span>
+        <span class="button-text">
+          <span class="char0" style="--d:0ms; --dr:60ms;">已</span>
+          <span class="char1" style="--d:30ms; --dr:30ms;">完</span>
+          <span class="char2" style="--d:60ms; --dr:0ms;">成</span>
+        </span>
       </div>
     </button>
     <canvas id="canvas"></canvas>
@@ -71,7 +80,7 @@ class Confetto {
   rotation: number;
   scale: { x: number; y: number };
   velocity: { x: number; y: number };
-
+  
   constructor() {
     this.randomModifier = randomRange(0, 99);
     this.color = colors[Math.floor(randomRange(0, colors.length))];
@@ -89,15 +98,15 @@ class Confetto {
     this.scale = {x: 1, y: 1};
     this.velocity = initConfettoVelocity([-9, 9], [6, 11]);
   }
-
+  
   update() {
     this.velocity.x -= this.velocity.x * dragConfetti;
     this.velocity.y = Math.min(this.velocity.y + gravityConfetti, terminalVelocity);
     this.velocity.x += Math.random() > 0.5 ? Math.random() : -Math.random();
-
+    
     this.position.x += this.velocity.x;
     this.position.y += this.velocity.y;
-
+    
     this.scale.y = Math.cos((this.position.y + this.randomModifier) * 0.09);
   }
 }
@@ -107,7 +116,7 @@ class Sequin {
   radius: number;
   position: { x: number; y: number };
   velocity: { x: number; y: number };
-
+  
   constructor() {
     this.color = colors[Math.floor(randomRange(0, colors.length))].back;
     this.radius = randomRange(1, 2);
@@ -122,11 +131,11 @@ class Sequin {
       y: randomRange(-8, -12),
     };
   }
-
+  
   update() {
     this.velocity.x -= this.velocity.x * dragSequins;
     this.velocity.y += gravitySequins;
-
+    
     this.position.x += this.velocity.x;
     this.position.y += this.velocity.y;
   }
@@ -149,26 +158,26 @@ const render = () => {
   if (!ctx.value || !canvas) {
     return;
   }
-
+  
   ctx.value.clearRect(0, 0, canvas.value?.width ?? 0, canvas.value?.height ?? 0);
-
+  
   confetti.value.forEach((confetto, index) => {
     if (!ctx.value) {
       return;
     }
     const width = confetto.dimensions.x * confetto.scale.x;
     const height = confetto.dimensions.y * confetto.scale.y;
-
+    
     ctx.value.translate(confetto.position.x, confetto.position.y);
     ctx.value.rotate(confetto.rotation);
-
+    
     confetto.update();
-
+    
     ctx.value.fillStyle = confetto.scale.y > 0 ? confetto.color.front : confetto.color.back;
     ctx.value.fillRect(-width / 2, -height / 2, width, height);
-
+    
     ctx.value.setTransform(1, 0, 0, 1, 0, 0);
-
+    
     if (confetto.velocity.y < 0) {
       ctx.value.clearRect(
           (canvas.value?.width ?? 0) / 2 - (button.value?.offsetWidth ?? 0) / 2,
@@ -178,22 +187,22 @@ const render = () => {
       );
     }
   });
-
+  
   sequins.value.forEach((sequin, index) => {
     if (!ctx.value) {
       return;
     }
     ctx.value.translate(sequin.position.x, sequin.position.y);
-
+    
     sequin.update();
-
+    
     ctx.value.fillStyle = sequin.color;
     ctx.value.beginPath();
     ctx.value.arc(0, 0, sequin.radius, 0, 2 * Math.PI);
     ctx.value.fill();
-
+    
     ctx.value.setTransform(1, 0, 0, 1, 0, 0);
-
+    
     if (sequin.velocity.y < 0) {
       ctx.value.clearRect(
           (canvas.value?.width ?? 0) / 2 - (button.value?.offsetWidth ?? 0) / 2,
@@ -203,7 +212,7 @@ const render = () => {
       );
     }
   });
-
+  
   confetti.value = confetti.value.filter((confetto) => confetto.position.y < ((canvas.value?.height || 0)) ?? 0);
   sequins.value = sequins.value.filter((sequin) => sequin.position.y < ((canvas.value?.height || 0)) ?? 0);
   animationFrameId = requestAnimationFrame(render);
@@ -211,21 +220,21 @@ const render = () => {
 
 const clickButton = () => {
   if (state.value !== "ready") return;
-
+  
   state.value = "loading";
   buttonClass.value = "loading";
-
+  
   setTimeout(() => {
     if (animationFrameId !== null) {
       cancelAnimationFrame(animationFrameId); // 停止之前的动画
     }
     state.value = "complete";
     buttonClass.value = "complete";
-
+    
     setTimeout(() => {
       initBurst();
       render();
-
+      
       setTimeout(() => {
         state.value = "ready";
         buttonClass.value = "ready";
@@ -237,19 +246,19 @@ const clickButton = () => {
 onMounted(() => {
   canvas.value = document.getElementById("canvas") as HTMLCanvasElement;
   ctx.value = canvas.value.getContext("2d");
-
+  
   canvas.value.width = window.innerWidth;
   canvas.value.height = window.innerHeight;
-
+  
   button.value = document.getElementById("button") as HTMLButtonElement;
-
+  
   window.addEventListener("resize", () => {
     if (canvas.value) {
       canvas.value.width = window.innerWidth;
       canvas.value.height = window.innerHeight;
     }
   });
-
+  
   document.body.onkeyup = (e) => {
     if (e.keyCode === 13 || e.keyCode === 32) {
       clickButton();
@@ -264,7 +273,7 @@ onUnmounted(() => {
 });
 
 </script>
-<style lang="scss" scoped>
+<style lang="scss" scoped src="./test.scss">
 @keyframes loading {
   0% {
     cy: 10;
@@ -282,21 +291,27 @@ onUnmounted(() => {
 //  background-color: #f4f7ff;
 //}
 
-.container {
-  width: 100%;
-  height: 100%;
-  position: relative;
+.btn5-container {
+  //width: 100%;
+  //height: 100%;
+  //height: 100vh;
+  //position: fixed;
+  //width: 100%;
+  //position: relative;
 }
 
 canvas {
-  height: 1600%;
+  //height: 1600%;
   pointer-events: none;
-  position: absolute;
-  width: 600%;
+  //position: absolute;
+  //width: 600%;
   z-index: 2;
   //scale: 0.5;
-  left: -200%;
-  top: -800%;
+  //left: -200%;
+  //top: -800%;
+  height: 100vh;
+  position: fixed;
+  width: 100%;
   //background-color: #0a5988;
 }
 
@@ -308,15 +323,19 @@ button {
   font-family: 'Quicksand', sans-serif;
   font-size: 14px;
   font-weight: 500;
-  height: 100%;
+  height: 40px;
+  left: 50%;
+  //height: 100%;
+  top: 50%;
+  width: 190px;
   outline: none;
   overflow: hidden;
-  position: absolute;
-  width: 100%;
+  position: fixed;
+  //width: 100%;
   -webkit-tap-highlight-color: transparent;
   z-index: 1;
-
-
+  
+  
   &::before {
     background: #1f2335;
     border-radius: 50px;
@@ -338,7 +357,7 @@ button.ready {
     top: 1px;
     transition: top .4s ease 600ms, opacity .3s linear 600ms;
   }
-
+  
   .submitMessage .button-text span {
     top: 0;
     opacity: 1;
@@ -352,11 +371,11 @@ button.loading {
     transition: width .3s ease;
     width: 80%;
   }
-
+  
   .loadingMessage {
     opacity: 1;
   }
-
+  
   .loadingCircle {
     animation-duration: 1s;
     animation-iteration-count: infinite;
@@ -371,22 +390,22 @@ button.complete {
     top: -30px;
     transition: none;
   }
-
+  
   .submitMessage .button-text span {
     top: -8px;
     transition: none;
   }
-
+  
   .loadingMessage {
     top: 80px;
   }
-
+  
   .successMessage .button-text span {
     left: 0;
     opacity: 1;
     transition: all .2s ease calc(var(--d) + 1000ms);
   }
-
+  
   .successMessage svg {
     stroke-dashoffset: 0;
     transition: stroke-dashoffset .3s ease-in-out 1.4s;
@@ -420,7 +439,7 @@ button.complete {
     top: 8px;
     transition: all .2s ease var(--d);
   }
-
+  
   svg {
     color: #5c86ff;
     margin-left: -1px;
@@ -435,7 +454,7 @@ button.complete {
 .loadingMessage {
   opacity: 0;
   transition: opacity .3s linear .3s, top .4s cubic-bezier(.22, 0, .41, -0.57);
-
+  
   svg {
     fill: #5c86ff;
     margin: 0;
@@ -448,7 +467,7 @@ button.complete {
     left: 5px;
     transition: all .2s ease var(--dr);
   }
-
+  
   svg {
     color: #5cffa1;
     stroke-dasharray: 20;
@@ -483,25 +502,25 @@ button.complete {
   right: 0;
   text-align: left;
   text-decoration: none;
-
+  
   &__icon {
     left: -10px;
     position: absolute;
     top: -12px;
     width: 44px;
   }
-
+  
   &__name {
     display: block;
     font-size: 14px;
     line-height: 14px;
     margin: 5px 0 3px;
   }
-
+  
   &__last-name {
     color: #55bada;
   }
-
+  
   &__message {
     color: #8aa8c5;
     display: block;

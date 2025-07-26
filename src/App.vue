@@ -1,14 +1,13 @@
 <script lang="ts" setup>
-
-// import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
-import Test from "@/components/common/button/test.vue";
+// import Button5 from "@/components/common/button/Button5.vue";
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 </script>
 
 <template>
   <div>
-    <Test></Test>
-    <!--    <el-config-provider :locale="zhCn">-->
-    <!--      <router-view :key="$route.fullPath"></router-view>-->
-    <!--    </el-config-provider>-->
+    <!--    <Button6></Button6>-->
+    <el-config-provider :locale="zhCn">
+      <router-view :key="$route.fullPath"></router-view>
+    </el-config-provider>
   </div>
 </template>

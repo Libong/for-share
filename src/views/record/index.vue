@@ -123,7 +123,7 @@ async function addRecordCallback(callback: () => void) {
   shoppingRecordObj.goodsTypes.forEach((item) => {
     categoryIds.push(item.id);
   });
-
+  
   await addRecordInterface({
     buyAt: toSecondOrMilli(shoppingRecordObj.buyAt, true),
     categoryIds: categoryIds,
@@ -243,7 +243,6 @@ const handleScroll = (event: Event) => {
                    @update="showUpdateRecordModel"></box>
             </template>
           </card>
-
         </div>
       </div>
       <div v-show="hasScrollToTopText" class="projects-back2Top" @click="scrollToTop">

@@ -6,6 +6,7 @@ import MoreVertical from "@/assets/more-vertical.svg";
 import {computed, PropType, ref} from "vue";
 import {toSecondOrMilli} from "@/tool/tool";
 import {IRecord} from "@/api/proto/recordinterface";
+import Button6 from "@/components/common/button/Button6.vue";
 
 const boxColorMap: Record<number, string> = {
   1: '#e9e7fd',
@@ -25,8 +26,6 @@ let props = defineProps({
   insideEstablishTime: String,
 })
 
-const boxColor = boxColorMap[Math.floor(Math.random() * 6) + 1];
-let boxOpacity = 1;
 /*时间相关操作*/
 const insideEstablishTime = computed(() => {
   if (!props.data.establishAt || props.data.establishAt == 0) {
@@ -61,14 +60,25 @@ const insideProduceTime = computed(() => {
 const buyTimeTextAlignItems = ref('normal');
 
 /*进度条相关操作*/
+let currentTimeOffsetColor = computed(() => {
+  if (currentTimeOffsetPercent >= 80) {
+    return '#ff0000';
+  } else if (currentTimeOffsetPercent >= 50) {
+    return '#fffb00';
+  } else {
+    return '#52c518';
+  }
+})
+
 //当前时间的偏移量
 let currentTimeOffsetPercent = Math.floor((new Date().getTime() / 1000 - props.data.produceAt) / (props.data.overdueAt - props.data.produceAt) * 100);
 if (currentTimeOffsetPercent > 100) {
   currentTimeOffsetPercent = 100;
 }
 
+
 //购买时间下标的偏移量
-const triangleOffsetPercent = Math.floor((props.data.buyAt - props.data.produceAt) / (props.data.overdueAt - props.data.produceAt) / 86400 * 100);
+const triangleOffsetPercent = Math.floor((props.data.buyAt - props.data.produceAt) / (props.data.overdueAt - props.data.produceAt) * 100);
 //购买时间文字的偏移量
 let buyTimeOffsetPercent = 0;
 if (triangleOffsetPercent > 10) {
@@ -83,7 +93,7 @@ if (leftDay >= 0) {
   let year = Math.floor(leftDay / 360);
   let month = Math.floor(leftDay % 360 / 30);
   let day = leftDay % 360 % 30;
-
+  
   if (year != 0) {
     leftDayStr += year + "年";
   }
@@ -97,11 +107,37 @@ if (leftDay >= 0) {
   handleOverdue();
 }
 
+const showCompleteButton = ref(false);
+let daysLeftTimer: number | NodeJS.Timeout | null = null; // 定时器
+
+const handleDaysLeftMouseEnter = () => {
+  // 如果已经有定时器，先清除
+  if (daysLeftTimer !== null) {
+    clearTimeout(daysLeftTimer);
+  }
+  console.log("handleDaysLeftMouseEnter in")
+  // 设置定时器，1秒后显示按钮
+  daysLeftTimer = setTimeout(() => {
+    showCompleteButton.value = true;
+  }, 1000);
+};
+
+// 鼠标离开时
+const handleDaysLeftMouseLeave = () => {
+  // 清除定时器
+  if (daysLeftTimer !== null) {
+    clearTimeout(daysLeftTimer);
+    daysLeftTimer = null;
+  }
+  console.log("handleDaysLeftMouseEnter out")
+  // 隐藏按钮
+  showCompleteButton.value = false;
+};
+
 /*过期状态处理*/
 
 function handleOverdue() {
   leftDayStr = "已过期";
-  boxOpacity = 0.5;
   hasOverDue.value = true;
 }
 
@@ -136,20 +172,26 @@ const boxUpdate = () => {
       <span>{{ insideEstablishTime }}</span>
       <div class="box-header-more-wrapper">
         <div v-if="showMenu" class="box-header-more-wrapper-menu">
-          <transition-group name="fade" tag="div"
-                            @before-enter="closePoint"
-                            @before-leave="closePoint"
-                            @after-enter="openPoint"
-                            @after-leave="openPoint">
+          <transition name="fade" tag="div"
+                      @before-enter="closePoint"
+                      @before-leave="closePoint"
+                      @after-enter="openPoint"
+                      @after-leave="openPoint">
             <img v-if="showMenuIcon && !hasOverDue" :src="UpdateIcon"
                  :style="{pointerEvents: isEnteringOrLeaving ? 'none':'auto'}"
                  alt="" class="box-header-more-wrapper-menu-update"
                  title="编辑"
                  @click="boxUpdate">
+          </transition>
+          <transition name="fade" tag="div"
+                      @before-enter="closePoint"
+                      @before-leave="closePoint"
+                      @after-enter="openPoint"
+                      @after-leave="openPoint">
             <img v-if="showMenuIcon" :src="DeleteIcon" :style="{pointerEvents: isEnteringOrLeaving ? 'none':'auto'}"
                  alt="" class="box-header-more-wrapper-menu-delete" title="删除"
                  @click="boxDelete">
-          </transition-group>
+          </transition>
         </div>
         <button class="box-header-btn-more">
           <img :src="MoreVertical" alt="" class="" @click="showMenus">
@@ -165,7 +207,7 @@ const boxUpdate = () => {
           }}</span>
         </div>
       </div>
-
+    
     </div>
     <div class="box-progress-wrapper">
       <div class="box-progress-top-date">
@@ -179,7 +221,8 @@ const boxUpdate = () => {
         </div>
       </div>
       <div class="box-progress-bar">
-        <span :style="{width:currentTimeOffsetPercent+ '%',backgroundColor:'#ff942e'}" class="box-progress"></span>
+        <span :style="{width:currentTimeOffsetPercent+ '%',backgroundColor:currentTimeOffsetColor}"
+              class="box-progress"></span>
         <span :style="{left: triangleOffsetPercent + '%'}" class="box-progress-triangle"></span>
       </div>
       <div class="box-progress-bottom-date">
@@ -190,12 +233,16 @@ const boxUpdate = () => {
         </div>
       </div>
     </div>
-    <div class="project-box-footer">
-      <div class="days-left" style="color: #ff942e;">
-        {{ leftDayStr }}
+    <div class="project-box-footer"
+         @mouseenter="handleDaysLeftMouseEnter"
+         @mouseleave="handleDaysLeftMouseLeave"
+    >
+      <div class="days-left" style="color: #c8ffff;">
+        <div>{{ leftDayStr }}
+        </div>
       </div>
       <div class="record-complete">
-        <!--        <test></test>-->
+        <Button6></Button6>
       </div>
       <!--      <CustomTick class="customTick"></CustomTick>-->
     </div>
@@ -234,6 +281,7 @@ const boxUpdate = () => {
 
 //效果2 整体淡入淡出
 .fade-leave-active, .fade-enter-active {
+  opacity: 1;
   transition: opacity 0.5s, transform 0.5s;
 }
 

@@ -163,6 +163,8 @@
 }
 
 .days-left {
+  display: flex;
+  justify-content: center;
   position: absolute;
   background-color: rgba(2, 2, 2, 0.6);
   font-size: 12px;
@@ -170,13 +172,13 @@
   flex-shrink: 0;
   padding: 6px 16px;
   font-weight: 700;
-  width: 35%;
+  width: 45%;
   height: 80%;
 }
 
 .record-complete {
-  width: 35%;
-  height: 80%;
+  width: 40%;
+  height: 10%;
   position: absolute;
   //display: flex;
 }

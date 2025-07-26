@@ -7,13 +7,13 @@
           <line stroke="currentColor" x1="6.5" x2="6.5" y1="1.2" y2="10.3"/>
         </svg>
         <span class="button-text">
-             <span class="char0" style="--d:0ms; --dr:90ms;">完</span>
-           <span class="char1" style="--d:30ms; --dr:60ms;">成</span>
-           <span class="char2" style="--d:60ms; --dr:30ms;">记</span>
-           <span class="char3" style="--d:90ms; --dr:0ms;">录</span>
-        </span>
+               <span class="char0" style="--d:0ms; --dr:90ms;">完</span>
+          <span class="char1" style="--d:30ms; --dr:60ms;">成</span>
+               <span class="char2" style="--d:60ms; --dr:30ms;">记</span>
+          <span class="char3" style="--d:90ms; --dr:0ms;">录</span>
+          </span>
       </div>
-      
+
       <div class="message loadingMessage">
         <svg viewBox="0 0 19 17" xmlns="http://www.w3.org/2000/svg">
           <circle class="loadingCircle" cx="2.2" cy="10" r="1.6"/>
@@ -21,22 +21,21 @@
           <circle class="loadingCircle" cx="16.8" cy="10" r="1.6"/>
         </svg>
       </div>
-      
+
       <div class="message successMessage">
         <svg viewBox="0 0 13 11" xmlns="http://www.w3.org/2000/svg">
           <polyline points="1.4,5.8 5.1,9.5 11.6,2.1" stroke="currentColor"/>
         </svg>
         <span class="button-text">
-                       <span class="char0" style="--d:0ms; --dr:60ms;">已</span>
-                     <span class="char1" style="--d:30ms; --dr:60ms;">完</span>
-                     <span class="char2" style="--d:60ms; --dr:0ms;">成</span>
-        </span>
+          <span class="char0" style="--d:0ms; --dr:60ms;">已</span>
+          <span class="char1" style="--d:30ms; --dr:30ms;">完</span>
+          <span class="char2" style="--d:60ms; --dr:0ms;">成</span>
+          </span>
       </div>
     </button>
+
     <canvas id="canvas"></canvas>
   </div>
-
-
 </template>
 
 <script setup>
@@ -144,11 +143,11 @@ Confetto.prototype.update = function () {
   this.velocity.x -= this.velocity.x * dragConfetti
   this.velocity.y = Math.min(this.velocity.y + gravityConfetti, terminalVelocity)
   this.velocity.x += Math.random() > 0.5 ? Math.random() : -Math.random()
-  
+
   // set position
   this.position.x += this.velocity.x
   this.position.y += this.velocity.y
-  
+
   // spin confetto by scaling y and set the color, .09 just slows cosine frequency
   this.scale.y = Math.cos((this.position.y + this.randomModifier) * 0.09)
 }
@@ -171,7 +170,7 @@ Sequin.prototype.update = function () {
   // apply forces to velocity
   this.velocity.x -= this.velocity.x * dragSequins
   this.velocity.y = this.velocity.y + gravitySequins
-  
+
   // set position
   this.position.x += this.velocity.x
   this.position.y += this.velocity.y
@@ -180,57 +179,57 @@ Sequin.prototype.update = function () {
 // draws the elements on the canvas
 const render = () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
-  
+
   confetti.forEach((confetto, index) => {
     let width = (confetto.dimensions.x * confetto.scale.x)
     let height = (confetto.dimensions.y * confetto.scale.y)
-    
+
     // move canvas to position and rotate
     ctx.translate(confetto.position.x, confetto.position.y)
     ctx.rotate(confetto.rotation)
-    
+
     // update confetto "physics" values
     confetto.update()
-    
+
     // get front or back fill color
     ctx.fillStyle = confetto.scale.y > 0 ? confetto.color.front : confetto.color.back
-    
+
     // draw confetto
     ctx.fillRect(-width / 2, -height / 2, width, height)
-    
+
     // reset transform matrix
     ctx.setTransform(1, 0, 0, 1, 0, 0)
-    
+
     // clear rectangle where button cuts off
     if (confetto.velocity.y < 0) {
       ctx.clearRect(canvas.width / 2 - button.offsetWidth / 2, canvas.height / 2 + button.offsetHeight / 2, button.offsetWidth, button.offsetHeight)
     }
   })
-  
+
   sequins.forEach((sequin, index) => {
     // move canvas to position
     ctx.translate(sequin.position.x, sequin.position.y)
-    
+
     // update sequin "physics" values
     sequin.update()
-    
+
     // set the color
     ctx.fillStyle = sequin.color
-    
+
     // draw sequin
     ctx.beginPath()
     ctx.arc(0, 0, sequin.radius, 0, 2 * Math.PI)
     ctx.fill()
-    
+
     // reset transform matrix
     ctx.setTransform(1, 0, 0, 1, 0, 0)
-    
+
     // clear rectangle where button cuts off
     if (sequin.velocity.y < 0) {
       ctx.clearRect(canvas.width / 2 - button.offsetWidth / 2, canvas.height / 2 + button.offsetHeight / 2, button.offsetWidth, button.offsetHeight)
     }
   })
-  
+
   // remove confetti and sequins that fall off the screen
   // must be done in seperate loops to avoid noticeable flickering
   confetti.forEach((confetto, index) => {
@@ -239,13 +238,14 @@ const render = () => {
   sequins.forEach((sequin, index) => {
     if (sequin.position.y >= canvas.height) sequins.splice(index, 1)
   })
-  
+
   window.requestAnimationFrame(render)
 }
 onMounted(() => {
 
 // init other global elements
   button = document.getElementById('container-button')
+
   canvas = document.getElementById('canvas')
   ctx = canvas.getContext('2d')
   canvas.width = window.innerWidth
@@ -276,19 +276,21 @@ onMounted(() => {
 //   }
 
 // Set up button text transition timings on page load
-  const textElements = button.querySelectorAll('.button-text')
-  textElements.forEach((element) => {
-    const characters = element.innerText.split('')
-    let characterHTML = ''
-    characters.forEach((letter, index) => {
-      characterHTML += `<span class="char${index}" style="--d:${index * 30}ms; --dr:${(characters.length - index - 1) * 30}ms;">${letter}</span>`
-    })
-    element.innerHTML = characterHTML
-  })
-  
+//   const textElements = button.querySelectorAll('.button-text')
+
+  // textElements.forEach((element) => {
+  //   const characters = element.innerText.split('')
+  //
+  //   let characterHTML = ''
+  //   characters.forEach((letter, index) => {
+  //     characterHTML += `<span class="char${index}" style="--d:${index * 30}ms; --dr:${(characters.length - index - 1) * 30}ms;">${letter}</span>`
+  //   })
+  //
+  //   element.innerHTML = characterHTML
+  // })
+
 });
 </script>
 
-<style lang="scss" scoped>
-@import "test";
+<style lang="scss" scoped src="./test.scss">
 </style>
