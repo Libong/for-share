@@ -7,7 +7,7 @@
           class="bell"
           @click="changeLoginWay"
       />
-      <h2 style="font-weight: bold">欢迎来到</h2>
+      <div class="welcomeText">欢迎来到</div>
       <img :src="LogoImg" alt="" class="logo"/>
       <!-- 用户名登录表单 start-->
       <CustomInput
@@ -71,8 +71,8 @@
         <!--        <span :style="jumpSpanStyle" @click="toRegister">立即注册</span>-->
         <span :style="jumpSpanStyle" @click="">忘记密码?</span>
       </div>
-
-      <Button1 :text="loginChangeItem.loginType === FormTypeEnum.Phone?'注 册 / 登 录':'登 录'" @click="login()"/>
+      
+      <LoginButton :text="loginChangeItem.loginType === FormTypeEnum.Phone?'注 册 / 登 录':'登 录'" @click="login()"/>
     </div>
     <!--    <div v-if="!isLogin" class="form-container">-->
     <!--      <img :src="BackArrowImg" alt="" class="back-arrow" @click="toLogin"/>-->
@@ -126,7 +126,7 @@
     <!--        </button>-->
     <!--      </div>-->
     <!--      &lt;!&ndash; 用户名注册表单 end&ndash;&gt;-->
-
+    
     <!--      &lt;!&ndash; 邮箱注册表单 start&ndash;&gt;-->
     <!--      <CustomInput-->
     <!--          v-model:inputValue="registerReq.name"-->
@@ -139,7 +139,7 @@
     <!--          :is-show="loginChangeItem.loginType === FormTypeEnum.Email"-->
     <!--          :type="'password'"-->
     <!--      />-->
-    <!--      <Button1 :text="'注  册'" style="" @click="register()"/>-->
+    <!--      <LoginButton :text="'注  册'" style="" @click="register()"/>-->
     <!--    </div>-->
   </div>
 </template>
@@ -156,7 +156,7 @@ import CustomInput from "@/components/common/input/CustomInput.vue";
 import {ElMessage, ElNotification} from "element-plus";
 import {ObjClear} from "@/tool/tool";
 import router from "@/router";
-import Button1 from "@/components/common/button/Button1.vue";
+import LoginButton from "@/components/common/button/LoginButton.vue";
 import {localStorage_roleObj_label, localStorage_tokenObj_label} from "@/config/localStorage";
 import {isDev, isProd} from "@/config/env/envConfig";
 import {
@@ -172,7 +172,7 @@ onMounted(() => {
     loginReq.account = "18888888888";
     loginReq.phone = "18888888888";
   } else if (isProd) {
-
+  
   } else {
     showMessage('未知环境');
   }
@@ -215,7 +215,7 @@ let confirmPasswordEl = ref();
 let checkConfirmPassword = (ev: any) => {
   const {target} = ev;
   if (!target?.value) return;
-
+  
   if (registerReq.password != target.value) {
     confirmPasswordEl.value.showNotice(true);
   } else {
@@ -392,7 +392,7 @@ async function login() {
     if (userRolesResp.roles.length > 0) {
       localStorage.setItem(localStorage_roleObj_label, JSON.stringify(userRolesResp.roles[0]));
     }
-
+    
     ElNotification({
       title: "",
       message: "登录成功",
@@ -402,7 +402,7 @@ async function login() {
         ObjClear(loginReq);
       },
     });
-
+    
   } catch (err) {
     //接口返回错误
     if (typeof err == "string") {

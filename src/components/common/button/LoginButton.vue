@@ -16,7 +16,7 @@ const props = defineProps({
   },
   height: {
     type: String,
-    default: '35px'
+    default: '0.9333rem'
   },
   marginTop: {
     type: String,
@@ -41,6 +41,7 @@ const customStyle = ref({
 <style lang="scss" scoped>
 
 .bubbly-button {
+  font-size: rem(15px);
   font-family: 'Helvetica', 'Arial', sans-serif;
   border-radius: 10px;
   background: transparent;
@@ -50,7 +51,7 @@ const customStyle = ref({
   cursor: pointer;
   position: relative;
   transition: transform ease-in 0.1s, box-shadow ease-in 0.25s;
-
+  
   &:before, &:after {
     position: absolute;
     content: '';
@@ -62,7 +63,7 @@ const customStyle = ref({
     transition: all ease-in-out 1s;
     background-repeat: no-repeat;
   }
-
+  
   &:before {
     display: none;
     top: -75%;
@@ -78,7 +79,7 @@ const customStyle = ref({
     background-size: 10% 10%, 20% 20%, 15% 15%, 20% 20%, 18% 18%, 10% 10%, 15% 15%, 10% 10%, 18% 18%;
     //background-position: 0% 80%, -5% 20%, 10% 40%, 20% 0%, 30% 30%, 22% 50%, 50% 50%, 65% 20%, 85% 30%;
   }
-
+  
   &:after {
     display: none;
     bottom: -75%;
@@ -92,18 +93,18 @@ const customStyle = ref({
     background-size: 15% 15%, 20% 20%, 18% 18%, 20% 20%, 15% 15%, 10% 10%, 20% 20%;
     //background-position: 5% 90%, 10% 90%, 10% 90%, 15% 90%, 25% 90%, 25% 90%, 40% 90%, 55% 90%, 70% 90%;
   }
-
+  
   &:active {
     transform: scale(0.9);
-
+    
   }
-
+  
   &.animate {
     &:before {
       display: block;
       animation: topBubbles ease-in-out 0.75s forwards;
     }
-
+    
     &:after {
       display: block;
       animation: bottomBubbles ease-in-out 0.75s forwards;

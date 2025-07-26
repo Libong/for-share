@@ -35,3 +35,17 @@ body {
     url("../src/assets/font/AlimamaFangYuanTiVF-Thin.woff") format("woff");
     font-display: swap;
 }
+
+/* 1. 先给一个默认（PC）基准 */
+html {
+    /* 375 px 时 1 rem = 10 px，PC 1920 px 时 1 rem ≈ 51 px → 略大，可以再调小 */
+    font-size: 2.6667vw;
+}
+
+/* 2. 手机端（≤768 px）用另一套基准 */
+@media screen and (max-width: 768px) {
+    html {
+        /* 375 px 时 1 rem = 20 px，刚好 */
+        font-size: 5.3333vw;
+    }
+}

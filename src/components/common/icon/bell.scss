@@ -1,0 +1,22 @@
+.wind-chime-container {
+  display: inline-block;
+  animation: sway 4s ease-in-out infinite;
+  transform-origin: 50% 0; /* 以绳子的顶部中心点为旋转中心 */
+}
+
+.rope {
+  transform: translateX(-50%);
+  width: rem(2px); /* 绳子的宽度 */
+  height: rem(40px); /* 绳子的长度 */
+  background-color: #3f3f3f; /* 绳子的颜色 */
+  margin-left: rem(14px);
+}
+
+@keyframes sway {
+  0%, 100% {
+    transform: rotate(10deg); /* 动画开始和结束时，不旋转 */
+  }
+  50% {
+    transform: rotate(-10deg); /* 动画中间，绳子摆动到最大角度 */
+  }
+}

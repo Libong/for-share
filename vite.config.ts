@@ -23,4 +23,12 @@ export default defineConfig({
         },
         // extensions: ['.vue', '.js', '.ts', '.pug'],
     },
+    css: {
+        preprocessorOptions: {
+            scss: {
+                // 关键：每次编译都先把 base.scss 打进去
+                additionalData: `@import "@/common.scss";`
+            }
+        }
+    }
 })
