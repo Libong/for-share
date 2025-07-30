@@ -3,8 +3,6 @@ $primary: #406ff3;
 $text: #6a778e;
 $timing: 250ms;
 $transition: $timing ease all;
-$headerTop: 1rem;
-$headerHeight: 3rem;
 
 .bg-container {
   /*视口宽度的百分比 vw*/
@@ -40,17 +38,16 @@ $headerHeight: 3rem;
   $ref: &;
   display: flex;
   position: fixed;
-  top: $headerTop;
   background: #fff;
   border-radius: $borderRadius;
-  height: $headerHeight;
+  height: 1.5rem;
   box-shadow: 0 0 40px rgba(144, 154, 171, 0.75);
 
   &__link {
     position: relative;
     display: flex;
-    height: 3rem;
-    width: 4rem;
+    height: 1.5rem;
+    width: 1.5rem;
     color: $text;
     transition: $transition;
     align-items: center;
@@ -68,8 +65,8 @@ $headerHeight: 3rem;
       transition: $transition;
       border-radius: $borderRadius * 1.75;
       text-align: center; /* 文本居中 */
-      width: 80%;
-      padding: 0.5rem;
+      width: 120%;
+      padding: 0.3rem;
       font-size: 12px;
       font-weight: bold;
     }
@@ -107,8 +104,8 @@ $headerHeight: 3rem;
         opacity: 0;
         z-index: -1;
         left: 0;
-        height: 3rem;
-        width: 4rem;
+        height: 100%;
+        width: 1.5rem;
         background: $primary;
         border-radius: $borderRadius * 1.75;
       }
@@ -157,26 +154,27 @@ $headerHeight: 3rem;
   display: flex;
   justify-content: space-between;
   width: 100%;
-  height: $headerHeight;
-  top: $headerTop;
+  height: 1.5rem;
+  top: 0.5rem;
   position: fixed;
 
   &-center {
     display: flex;
+    justify-content: center;
     flex-grow: 1; /* 中间的元素可以伸缩，占据剩余空间 */
   }
 
   &-right {
     display: flex;
-    width: 20%;
+    width: 33%;
     align-items: center;
     justify-content: right;
-    margin-bottom: 5px;
+    //margin-bottom: 5px;
   }
 
   &-left {
     display: flex;
-    width: 40%;
+    width: 33%;
   }
 }
 
@@ -224,6 +222,7 @@ $headerHeight: 3rem;
   align-items: center;
   justify-content: center;
   padding: 10px;
+  cursor: pointer;
 }
 
 .notification-btn {
@@ -234,6 +233,7 @@ $headerHeight: 3rem;
   justify-content: center;
   align-items: center;
   padding: 10px;
+  cursor: pointer;
 }
 
 //.mode-switch.active .moon {

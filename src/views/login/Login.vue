@@ -346,6 +346,8 @@ async function sendPhoneCaptcha() {
 
 //登录
 async function login() {
+  router.push('/navbar'); // 关闭后跳转
+  return;
   switch (loginChangeItem.loginType) {
     case FormTypeEnum.Email:
       if (loginReq.email == "") {

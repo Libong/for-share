@@ -16,12 +16,12 @@ import {
 } from "@/api/proto/recordinterface";
 import Form from "@/views/record/components/form/form.vue";
 import {ObjClear, toSecondOrMilli} from "@/tool/tool";
-import {ElMessage} from "element-plus";
 import WaitPoint from "@/components/common/waitPoint/waitPoint.vue";
 import CustomConfirmDialog from "@/components/common/confirm/CustomConfirmDialog.vue";
 import Card from "@/components/common/card/card.vue";
 import Box from "@/views/record/components/box/box.vue";
 import TestBG from "@/assets/record-bg/milaotou.jpeg"
+import {ShowCommonMessage} from "@/tool/message";
 
 onMounted(() => {
   refreshSearch();
@@ -47,16 +47,6 @@ const searchRecordsPageReq = reactive(<ISearchRecordsPageReq>{
   recordType: recordType.value,
 })
 const shoppingRecords = ref<IRecord[]>([])
-
-function showMessage(msg: string) {
-  ElMessage({
-    message: msg,
-    type: "success",
-    plain: true,
-    customClass: "global-message",
-    duration: 1000
-  });
-}
 
 async function searchMore() {
   // if ((searchRecordsPageReq.pageNum * searchRecordsPageReq.pageSize >= pageCondition.total)) {
@@ -131,7 +121,7 @@ async function addRecordCallback(callback: () => void) {
     overdueAt: toSecondOrMilli(shoppingRecordObj.overdueAt, true),
     produceAt: toSecondOrMilli(shoppingRecordObj.produceAt, true),
   });
-  showMessage("记录成功");
+  ShowCommonMessage("记录成功", "success");
   callback();
   ObjClear(shoppingRecordObj);
   await refreshSearch();
@@ -149,7 +139,7 @@ async function updateRecordCallback(callback: () => void) {
   req.produceAt = toSecondOrMilli(req.produceAt, true);
   req.categoryIds = categoryIds;
   await updateRecordInterface(req);
-  showMessage("修改成功");
+  ShowCommonMessage("修改成功", "success");
   callback();
   ObjClear(shoppingRecordObj);
   await refreshSearch();
@@ -178,7 +168,7 @@ async function confirmDialogConfirmed() {
   await deleteRecordInterface({
     recordId: confirmDialogParam.id,
   });
-  showMessage("删除成功");
+  ShowCommonMessage("删除成功", "success");
   await refreshSearch();
 }
 

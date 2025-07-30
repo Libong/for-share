@@ -2,11 +2,9 @@
 import feather from 'feather-icons';
 import {onMounted, onUnmounted, reactive, ref} from "vue";
 import router from "@/router";
-import Moon from "@/assets/moon.svg"
-import Settings from "@/assets/settings.svg"
-import Bell from "@/assets/bell.svg"
 import {loginOutInterface, updateUserInfoInterface, userInfoInterface} from "@/api/proto/loginInterface";
 import EditProfile from '@/views/mine/edit-profile/index.vue'
+import {ShowCommonMessage} from "@/tool/message";
 
 onMounted(() => {
   feather.replace();
@@ -36,17 +34,20 @@ const userInfo = reactive({
   hasPassword: false
 })
 
-
+const handleSetting = () => {
+  ShowCommonMessage("功能暂未开放", "info");
+}
+const handleNotice = () => {
+  ShowCommonMessage("功能暂未开放", "info");
+}
+const handleMode = () => {
+  ShowCommonMessage("功能暂未开放", "info");
+}
 const showProfileEditModel = ref(false)
 const isProfileEditModelLeave = ref(false)
 
 const handleEditProfile = () => {
   showProfileEditModel.value = true
-}
-
-async function handleLoginOut() {
-  await loginOutInterface();
-  await router.push("login");
 }
 
 const handleCloseProfile = () => {
@@ -73,10 +74,12 @@ function to(path: string) {
 
 const options = [
   {label: '首页', path: '/home', feather: 'home'},
-  {label: '记录', path: '/navbar/mine', feather: 'clipboard'},
-  {label: '分享', path: '/share', feather: 'slack'}
+  {label: '记录', path: '/record', feather: 'clipboard'},
+  {label: '分享', path: '/share', feather: 'slack'},
+  {label: '日历', path: '/calendar', feather: 'calendar'}
 ]
 
+/*菜单动画*/
 const navbarEl = ref()
 
 function mouseenter() {
@@ -85,6 +88,12 @@ function mouseenter() {
 
 function mouseleave() {
   navbarEl.value.at(-1).classList.remove('navbar__transition')
+}
+
+/*接口*/
+async function handleLoginOut() {
+  await loginOutInterface();
+  await router.push("login");
 }
 
 const handleUpdateNickname = async (nickname: string, callback: (success: boolean) => void) => {
@@ -124,7 +133,6 @@ const handleUpdatePassword = async (
   <div class="bg-container">
     <div class="header">
       <div class="header-left">
-
       </div>
       <div class="header-center">
         <nav class="navbar">
@@ -139,15 +147,15 @@ const handleUpdatePassword = async (
         </nav>
       </div>
       <div class="header-right">
-        <button class="mode-switch" title="Switch Theme">
-          <img :src="Moon" alt=""/>
-        </button>
-        <button class="setting-btn" title="Add New Project">
-          <img :src="Settings" alt=""/>
-        </button>
-        <button class="notification-btn">
-          <img :src="Bell" alt=""/>
-        </button>
+        <!--        <button class="mode-switch" title="Switch Theme" @click="handleSetting">-->
+        <!--          <img :src="Moon" alt=""/>-->
+        <!--        </button>-->
+        <!--        <button class="setting-btn" title="Add New Project" @click="handleNotice">-->
+        <!--          <img :src="Settings" alt=""/>-->
+        <!--        </button>-->
+        <!--        <button class="notification-btn" @click="handleMode">-->
+        <!--          <img :src="Bell" alt=""/>-->
+        <!--        </button>-->
         <div ref="profileDropdownRef"
              class="profile-dropdown">
           <button class="profile-btn">
@@ -165,7 +173,7 @@ const handleUpdatePassword = async (
         </div>
       </div>
     </div>
-
+    
     <div class="main-content">
       <router-view/>
     </div>

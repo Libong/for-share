@@ -11,26 +11,26 @@ const routes: Array<RouteRecordRaw> = [
         name: "Login",
         component: () => import("@/views/login/Login.vue"),
     },
-    // {
-    //     path: "/improveInfo",
-    //     name: "ImproveInfo",
-    //     component: () => import("@/views/improveInfo/index.vue"),
-    // },
-    {
-        path: "/home",
-        name: "Home",
-        component: () => import("@/views/home/index.vue"),
-    },
     {
         path: "/navbar",
         name: "Navbar",
         component: () => import("@/views/navbar/index.vue"),
         children: [
             {
-                path: "",
+                path: "/record",
                 name: "Record",
                 component: () => import("@/views/record/index.vue"),
-            }
+            },
+            {
+                path: "/calendar",
+                name: "Calendar",
+                component: () => import("@/views/calendar/index.vue"),
+            },
+            {
+                path: "/home",
+                name: "Home",
+                component: () => import("@/views/home/index.vue"),
+            },
         ]
     },
     // 可以添加更多的路由配置
