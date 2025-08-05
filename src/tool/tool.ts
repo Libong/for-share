@@ -96,3 +96,18 @@ export function calculateShelfLife(production: number, expiry: number): ShelfLif
     }
     return shelfLife;
 }
+
+export function timestampToYYYYMMDD(timestamp: number): string {
+    // 如果时间戳是秒级的，需要转换为毫秒
+    if (timestamp.toString().length === 10) {
+        timestamp *= 1000;
+    }
+
+    const date = new Date(timestamp);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份从0开始，需要加1
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+}

@@ -36,29 +36,110 @@
         <transition name="fade">
           <div v-if="modalVisible" class="modal-mask" @click.self="closeModal">
             <div class="modal">
-              <h3>{{ selectedDate }} 事件</h3>
-              
-              <label>
-                事件名称
-                <input v-model="form.title"/>
-              </label>
-              
-              <label>
-                事件类型
-                <select v-model="form.type">
-                  <option value="meeting">会议</option>
-                  <option value="travel">出行</option>
-                  <option value="life">生活</option>
-                </select>
-              </label>
-              
-              <label>
-                备注
-                <textarea v-model="form.note" rows="3"></textarea>
-              </label>
-              
+              <h3>{{ selectedDate }} 账单</h3>
+              <el-scrollbar :height="scrollbarHeight">
+                <!--设置统一的label宽度使其右对齐-->
+                <el-form label-width="80px">
+                  <div class="modal-expend" @click="toggleIncomes">
+                    <span>收入</span>
+                    <el-icon class="arrow-icon">
+                      <arrow-down v-if="!isIncomeVisible"/>
+                      <arrow-up v-else/>
+                    </el-icon>
+                  </div>
+                  <transition name="fade">
+                    <div v-show="isIncomeVisible" class="expenses-form">
+                      <el-form-item
+                          label="今日收入">
+                        <el-input-number
+                            v-model="form.dayIncome"
+                            :min="0"
+                        />
+                      </el-form-item>
+                      <el-form-item
+                          label="现金收入">
+                        <el-input-number
+                            v-model="form.cash"
+                            :min="0"
+                        />
+                      </el-form-item>
+                      <el-form-item
+                          label="在线收入">
+                        <el-input-number
+                            v-model="form.onlineIncome"
+                            :min="0"
+                        />
+                      </el-form-item>
+                      <el-form-item label="是否提款">
+                        <el-radio-group v-model="form.isDraw">
+                          <el-radio :value="1">是</el-radio>
+                          <el-radio :value="2">否</el-radio>
+                        </el-radio-group>
+                      </el-form-item>
+                      <el-form-item label="提款收入">
+                        <el-input-number
+                            v-model="form.drawIncome"
+                            :min="0"
+                        />
+                      </el-form-item>
+                      <el-form-item label="卡收入">
+                        <el-input-number
+                            v-model="form.cardIncome"
+                            :min="0"
+                        />
+                      </el-form-item>
+                      <el-form-item label="其他备注:">
+                      </el-form-item>
+                      <el-form-item label-width="0px">
+                        <el-input
+                            v-model="form.remark"
+                            :autosize="{ minRows: 2, maxRows: 5 }"
+                            :maxlength="100"
+                            placeholder="请输入备注内容"
+                            show-word-limit
+                            type="textarea"
+                        />
+                      </el-form-item>
+                    </div>
+                  </transition>
+                  <span class="form-separator"></span>
+                  <div class="modal-expend" @click="toggleExpenses">
+                    <span>支出</span>
+                    <el-icon class="arrow-icon">
+                      <arrow-down v-if="!isExpensesVisible"/>
+                      <arrow-up v-else/>
+                    </el-icon>
+                  </div>
+                  <transition name="fade">
+                    <div v-show="isExpensesVisible" class="expenses-form">
+                      <el-form-item label="进货支出">
+                        <el-input-number v-model="form.goodsExpenses" :min="0"/>
+                      </el-form-item>
+                      <el-form-item label="酒水支出">
+                        <el-input-number v-model="form.drinksExpenses" :min="0"/>
+                      </el-form-item>
+                      <el-form-item label="其他支出">
+                        <el-input-number v-model="form.otherExpenses" :min="0"/>
+                      </el-form-item>
+                      <el-form-item label="其他支出备注:" label-width="100px">
+                      </el-form-item>
+                      <el-form-item label-width="0px">
+                        <el-input
+                            v-model="form.otherExpensesRemark"
+                            :autosize="{ minRows: 2, maxRows: 5 }"
+                            :maxlength="100"
+                            placeholder="请输入备注内容"
+                            show-word-limit
+                            type="textarea"
+                        />
+                      </el-form-item>
+                    </div>
+                  </transition>
+                </el-form>
+              </el-scrollbar>
               <div class="btn-bar">
                 <button @click="save">保存</button>
+                <button @click="clear">清空</button>
                 <button @click="closeModal">取消</button>
               </div>
             </div>
@@ -70,7 +151,19 @@
 </template>
 
 <script lang="ts" setup>
-import {computed, ref} from 'vue'
+import {computed, onMounted, reactive, ref} from 'vue'
+import {ArrowDown, ArrowUp} from "@element-plus/icons-vue";
+import {
+  addFinanceBillInterface,
+  deleteFinanceBillInterface,
+  IAddFinanceBillReq,
+  IFinanceBill,
+  IUpdateFinanceBillReq,
+  searchFinanceBillsPageInterface,
+  updateFinanceBillInterface
+} from "@/api/proto/calendarInterface";
+import {ObjClear, timestampToYYYYMMDD} from "@/tool/tool";
+import {ShowCommonMessage} from "@/tool/message";
 
 /* ===== 日历逻辑 ===== */
 const today = new Date()
@@ -109,55 +202,134 @@ const calendarGrid = computed(() => {
   return arr
 })
 
-function prevMonth() {
+async function prevMonth() {
   if (month.value === 0) {
     year.value--
     month.value = 11
   } else {
     month.value--
   }
+  await updateMonthBillData()
 }
 
-function nextMonth() {
+async function nextMonth() {
   if (month.value === 11) {
     year.value++
     month.value = 0
   } else {
     month.value++
   }
+  await updateMonthBillData()
 }
 
 /* ===== 弹窗逻辑 ===== */
-interface Form {
-  title: string
-  type: string
-  note: string
-}
-
 const modalVisible = ref(false)
 const selectedDate = ref('')
-const form = ref<Form>({title: '', type: 'meeting', note: ''})
+const form = reactive<IFinanceBill>({
+  billId: "", timestamp: 0,
+  drinksExpenses: 0, otherExpenses: 0, otherExpensesRemark: "",
+  cardIncome: 0, cash: 0, drawIncome: 0, goodsExpenses: 0, isDraw: 2, onlineIncome: 0, remark: "", dayIncome: 0
+})
+
+//表单内容
+const isExpensesVisible = ref(false);
+const toggleExpenses = () => {
+  isExpensesVisible.value = !isExpensesVisible.value;
+  appendScrollbarHeight();
+};
+const isIncomeVisible = ref(false);
+const toggleIncomes = () => {
+  isIncomeVisible.value = !isIncomeVisible.value;
+  appendScrollbarHeight();
+};
+const scrollbarHeight = ref('100px')
+const appendScrollbarHeight = () => {
+  console.log(isExpensesVisible.value + " " + isIncomeVisible.value)
+  if (!isExpensesVisible.value && !isIncomeVisible.value) {
+    scrollbarHeight.value = '100px';
+  } else {
+    scrollbarHeight.value = '300px';
+  }
+}
+
+onMounted(() => {
+  updateMonthBillData();
+})
 
 // 以 2025-07-30 为 key 的对象
-const eventMap = ref<Record<string, Form>>({})
+const eventMap = ref<Record<string, IFinanceBill>>({})
+
+async function updateMonthBillData() {
+  //获取当前月份的头尾时间戳
+  const startMonthTimestamp = new Date(year.value, month.value, 1)
+  startMonthTimestamp.setHours(0, 0, 0, 0)
+  const endMonthTimestamp = new Date(year.value, month.value + 1, 1, 0, 0, -1)
+  const resp = await searchFinanceBillsPageInterface({
+    endTimestamp: endMonthTimestamp.getTime(), pageNum: 0, pageSize: 0, startTimestamp: startMonthTimestamp.getTime()
+  });
+  //更新已存在的列表的数据
+  if (!resp.list) {
+    return
+  }
+  resp.list.forEach((item) => {
+    const dateStr = timestampToYYYYMMDD(item.timestamp);
+    eventMap.value[dateStr] = item
+  })
+}
 
 function openModal(item: any) {
   if (!item.inMonth) return
+  //设置选中的日期
   selectedDate.value = `${year.value}-${String(month.value + 1).padStart(2, '0')}-${String(
       item.day,
   ).padStart(2, '0')}`
-  // 如果已有数据则回填
-  form.value = eventMap.value[selectedDate.value] || {title: '', type: 'meeting', note: ''}
+  //从eventMap中获取数据到form中回显
+  if (eventMap.value[selectedDate.value]) {
+    Object.assign(form, eventMap.value[selectedDate.value])
+  }
   modalVisible.value = true
 }
 
 function closeModal() {
+  ObjClear(form);
   modalVisible.value = false
 }
 
-function save() {
-  eventMap.value[selectedDate.value] = {...form.value}
+async function clear() {
+  if (!eventMap.value[selectedDate.value]) {
+    closeModal()
+    return
+  }
+  const billId = eventMap.value[selectedDate.value].billId
+  await deleteFinanceBillInterface({billId: billId})
+  eventMap.value[selectedDate.value] = {} as IFinanceBill
+  ShowCommonMessage("清空成功", "success")
   closeModal()
+}
+
+async function save() {
+  //设置当前日期时间戳
+  if (form.timestamp == 0) {
+    form.timestamp = new Date(selectedDate.value).getTime()
+  }
+  if (form.billId != "") {
+    const updateReq = {} as IUpdateFinanceBillReq
+    Object.assign(updateReq, form)
+    await updateFinanceBillInterface(updateReq)
+  } else {
+    const addReq = {} as IAddFinanceBillReq
+    Object.assign(addReq, form)
+    const resp = await addFinanceBillInterface(addReq)
+    form.billId = resp.billId
+  }
+  // 确保 eventMap.value[selectedDate.value] 是一个对象
+  if (!eventMap.value[selectedDate.value]) {
+    eventMap.value[selectedDate.value] = {} as IFinanceBill
+  }
+  //更新本地数据 form数据会被清空
+  Object.assign(eventMap.value[selectedDate.value], form)
+  closeModal()
+  ShowCommonMessage("保存成功", "success")
 }
 </script>
 
