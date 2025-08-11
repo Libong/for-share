@@ -1,5 +1,12 @@
 .login-message {
-  margin-top: 3%;
+  margin-top: 20vh;
+  //width: rem(200px);
+  max-width: rem(300px);
+  font-size: rem(13px);
+  
+  .el-message__content {
+    font-size: rem(13px);
+  }
 }
 
 .form-message {

@@ -33,7 +33,6 @@ $transition: $timing ease all;
   }
 }
 
-
 .navbar {
   $ref: &;
   display: flex;
@@ -42,6 +41,7 @@ $transition: $timing ease all;
   border-radius: $borderRadius;
   height: 1.5rem;
   box-shadow: 0 0 40px rgba(144, 154, 171, 0.75);
+
 
   &__link {
     position: relative;
@@ -52,6 +52,10 @@ $transition: $timing ease all;
     transition: $transition;
     align-items: center;
     justify-content: center;
+
+    &.active-link, &:hover {
+      color: #fff; /* 激活时的颜色 */
+    }
 
     span {
       position: absolute;
@@ -69,10 +73,6 @@ $transition: $timing ease all;
       padding: 0.3rem;
       font-size: 12px;
       font-weight: bold;
-    }
-
-    &:hover {
-      color: #fff;
     }
 
     .navbar:not(:hover) &:focus,
@@ -93,60 +93,71 @@ $transition: $timing ease all;
   }
 
   &__li {
-    margin: 0 0.55rem;
+    padding: 0 0.55rem;
     cursor: pointer;
 
-    &:last-child {
+    &.active, &:hover {
+      .navbar__link {
+        color: #fff; /* 激活时的颜色 */
+      }
+    }
+
+    &:first-child {
       &:before {
-        margin: 0 20px;
+        margin: 0 0.55rem;
         content: '';
         position: absolute;
-        opacity: 0;
+        opacity: var(--indicator-opacity, 0);
         z-index: -1;
-        left: 0;
+        left: var(--indicator-left, 0);
         height: 100%;
         width: 1.5rem;
         background: $primary;
         border-radius: $borderRadius * 1.75;
+        transition: opacity 0.3s, left 0.2s cubic-bezier(1, 0.2, 0.1, 1.2);
       }
     }
 
-    @for $i from 1 to 12 {
-      &:first-child:nth-last-child(#{$i}),
-      &:first-child:nth-last-child(#{$i}) ~ li {
-        &:hover {
-          ~ li:last-child:before {
-            opacity: 1;
-          }
-        }
+    //@for $i from 1 to 12 {
+    //  &:first-child:nth-last-child(#{$i}),
+    //  &:first-child:nth-last-child(#{$i}) ~ li {
+    //    &:hover {
+    //      ~ li:last-child:before {
+    //        opacity: 1;
+    //      }
+    //    }
+    //
+    //    &:last-child:hover:before {
+    //      opacity: 1;
+    //    }
 
-        &:last-child:hover:before {
-          opacity: 1;
-        }
+    //@for $j from 1 to $i {
+    //  &:nth-child(#{$j}):hover,
+    //  &.active {
+    //    ~ li:last-child:before {
+    //      @include gooeyEffect($j);
+    //      left: calc(100% / $i) * ($j - 1);
+    //      animation: gooeyEffect-#{$j} $timing 1;
+    //      opacity: 1;
+    //    }
+    //  }
+    //}
 
-        @for $j from 1 to $i {
-          &:nth-child(#{$j}):hover, {
-            ~ li:last-child:before {
-              @include gooeyEffect($j);
-              left: calc(100% / $i) * ($j - 1);
-              animation: gooeyEffect-#{$j} $timing 1;
-            }
-          }
-        }
-
-        &:last-child:hover:before, {
-          @include gooeyEffect($i);
-          left: calc(100% / $i) * ($i - 1);
-          animation: gooeyEffect-#{$i} $timing 1;
-        }
-      }
-    }
+    //&:last-child:hover:before,
+    //&.active:before {
+    //  @include gooeyEffect($i);
+    //  left: calc(100% / $i) * ($i - 1);
+    //  animation: gooeyEffect-#{$i} $timing 1;
+    //  opacity: 1;
+    //}
+    //}
+    //}
 
   }
 
-  &__transition:before {
-    transition: $timing cubic-bezier(1, 0.2, 0.1, 1.2) all;
-  }
+  //&__transition:before {
+  //  transition: $timing cubic-bezier(1, 0.2, 0.1, 1.2) all;
+  //}
 
 }
 

@@ -1,5 +1,7 @@
 <script lang="ts" setup>
 // 使用 GSAP 3 的写法
+import gsap from 'gsap';
+
 var bounce = gsap.timeline({
   onComplete: function () {
     bounce.reverse();

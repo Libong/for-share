@@ -101,20 +101,20 @@ export function deleteFinanceBillInterface(req: IDeleteFinanceBillReq): Promise<
     });
 }
 
-export interface FinanceBillByIDReq {
+export interface IFinanceBillByIDReq {
     billId: string; // 账单编号
 }
 
-export interface FinanceBillByIDResp {
+export interface IFinanceBillByIDResp {
     financeBill: IFinanceBill; // 账单详情
 }
 
-export function financeBillByIDInterface(req: FinanceBillByIDReq): Promise<FinanceBillByIDResp> {
+export function financeBillByIDInterface(req: IFinanceBillByIDReq): Promise<IFinanceBillByIDResp> {
     return new Promise((resolve, reject) => {
         http
             .get(`/financeBill/detail?billId=${req.billId}`, true)
             .then((res) => {
-                resolve(toCamelCaseObject(res.data) as FinanceBillByIDResp);
+                resolve(toCamelCaseObject(res.data) as IFinanceBillByIDResp);
             })
             .catch((err) => {
                 reject(err);
@@ -122,25 +122,52 @@ export function financeBillByIDInterface(req: FinanceBillByIDReq): Promise<Finan
     });
 }
 
-export interface SearchFinanceBillsPageReq {
-    startTimestamp: number, //开始时间戳
-    endTimestamp: number, //结束时间戳
-
+export interface ISearchFinanceBillsPageReq {
+    startTimestamp: number; //开始时间戳
+    endTimestamp: number; //结束时间戳
+    owner: string; //拥有者
     pageNum: number; // 当前页码
     pageSize: number; // 每页大小
 }
 
-export interface SearchFinanceBillsPageResp {
+export interface ISearchFinanceBillsPageResp {
     list: IFinanceBill[]; // 账单列表
     total: number; // 总记录数
 }
 
-export function searchFinanceBillsPageInterface(req: SearchFinanceBillsPageReq): Promise<SearchFinanceBillsPageResp> {
+export function searchFinanceBillsPageInterface(req: ISearchFinanceBillsPageReq): Promise<ISearchFinanceBillsPageResp> {
     return new Promise((resolve, reject) => {
         http
             .post("/financeBill/search/page", true, req)
             .then((res) => {
-                resolve(toCamelCaseObject(res.data) as SearchFinanceBillsPageResp);
+                resolve(toCamelCaseObject(res.data) as ISearchFinanceBillsPageResp);
+            })
+            .catch((err) => {
+                reject(err);
+            });
+    });
+}
+
+export interface IFinanceBillAccount {
+    avatar: string;
+    accountId: string;
+    account: string;
+}
+
+export interface ISearchFinanceBillAccountsReq {
+
+}
+
+export interface ISearchFinanceBillAccountsResp {
+    list: IFinanceBillAccount[];
+}
+
+export function searchFinanceBillAccountsInterface(req: ISearchFinanceBillAccountsReq): Promise<ISearchFinanceBillAccountsResp> {
+    return new Promise((resolve, reject) => {
+        http
+            .get("/financeBill/account/search", true, req)
+            .then((res) => {
+                resolve(toCamelCaseObject(res.data) as ISearchFinanceBillAccountsResp);
             })
             .catch((err) => {
                 reject(err);

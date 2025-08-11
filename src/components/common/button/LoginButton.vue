@@ -45,9 +45,8 @@ const customStyle = ref({
   font-family: 'Helvetica', 'Arial', sans-serif;
   border-radius: 10px;
   background: transparent;
-  outline: 2px solid rgb(31, 27, 27);
   font-weight: bold;
-  border: none;
+  border: 2px solid rgb(31, 27, 27);
   cursor: pointer;
   position: relative;
   transition: transform ease-in 0.1s, box-shadow ease-in 0.25s;

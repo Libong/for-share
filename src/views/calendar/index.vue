@@ -1,5 +1,11 @@
 <template>
   <div class="calendar-container">
+    <div v-if="allOwners.length != 0" class="calendar-owner-select">
+      <button v-for="item in allOwners" class="calendar-owner-select-btn">
+        <img :src="item.avatar" alt="" @click="setSelectOwner(item)"/>
+        <span>{{ item.account }}</span>
+      </button>
+    </div>
     <div class="header-title">
       <span>！！开始记账 ！！</span>
     </div>
@@ -158,12 +164,48 @@ import {
   deleteFinanceBillInterface,
   IAddFinanceBillReq,
   IFinanceBill,
+  IFinanceBillAccount,
   IUpdateFinanceBillReq,
+  searchFinanceBillAccountsInterface,
   searchFinanceBillsPageInterface,
   updateFinanceBillInterface
 } from "@/api/proto/calendarInterface";
 import {ObjClear, timestampToYYYYMMDD} from "@/tool/tool";
 import {ShowCommonMessage} from "@/tool/message";
+import {localStorage_roleObj_label} from "@/config/localStorage";
+
+onMounted(() => {
+  updateMonthBillData();
+  userIsManager();
+})
+
+/* 管理员功能 选择人*/
+const selectOwner = ref("")
+const allOwners = ref<IFinanceBillAccount[]>([])
+
+function userIsManager() {
+  const roleObjStr = localStorage.getItem(localStorage_roleObj_label);
+  if (roleObjStr) {
+    const roleObj = JSON.parse(roleObjStr);
+    if (roleObj.id == "manager") {
+      searchOwners();
+    }
+  }
+}
+
+async function setSelectOwner(owner: IFinanceBillAccount) {
+  selectOwner.value = owner.accountId
+  await updateMonthBillData()
+  ShowCommonMessage("已切换至" + owner.account + "视角", "success")
+}
+
+async function searchOwners() {
+  const resp = await searchFinanceBillAccountsInterface({});
+  if (!resp.list) {
+    return
+  }
+  allOwners.value = resp.list;
+}
 
 /* ===== 日历逻辑 ===== */
 const today = new Date()
@@ -252,10 +294,6 @@ const appendScrollbarHeight = () => {
   }
 }
 
-onMounted(() => {
-  updateMonthBillData();
-})
-
 // 以 2025-07-30 为 key 的对象
 const eventMap = ref<Record<string, IFinanceBill>>({})
 
@@ -265,7 +303,11 @@ async function updateMonthBillData() {
   startMonthTimestamp.setHours(0, 0, 0, 0)
   const endMonthTimestamp = new Date(year.value, month.value + 1, 1, 0, 0, -1)
   const resp = await searchFinanceBillsPageInterface({
-    endTimestamp: endMonthTimestamp.getTime(), pageNum: 0, pageSize: 0, startTimestamp: startMonthTimestamp.getTime()
+    endTimestamp: endMonthTimestamp.getTime(),
+    pageNum: 0,
+    pageSize: 0,
+    startTimestamp: startMonthTimestamp.getTime(),
+    owner: selectOwner.value,
   });
   //更新已存在的列表的数据
   if (!resp.list) {
@@ -309,9 +351,11 @@ async function clear() {
 
 async function save() {
   //设置当前日期时间戳
-  if (form.timestamp == 0) {
-    form.timestamp = new Date(selectedDate.value).getTime()
-  }
+  // if (form.timestamp == 0) {
+  let date = new Date(selectedDate.value);
+  date.setHours(0, 0, 0, 0)
+  form.timestamp = date.getTime()
+  // }
   if (form.billId != "") {
     const updateReq = {} as IUpdateFinanceBillReq
     Object.assign(updateReq, form)

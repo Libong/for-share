@@ -29,11 +29,11 @@
     width: 100%;
     height: rem(35px);
     /*不设置边框 否则会有边框会有阴影*/
-    border: none;
+    border: 2px solid rgb(0, 0, 0, 0.5);
     /*背景设置透明*/
     background: transparent;
-    /*类似于边框border 描边*/
-    outline: 2px solid rgb(0, 0, 0, 0.5);
+    /*类似于边框border 描边 不过safari不会生效*/
+    outline: none;
     /*圆角边框*/
     border-radius: rem(5px);
     /*字体大小*/
@@ -55,7 +55,7 @@
 
     &:focus {
       /*改变描边的颜色*/
-      outline: 2px solid rgb(255, 255, 255, 0.5);
+      border: 2px solid rgb(255, 255, 255, 0.5);
       /*提示字消失*/
 
       &::placeholder {

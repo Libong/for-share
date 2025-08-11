@@ -40,3 +40,11 @@ window.onunhandledrejection = (event) => {
         app.config.errorHandler(event.reason, null, "Unhandled Rejection");
     }
 };
+if (!Array.prototype.at) {
+    Array.prototype.at = function (index) {
+        if (index < 0) {
+            index = this.length + index;
+        }
+        return this[index];
+    };
+}

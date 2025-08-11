@@ -1,0 +1,23 @@
+/*返回箭头*/
+.back-arrow {
+  //position: absolute;
+  width: rem(30px);
+  height: rem(30px);
+  cursor: pointer;
+}
+
+.forget-text-container {
+  width: 100%;
+  margin: 0.5rem auto;
+
+  .forget-text {
+    font-size: 0.5rem;
+    font-family: "阿里妈妈方圆体 VF Regular", serif;
+    font-weight: bold;
+  }
+}
+
+.forget-prompt {
+  font-size: 0.4rem;
+  font-family: "阿里妈妈方圆体 VF Regular", serif;
+}

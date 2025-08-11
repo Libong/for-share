@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import feather from 'feather-icons';
-import {onMounted, onUnmounted, reactive, ref} from "vue";
+import {ComponentPublicInstance, onMounted, onUnmounted, reactive, ref} from "vue";
 import router from "@/router";
 import {loginOutInterface, updateUserInfoInterface, userInfoInterface} from "@/api/proto/loginInterface";
 import EditProfile from '@/views/mine/edit-profile/index.vue'
@@ -34,15 +34,6 @@ const userInfo = reactive({
   hasPassword: false
 })
 
-const handleSetting = () => {
-  ShowCommonMessage("功能暂未开放", "info");
-}
-const handleNotice = () => {
-  ShowCommonMessage("功能暂未开放", "info");
-}
-const handleMode = () => {
-  ShowCommonMessage("功能暂未开放", "info");
-}
 const showProfileEditModel = ref(false)
 const isProfileEditModelLeave = ref(false)
 
@@ -68,27 +59,81 @@ async function initUserInfo() {
   userInfo.encryptPhone = userInfoResp.encryptPhone;
 }
 
-function to(path: string) {
-  router.push(path)
+//当前被选中的菜单下标 用于激活样式和取消样式(在悬停时)
+const activeIndex = ref(-1)
+//上次选中的菜单下标 用来还原当鼠标移开后 当前页面的菜单能够被选中
+const lastActiveIndex = ref(-1)
+//上次选中的菜单的偏移量 用于还原伪元素位置
+let lastIndicatorLeft = 0
+
+/*菜单动画*/
+const navbarEl = ref<HTMLLIElement[]>([]);
+
+function setNavbarEl(el: Element | ComponentPublicInstance | null, index: number) {
+  if (el instanceof HTMLLIElement) {
+    navbarEl.value[index] = el; // 直接赋值到指定索引位置
+  }
+}
+
+const mouseenter = (index: number) => {
+  //保存当前的激活下标
+  lastActiveIndex.value = activeIndex.value
+  //取消激活样式
+  activeIndex.value = -1
+  const el = navbarEl.value[index];
+  if (el) {
+    const firstEl = navbarEl.value[0];
+    //设置伪元素的位置为当前移动到的菜单元素 并显示
+    if (firstEl) {
+      firstEl.style.setProperty('--indicator-left', `${el.offsetLeft}px`);
+      firstEl.style.setProperty('--indicator-opacity', '1');
+    }
+  }
+};
+
+const mouseleave = () => {
+  //还原激活样式
+  activeIndex.value = lastActiveIndex.value
+  const firstEl = navbarEl.value[0];
+  if (firstEl) {
+    firstEl.style.setProperty('--indicator-left', `${lastIndicatorLeft}px`);
+    console.log(activeIndex.value)
+    if (activeIndex.value === -1) {
+      firstEl.style.setProperty('--indicator-opacity', '0');
+    }
+  }
+};
+
+function to(path: string, index: number) {
+  //设置激活位置偏移量
+  const el = navbarEl.value[index];
+  if (el) {
+    const firstEl = navbarEl.value[0];
+    if (firstEl) {
+      lastIndicatorLeft = el.offsetLeft;
+    }
+  }
+  //设置激活下标
+  activeIndex.value = index
+  lastActiveIndex.value = index;
+  switch (path) {
+    case "Record":
+    case "Share":
+      ShowCommonMessage("功能暂未开放", "info");
+      return
+    default:
+      break;
+  }
+  //TODO 使用name才能跳转 使用path的话就不行 除非在app.vue中设置routerView标签的key为$route.fullPath
+  router.push({name: path})
 }
 
 const options = [
-  {label: '首页', path: '/home', feather: 'home'},
-  {label: '记录', path: '/record', feather: 'clipboard'},
-  {label: '分享', path: '/share', feather: 'slack'},
-  {label: '日历', path: '/calendar', feather: 'calendar'}
+  {label: '首页', path: 'Home', feather: 'home'},
+  {label: '记录', path: 'Record', feather: 'clipboard'},
+  {label: '分享', path: 'Share', feather: 'slack'},
+  {label: '日历', path: 'Calendar', feather: 'calendar'}
 ]
-
-/*菜单动画*/
-const navbarEl = ref()
-
-function mouseenter() {
-  navbarEl.value.at(-1).classList.add('navbar__transition')
-}
-
-function mouseleave() {
-  navbarEl.value.at(-1).classList.remove('navbar__transition')
-}
 
 /*接口*/
 async function handleLoginOut() {
@@ -136,9 +181,16 @@ const handleUpdatePassword = async (
       </div>
       <div class="header-center">
         <nav class="navbar">
-          <ul class="navbar__lu" @mouseenter="mouseenter" @mouseleave="mouseleave">
-            <li v-for="item in options" ref="navbarEl" class="navbar__li" @click="to(item.path)">
-              <a class="navbar__link">
+          <ul class="navbar__lu">
+            <li v-for="(item,index) in options"
+                :ref="(el) => setNavbarEl(el, index)"
+                :class="{ active: activeIndex === index }"
+                class="navbar__li"
+                @click="to(item.path,index)"
+                @mouseenter="() => mouseenter(index)"
+                @mouseleave="() => mouseleave()">
+              <a
+                  class="navbar__link">
                 <i :data-feather="item.feather"></i>
                 <span>{{ item.label }}</span>
               </a>

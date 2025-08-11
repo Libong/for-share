@@ -6,6 +6,29 @@
   align-items: center;
 }
 
+.calendar-owner-select {
+  display: flex;
+  width: 50%;
+  height: 1.5rem;
+  //background-color: #0a5988;
+  margin-top: 1rem;
+
+  img {
+    width: rem(32px);
+    height: rem(32px);
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  &-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: none;
+    cursor: pointer;
+  }
+}
+
 .header-title {
   display: flex;
   justify-content: center;
