@@ -15,6 +15,13 @@ export interface IFinanceBill {
     cardIncome: number, //卡收入
     remark: string, //备注
     timestamp: number, //时间戳
+    repayExpenses: number, //还款支出
+    extra: string,
+}
+
+export interface IFinanceBillExtra {
+    repayUnit: string; //还款单位
+    repayImages: string[]; //还款证明图
 }
 
 export enum FinanceBillIsDraw {
@@ -36,6 +43,8 @@ export interface IAddFinanceBillReq {
     cardIncome: number; // 卡收入
     remark: string; // 备注
     timestamp: number, //时间戳
+    repayExpenses: number, //还款支出
+    extra: string,
 }
 
 export interface IAddFinanceBillResp {
@@ -69,6 +78,8 @@ export interface IUpdateFinanceBillReq {
     cardIncome: number; // 卡收入
     remark: string; // 备注
     timestamp: number, //时间戳
+    repayExpenses: number, //还款支出
+    extra: string,
 }
 
 export function updateFinanceBillInterface(req: IUpdateFinanceBillReq): Promise<void> {

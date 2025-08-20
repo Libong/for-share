@@ -17,7 +17,7 @@ const createAxiosInstance = (auth: boolean, contentType?: string, baseUrl?: stri
         baseURL: envConfig.BASE_URL,
         headers: {
             "Content-Type": "application/json",
-            "app_id": envConfig.APP_ID
+            "li-app-id": envConfig.APP_ID
         }
     }
     if (contentType) {
@@ -71,32 +71,34 @@ const createAxiosInstance = (auth: boolean, contentType?: string, baseUrl?: stri
 };
 
 function handleAuthenticationError(redirectPath: string) {
+    localStorage.removeItem(localStorage_tokenObj_label);
+    localStorage.removeItem(localStorage_roleObj_label);
     router.push({path: '/login', query: {redirect: redirectPath}}).then(r => {
-        // 可以添加额外的清理逻辑
     });
 }
 
 interface IHttp {
-    get<T>(url: string, auth: boolean, param?: unknown): Promise<IApiResponse>;
+    get<T>(url: string, auth: boolean, param?: unknown, urlPrefix?: string): Promise<IApiResponse>;
 
-    post<T>(url: string, auth: boolean, data?: unknown): Promise<IApiResponse>;
+    post<T>(url: string, auth: boolean, data?: unknown, urlPrefix?: string): Promise<IApiResponse>;
 
     filePost<T>(url: string, auth: boolean, data?: unknown, param?: unknown): Promise<IApiResponse>;
 }
 
 const http: IHttp = {
-    async get(url, auth, params) {
-        const axiosInstance = createAxiosInstance(auth);
+    async get(url, auth, params, urlPrefix) {
+        const axiosInstance = createAxiosInstance(auth, undefined, urlPrefix);
         try {
-            const response = await axiosInstance.get(url, {params});
+            const parsedParams = toSnakeCase(params)
+            const response = await axiosInstance.get(url, {params: parsedParams});
             return response.data;
         } catch (err) {
             return Promise.reject(err);
         }
     },
 
-    async post(url, auth, data) {
-        const axiosInstance = createAxiosInstance(auth);
+    async post(url, auth, data, urlPrefix) {
+        const axiosInstance = createAxiosInstance(auth, undefined, urlPrefix);
         try {
             const response = await axiosInstance.post(url, toSnakeCase(data));
             return response.data;
@@ -112,7 +114,7 @@ const http: IHttp = {
         } catch (err) {
             return Promise.reject(err);
         }
-    }
+    },
 };
 
 export default http;

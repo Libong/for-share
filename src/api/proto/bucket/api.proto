@@ -1,0 +1,173 @@
+syntax = "proto3";
+
+package com.liBong.storage.interface.bucket;
+
+option go_package = "./;api";
+
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+import "router/api/proto/router.proto";
+import "auth/api/proto/auth.proto";
+
+service BucketInterface{
+
+  option(libong.prefix) = "libong/bucket";
+
+  //添加桶
+  rpc addBucket(AddBucketReq)returns(google.protobuf.Empty){
+    option (libong.auth) = true;
+    option(google.api.http) = {
+      post:"/add"
+    };
+  }
+  //修改桶
+  rpc updateBucket(UpdateBucketReq)returns(google.protobuf.Empty){
+    option (libong.auth) = true;
+    option(google.api.http) = {
+      post:"/update"
+    };
+  }
+  //删除桶
+  rpc deleteBucket(DeleteBucketReq)returns(google.protobuf.Empty){
+    option (libong.auth) = true;
+    option(google.api.http) = {
+      post:"/delete"
+    };
+  }
+  //分页查询
+  rpc searchBucketsPage(SearchBucketsPageReq)returns(SearchBucketsPageResp){
+    option (libong.auth) = true;
+    option(google.api.http) = {
+      get:"/search/page"
+    };
+  }
+  //详情
+  rpc bucketById(BucketByIdReq)returns(BucketByIdResp){
+    option (libong.auth) = true;
+    option(google.api.http) = {
+      get:"/get"
+    };
+  }
+  //文件浏览
+  rpc browseBucketObjects(BrowseBucketObjectsReq)returns(BrowseBucketObjectsResp){
+    option (libong.auth) = true;
+    option(google.api.http) = {
+      get:"/object/browse"
+    };
+  }
+  //不走pb 走原生post
+//  rpc addBucketObject(AddBucketObjectReq)returns(google.protobuf.Empty){
+//    option (libong.auth) = true;
+//    option(google.api.http) = {
+//      post:"/object/upload"
+//    };
+//  }
+  //删除文件
+  rpc deleteObject(DeleteObjectReq)returns(google.protobuf.Empty){
+    option (libong.auth) = true;
+    option(google.api.http) = {
+      post:"/object/delete"
+    };
+  }
+  //文件分享
+  rpc shareBucketObjectUrl(ShareBucketObjectUrlReq)returns(ShareBucketObjectUrlResp){
+    option (libong.auth) = true;
+    option(google.api.http) = {
+      post:"/object/share"
+    };
+  }
+  //删除桶
+  rpc deleteBucketAccountRel(DeleteBucketAccountRelReq)returns(google.protobuf.Empty){
+    option (libong.auth) = true;
+    option(google.api.http) = {
+      post:"/accountRel/delete"
+    };
+  }
+}
+message AddBucketReq{
+  string name = 1;
+}
+message BucketAccount{
+  string account_id = 1;
+  uint32 access_mode = 2; //访问权限 1只读 2只写 3读写
+}
+message BucketAccountDetail{
+  string account_id = 1;
+  string account_name = 2;
+  uint32 access_mode = 3; //访问权限 1只读 2只写 3读写
+  string avatar = 4;//头像地址url
+}
+message UpdateBucketReq{
+  uint32 access_policy = 1; //访问策略
+  string access_rule = 2; //访问规则
+  string bucket_id = 3;
+  BucketAccount bucket_account = 4;
+}
+message DeleteBucketReq{
+  string bucket_id = 1;
+}
+message Bucket{
+  string name = 1;
+  double usage = 2; //用量
+  uint32 object_cnt = 3; //对象数
+  int64 establish_at = 4; //创建时间
+  string bucket_id = 6;
+  uint32 access_policy = 7; //访问策略 1公有 2私有 3自定义
+  int64 last_modified_at = 8; //上次更新时间
+}
+message SearchBucketsPageReq{
+  string fuzzy_name = 1;
+
+  uint32 page_num = 100;
+  uint32 page_size = 101;
+}
+message SearchBucketsPageResp{
+  repeated Bucket list = 1;
+  int64 total = 2;
+}
+message BucketByIdReq{
+  string bucket_id = 1;
+}
+message BucketByIdResp{
+  string name = 1;
+  double usage = 2; //用量
+  uint32 access_policy = 3; //访问策略 1公有 2私有 3自定义
+  string access_rule = 4; //访问规则
+  string bucket_id = 5;
+  repeated BucketAccountDetail list = 6;
+  uint32 object_cnt = 7; //对象数
+  int64 establish_at = 8; //创建时间
+}
+message Object {
+  string name = 1; //对象名称
+  int64 last_modify_at = 2; //对象修改时间
+  int64 size = 3; //对象大小
+  bool is_dir = 4;//是否是文件夹
+  string url = 5; //文件地址
+}
+message BrowseBucketObjectsReq{
+  string path = 1;  //查询的连贯路径 以bucket的名称开始
+}
+message BrowseBucketObjectsResp{
+  repeated Object list = 1;
+}
+message DeleteObjectReq{
+  string path = 1;
+}
+message ShareBucketObjectUrlReq{
+  uint32 expire_type = 1; //1.1小时 2.当天 3.永久有效
+  string path = 2;
+}
+message ShareBucketObjectUrlResp{
+  string url = 1;
+}
+message DeleteBucketAccountRelReq{
+  string bucket_id = 1;
+  string account_id = 2;
+}
+enum UrlExpireType{
+    UrlExpireTypeUnknown = 0;
+    UrlExpireTypeHour = 1;
+    UrlExpireTypeDay = 2;
+    UrlExpireTypeForever = 3;
+}

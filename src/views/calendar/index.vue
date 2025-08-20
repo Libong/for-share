@@ -1,8 +1,9 @@
 <template>
   <div class="calendar-container">
     <div v-if="allOwners.length != 0" class="calendar-owner-select">
-      <button v-for="item in allOwners" class="calendar-owner-select-btn">
-        <img :src="item.avatar" alt="" @click="setSelectOwner(item)"/>
+      <button v-for="item in allOwners" :class="{active:item.accountId != selectOwner}"
+              class="calendar-owner-select-btn" @click="setSelectOwner(item)">
+        <img :src="item.avatar" alt=""/>
         <span>{{ item.account }}</span>
       </button>
     </div>
@@ -34,6 +35,7 @@
             @click="openModal(item)"
         >
           {{ item.day }}
+          <img v-if="activeDateRepayPointMap[item.dateKey]" alt="" class="notice-point" src="@/assets/red-point.png"/>
         </li>
       </ul>
       
@@ -43,9 +45,65 @@
           <div v-if="modalVisible" class="modal-mask" @click.self="closeModal">
             <div class="modal">
               <h3>{{ selectedDate }} 账单</h3>
-              <el-scrollbar :height="scrollbarHeight">
+              <el-scrollbar :height="scrollbarHeight" class="teleport-el-scrollbar"
+                            style="padding: 0 10px;">
                 <!--设置统一的label宽度使其右对齐-->
-                <el-form label-width="80px">
+                <el-form class="teleport-form-style" label-width="80px">
+                  <div v-if="showRepayContent" class="modal-expend"
+                       @click="toggleRepay">
+                    <span>还款详情</span>
+                    <el-icon>
+                      <arrow-down v-if="!isRepayVisible"/>
+                      <arrow-up v-else/>
+                    </el-icon>
+                  </div>
+                  <transition name="fade">
+                    <div v-show="isRepayVisible">
+                      <el-form-item label="还款单位">
+                        <el-input
+                            v-model="formExtra.repayUnit">
+                        </el-input>
+                      </el-form-item>
+                      <el-form-item label="还款金额">
+                        <el-input-number
+                            v-model="form.repayExpenses">
+                        </el-input-number>
+                      </el-form-item>
+                      <el-form-item label="还款截图证明" label-width="100px">
+                      </el-form-item>
+                      <el-form-item label-width="0px">
+                        <div v-for="(image, index) in formExtra.repayImages" :key="index" class="image-item">
+                          <el-image
+                              :preview-src-list="[image]"
+                              :src="image"
+                              class="preview-image"
+                              fit="cover"
+                          ></el-image>
+                          <el-icon class="image-delete-icon" @click="deleteImage(index)">
+                            <Close class="el-icon-close"/>
+                          </el-icon>
+                        </div>
+                        <!-- 如果图片数组为空，或者在最后一个图片后面显示上传按钮 -->
+                        <div
+                            v-if="formExtra.repayImages &&(formExtra.repayImages.length === 0 || formExtra.repayImages.length > 0)"
+                            class="upload-container">
+                          <el-upload
+                              :before-upload="beforeUpload"
+                              :http-request="handleUpload"
+                              :show-file-list="false"
+                              accept="image/*"
+                              class="upload-item"
+                              list-type="picture-card"
+                          >
+                            <el-icon>
+                              <Plus class="el-icon-plus"/>
+                            </el-icon>
+                          </el-upload>
+                        </div>
+                      </el-form-item>
+                    </div>
+                  </transition>
+                  <span v-if="showRepayContent" class="form-separator"></span>
                   <div class="modal-expend" @click="toggleIncomes">
                     <span>收入</span>
                     <el-icon class="arrow-icon">
@@ -54,7 +112,7 @@
                     </el-icon>
                   </div>
                   <transition name="fade">
-                    <div v-show="isIncomeVisible" class="expenses-form">
+                    <div v-show="isIncomeVisible">
                       <el-form-item
                           label="今日收入">
                         <el-input-number
@@ -117,7 +175,7 @@
                     </el-icon>
                   </div>
                   <transition name="fade">
-                    <div v-show="isExpensesVisible" class="expenses-form">
+                    <div v-show="isExpensesVisible">
                       <el-form-item label="进货支出">
                         <el-input-number v-model="form.goodsExpenses" :min="0"/>
                       </el-form-item>
@@ -152,19 +210,29 @@
           </div>
         </transition>
       </teleport>
+      
+      <CalendarConfirmDialog
+          v-model:visible="imageDeleteConfirmDialogVisible"
+          :message="`确定要移除该照片吗？`"
+          title="移除照片"
+          type="danger"
+          @cancel="handleDeleteImageConfirm(false)"
+          @confirm="handleDeleteImageConfirm(true)"
+      />
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import {computed, onMounted, reactive, ref} from 'vue'
-import {ArrowDown, ArrowUp} from "@element-plus/icons-vue";
+import {ArrowDown, ArrowUp, Close, Plus} from "@element-plus/icons-vue";
 import {
   addFinanceBillInterface,
   deleteFinanceBillInterface,
   IAddFinanceBillReq,
   IFinanceBill,
   IFinanceBillAccount,
+  IFinanceBillExtra,
   IUpdateFinanceBillReq,
   searchFinanceBillAccountsInterface,
   searchFinanceBillsPageInterface,
@@ -173,6 +241,12 @@ import {
 import {ObjClear, timestampToYYYYMMDD} from "@/tool/tool";
 import {ShowCommonMessage} from "@/tool/message";
 import {localStorage_roleObj_label} from "@/config/localStorage";
+import {rem} from "@/main";
+import {fileUploadInterface, UploadFileType} from "@/api/proto/fileinterface";
+import {UploadRequestOptions} from "element-plus";
+import {UploadFileTypeText} from "@/config/common";
+import CalendarConfirmDialog from "@/views/calendar/calendarConfirmDialog.vue";
+import {Record} from "@icon-park/vue-next";
 
 onMounted(() => {
   updateMonthBillData();
@@ -182,11 +256,13 @@ onMounted(() => {
 /* 管理员功能 选择人*/
 const selectOwner = ref("")
 const allOwners = ref<IFinanceBillAccount[]>([])
+const curUserRole = ref("")
 
 function userIsManager() {
   const roleObjStr = localStorage.getItem(localStorage_roleObj_label);
   if (roleObjStr) {
     const roleObj = JSON.parse(roleObjStr);
+    curUserRole.value = roleObj.id
     if (roleObj.id == "manager") {
       searchOwners();
     }
@@ -212,19 +288,29 @@ const today = new Date()
 const year = ref(today.getFullYear())
 const month = ref(today.getMonth())
 
+interface CalendarItem {
+  day: number;
+  inMonth: boolean;
+  isToday: boolean;
+  dateKey: number;
+}
+
 const calendarGrid = computed(() => {
   const firstDay = new Date(year.value, month.value, 1).getDay()
   const daysInMonth = new Date(year.value, month.value + 1, 0).getDate()
-  const arr: any[] = []
+  const arr: CalendarItem[] = []
+  
   
   // 上月占位
   const prevDays = new Date(year.value, month.value, 0).getDate()
   for (let i = 0; i < firstDay; i++) {
-    arr.unshift({day: prevDays - i, inMonth: false})
+    arr.unshift({day: prevDays - i, inMonth: false, isToday: false, dateKey: 0})
   }
   
   // 当月
   for (let i = 1; i <= daysInMonth; i++) {
+    const monthDayTimestamp = new Date(year.value, month.value, i)
+    monthDayTimestamp.setHours(0, 0, 0, 0)
     arr.push({
       day: i,
       inMonth: true,
@@ -232,15 +318,15 @@ const calendarGrid = computed(() => {
           year.value === today.getFullYear() &&
           month.value === today.getMonth() &&
           i === today.getDate(),
+      dateKey: monthDayTimestamp.getTime(),
     })
   }
   
   // 下月占位（凑满 6 行 42 格）
   const len = 42 - arr.length
   for (let i = 1; i <= len; i++) {
-    arr.push({day: i, inMonth: false})
+    arr.push({day: i, inMonth: false, isToday: false, dateKey: 0})
   }
-  
   return arr
 })
 
@@ -268,34 +354,86 @@ async function nextMonth() {
 const modalVisible = ref(false)
 const selectedDate = ref('')
 const form = reactive<IFinanceBill>({
-  billId: "", timestamp: 0,
-  drinksExpenses: 0, otherExpenses: 0, otherExpensesRemark: "",
-  cardIncome: 0, cash: 0, drawIncome: 0, goodsExpenses: 0, isDraw: 2, onlineIncome: 0, remark: "", dayIncome: 0
+  repayExpenses: 0, drinksExpenses: 0, otherExpenses: 0, otherExpensesRemark: "", goodsExpenses: 0,
+  billId: "", timestamp: 0, remark: "", extra: "",
+  cardIncome: 0, cash: 0, drawIncome: 0, isDraw: 2, onlineIncome: 0, dayIncome: 0
 })
-
-//表单内容
+const formExtra = reactive<IFinanceBillExtra>({
+  repayUnit: "", repayImages: []
+})
+/* ===== 表单内容 ===== */
+const showRepayContent = computed(() => {
+  return form.repayExpenses != 0 || curUserRole.value == 'manager'
+})
 const isExpensesVisible = ref(false);
 const toggleExpenses = () => {
   isExpensesVisible.value = !isExpensesVisible.value;
-  appendScrollbarHeight();
 };
 const isIncomeVisible = ref(false);
 const toggleIncomes = () => {
   isIncomeVisible.value = !isIncomeVisible.value;
-  appendScrollbarHeight();
 };
-const scrollbarHeight = ref('100px')
-const appendScrollbarHeight = () => {
-  console.log(isExpensesVisible.value + " " + isIncomeVisible.value)
+const isRepayVisible = ref(false);
+const toggleRepay = () => {
+  isRepayVisible.value = !isRepayVisible.value;
+};
+const scrollbarHeight = computed(() => {
   if (!isExpensesVisible.value && !isIncomeVisible.value) {
-    scrollbarHeight.value = '100px';
+    if (showRepayContent.value) {
+      return rem(350);
+    } else {
+      return rem(200);
+    }
   } else {
-    scrollbarHeight.value = '300px';
+    return rem(300);
   }
+})
+/* ===== 文件上传 ===== */
+const selectDeleteImageIndex = ref(-1)
+const imageDeleteConfirmDialogVisible = ref(false)
+const handleDeleteImageConfirm = (confirm: boolean) => {
+  if (confirm) {
+    formExtra.repayImages.splice(selectDeleteImageIndex.value, 1);
+  }
+  selectDeleteImageIndex.value = -1
+}
+// 删除图片的方法
+const deleteImage = (index: number) => {
+  selectDeleteImageIndex.value = index
+  imageDeleteConfirmDialogVisible.value = true
+};
+// 上传前的回调
+const beforeUpload = (file: File) => {
+  // 可以在这里添加一些校验逻辑
+  const isImage = file.type.startsWith('image/');
+  if (!isImage) {
+    ShowCommonMessage('只能上传图片文件', "warning");
+    return false;
+  }
+  return true;
+};
+
+const handleUpload: (options: UploadRequestOptions) => void = async (options) => {
+  const {file} = options;
+  if (!file) {
+    ShowCommonMessage('文件上传失败', "error");
+    return;
+  }
+  const formData = new FormData()
+  formData.append('file', file)
+  const params = {
+    [UploadFileTypeText]: UploadFileType.UploadFileTypeImage
+  }
+  // 调用上传接口
+  const resp = await fileUploadInterface(formData, params);
+  
+  // 假设接口返回的数据格式为 { url: string }
+  formExtra.repayImages.push(resp.url)
 }
 
 // 以 2025-07-30 为 key 的对象
 const eventMap = ref<Record<string, IFinanceBill>>({})
+const activeDateRepayPointMap = ref<Record<number, boolean>>({})
 
 async function updateMonthBillData() {
   //获取当前月份的头尾时间戳
@@ -316,6 +454,9 @@ async function updateMonthBillData() {
   resp.list.forEach((item) => {
     const dateStr = timestampToYYYYMMDD(item.timestamp);
     eventMap.value[dateStr] = item
+    if (item.repayExpenses != 0) {
+      activeDateRepayPointMap.value[item.timestamp] = true
+    }
   })
 }
 
@@ -326,14 +467,18 @@ function openModal(item: any) {
       item.day,
   ).padStart(2, '0')}`
   //从eventMap中获取数据到form中回显
-  if (eventMap.value[selectedDate.value]) {
+  if (eventMap.value[selectedDate.value] && eventMap.value[selectedDate.value].extra) {
+    const extraJson = JSON.parse(eventMap.value[selectedDate.value].extra)
+    formExtra.repayUnit = extraJson.repayUnit || ''
+    formExtra.repayImages = extraJson.repayImages || []
     Object.assign(form, eventMap.value[selectedDate.value])
   }
   modalVisible.value = true
 }
 
 function closeModal() {
-  ObjClear(form);
+  ObjClear(form)
+  ObjClear(formExtra)
   modalVisible.value = false
 }
 
@@ -356,13 +501,16 @@ async function save() {
   date.setHours(0, 0, 0, 0)
   form.timestamp = date.getTime()
   // }
+  const formExtraJson = JSON.stringify(formExtra)
   if (form.billId != "") {
     const updateReq = {} as IUpdateFinanceBillReq
     Object.assign(updateReq, form)
+    updateReq.extra = formExtraJson
     await updateFinanceBillInterface(updateReq)
   } else {
     const addReq = {} as IAddFinanceBillReq
     Object.assign(addReq, form)
+    addReq.extra = formExtraJson
     const resp = await addFinanceBillInterface(addReq)
     form.billId = resp.billId
   }
@@ -372,6 +520,7 @@ async function save() {
   }
   //更新本地数据 form数据会被清空
   Object.assign(eventMap.value[selectedDate.value], form)
+  eventMap.value[selectedDate.value].extra = formExtraJson
   closeModal()
   ShowCommonMessage("保存成功", "success")
 }

@@ -175,6 +175,7 @@ import {
 } from "@/api/proto/loginInterface";
 import {LoginViewType} from "@/views/login/login";
 import Forget from "@/views/login/forget.vue";
+import {useRoute} from "vue-router";
 
 onMounted(() => {
   if (isDev) {
@@ -191,6 +192,7 @@ defineComponent({
     Bell,
   },
 });
+const route = useRoute();
 /*------数据------*/
 let loginReq = reactive(<ILoginInReq>{
   loginInType: 0,
@@ -409,7 +411,12 @@ async function login() {
       message: "登录成功",
       duration: 1000,
       onClose: () => {
-        router.push('/navbar'); // 关闭后跳转
+        const redirectPath = route.query.redirect as string || '';
+        if (redirectPath != '') {
+          router.push(redirectPath); // 关闭后跳转
+        } else {
+          router.push('/navbar'); // 关闭后跳转
+        }
         ObjClear(loginReq);
       },
     });

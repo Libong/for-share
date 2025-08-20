@@ -1,20 +1,34 @@
 <script lang="ts" setup>
 import feather from 'feather-icons';
-import {ComponentPublicInstance, onMounted, onUnmounted, reactive, ref} from "vue";
+import {ComponentPublicInstance, onMounted, reactive, ref, watch} from "vue";
 import router from "@/router";
 import {loginOutInterface, updateUserInfoInterface, userInfoInterface} from "@/api/proto/loginInterface";
 import EditProfile from '@/views/mine/edit-profile/index.vue'
 import {ShowCommonMessage} from "@/tool/message";
+import {GetCurRole, localStorage_roleObj_label, localStorage_tokenObj_label} from "@/config/localStorage";
+import {useRoute} from "vue-router";
 
 onMounted(() => {
   feather.replace();
   initUserInfo();
   initModeSwitch();
+  initNavbarSelect();
 });
 
-onUnmounted(() => {
-  // No need to remove event listeners as we're not using handleClickOutside
-});
+//TODO 初始化的时候 进行默认菜单自动选择的话 会有一瞬的动画 可能有点怪
+function initNavbarSelect() {
+  //获取路由信息并判断应该显示哪个菜单
+  const route = useRoute();
+  let el;
+  options.forEach((item, index) => {
+    if (route.fullPath.includes(item.path)) {
+      el = navbarEl.value[index];
+      lastIndicatorLeft = el.offsetLeft;
+      lastActiveIndex.value = index;
+      mouseleave();
+    }
+  })
+}
 
 function initModeSwitch() {
   let modeSwitch = document.querySelector('.mode-switch');
@@ -34,6 +48,14 @@ const userInfo = reactive({
   hasPassword: false
 })
 
+async function initUserInfo() {
+  let userInfoResp = await userInfoInterface();
+  userInfo.avatar = userInfoResp.avatar;
+  userInfo.account = userInfoResp.account;
+  userInfo.hasPassword = userInfoResp.hasPassword;
+  userInfo.encryptPhone = userInfoResp.encryptPhone;
+}
+
 const showProfileEditModel = ref(false)
 const isProfileEditModelLeave = ref(false)
 
@@ -51,14 +73,6 @@ const handleCloseProfile = () => {
 
 const profileDropdownRef = ref<HTMLElement | null>(null)
 
-async function initUserInfo() {
-  let userInfoResp = await userInfoInterface();
-  userInfo.avatar = userInfoResp.avatar;
-  userInfo.account = userInfoResp.account;
-  userInfo.hasPassword = userInfoResp.hasPassword;
-  userInfo.encryptPhone = userInfoResp.encryptPhone;
-}
-
 //当前被选中的菜单下标 用于激活样式和取消样式(在悬停时)
 const activeIndex = ref(-1)
 //上次选中的菜单下标 用来还原当鼠标移开后 当前页面的菜单能够被选中
@@ -75,18 +89,25 @@ function setNavbarEl(el: Element | ComponentPublicInstance | null, index: number
   }
 }
 
+watch(activeIndex, () => {
+  const firstEl = navbarEl.value[0];
+  if (activeIndex.value != -1) {
+    firstEl.style.setProperty('--indicator-opacity', '1');
+  } else {
+    firstEl.style.setProperty('--indicator-opacity', '0');
+  }
+})
 const mouseenter = (index: number) => {
   //保存当前的激活下标
   lastActiveIndex.value = activeIndex.value
   //取消激活样式
-  activeIndex.value = -1
+  activeIndex.value = -2
   const el = navbarEl.value[index];
   if (el) {
     const firstEl = navbarEl.value[0];
     //设置伪元素的位置为当前移动到的菜单元素 并显示
     if (firstEl) {
       firstEl.style.setProperty('--indicator-left', `${el.offsetLeft}px`);
-      firstEl.style.setProperty('--indicator-opacity', '1');
     }
   }
 };
@@ -97,10 +118,6 @@ const mouseleave = () => {
   const firstEl = navbarEl.value[0];
   if (firstEl) {
     firstEl.style.setProperty('--indicator-left', `${lastIndicatorLeft}px`);
-    console.log(activeIndex.value)
-    if (activeIndex.value === -1) {
-      firstEl.style.setProperty('--indicator-opacity', '0');
-    }
   }
 };
 
@@ -118,9 +135,13 @@ function to(path: string, index: number) {
   lastActiveIndex.value = index;
   switch (path) {
     case "Record":
-    case "Share":
       ShowCommonMessage("功能暂未开放", "info");
-      return
+      return;
+    case "BucketHome":
+      if (GetCurRole() != 'manager') {
+        ShowCommonMessage("功能暂未开放", "info");
+      }
+      break
     default:
       break;
   }
@@ -129,16 +150,18 @@ function to(path: string, index: number) {
 }
 
 const options = [
-  {label: '首页', path: 'Home', feather: 'home'},
-  {label: '记录', path: 'Record', feather: 'clipboard'},
-  {label: '分享', path: 'Share', feather: 'slack'},
-  {label: '日历', path: 'Calendar', feather: 'calendar'}
+  {index: 0, label: '首页', name: 'Home', path: '/home', feather: 'home'},
+  {index: 1, label: '记录', name: 'Record', path: '/record', feather: 'clipboard'},
+  {index: 2, label: '存储', name: 'BucketHome', path: '/bucketHome', feather: 'database'},
+  {index: 3, label: '日历', name: 'Calendar', path: '/calendar', feather: 'calendar'}
 ]
 
 /*接口*/
 async function handleLoginOut() {
   await loginOutInterface();
-  await router.push("login");
+  localStorage.removeItem(localStorage_tokenObj_label);
+  localStorage.removeItem(localStorage_roleObj_label);
+  await router.push("/login");
 }
 
 const handleUpdateNickname = async (nickname: string, callback: (success: boolean) => void) => {
@@ -186,7 +209,7 @@ const handleUpdatePassword = async (
                 :ref="(el) => setNavbarEl(el, index)"
                 :class="{ active: activeIndex === index }"
                 class="navbar__li"
-                @click="to(item.path,index)"
+                @click="to(item.name,index)"
                 @mouseenter="() => mouseenter(index)"
                 @mouseleave="() => mouseleave()">
               <a

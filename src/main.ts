@@ -3,6 +3,7 @@ import "./base.css";
 import {createApp} from "vue";
 import "element-plus/dist/index.css";
 import "@/style/custom.scss" //必须全局引用才能被element-plus的customClass发现
+import '@fortawesome/fontawesome-free/css/all.css';
 //引入页面
 import App from "./App.vue";
 //加入路由
@@ -47,4 +48,10 @@ if (!Array.prototype.at) {
         }
         return this[index];
     };
+}
+
+//基准转换
+export function rem(px: number): string {
+    const base = 37.5;
+    return `${px / base}rem`;
 }

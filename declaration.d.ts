@@ -7,7 +7,7 @@ declare module '*.vue' {
     const component: DefineComponent<{}, {}, any>;
     export default component;
 }
-// src/shims.d.ts
-declare module '@/components/common/button/test.js' {
-    export function clickButton(): void;
-}
+// // src/shims.d.ts
+// declare module '@/components/common/button/test.js' {
+//     export function clickButton(): void;
+// }

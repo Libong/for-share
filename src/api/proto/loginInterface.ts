@@ -26,7 +26,7 @@ export interface ILoginInResp {
 export function loginInInterface(req: ILoginInReq): Promise<ILoginInResp> {
     return new Promise((resolve, reject) => {
         http
-            .post("/login/in", false, req)
+            .post("/manager/api/login/in", false, req)
             .then((res) => {
                 resolve(toCamelCaseObject(res.data) as ILoginInResp);
             })
@@ -43,7 +43,7 @@ export interface ISendLoginSmsReq {
 export function sendLoginSmsInterface(req: ISendLoginSmsReq): Promise<void> {
     return new Promise((resolve, reject) => {
         http
-            .get("/login/login/sms/send", false, toSnakeCase(req))
+            .get("/manager/api/login/login/sms/send", false, toSnakeCase(req))
             .then((res) => {
                 resolve();
             })
@@ -66,7 +66,7 @@ export interface IUserInfoResp {
 export function userInfoInterface(): Promise<IUserInfoResp> {
     return new Promise((resolve, reject) => {
         http
-            .get("/login/user/info", true, null)
+            .get("/manager/api/login/user/info", true, null)
             .then((res) => {
                 resolve(toCamelCaseObject(res.data) as IUserInfoResp);
             })
@@ -83,7 +83,7 @@ export interface IUserRolesResp {
 export function userRolesInterface(): Promise<IUserRolesResp> {
     return new Promise((resolve, reject) => {
         http
-            .get("/login/user/roles", true, null)
+            .get("/manager/api/login/user/roles", true, null)
             .then((res) => {
                 resolve(toCamelCaseObject(res.data) as IUserRolesResp);
             })
@@ -106,7 +106,7 @@ export interface IUpdateUserInfoReq {
 export function updateUserInfoInterface(req: IUpdateUserInfoReq): Promise<void> {
     return new Promise((resolve, reject) => {
         http
-            .post("/login/user/info/update", true, req)
+            .post("/manager/api/login/user/info/update", true, req)
             .then((res) => {
                 resolve();
             })
@@ -136,7 +136,7 @@ export interface IRegisterResp {
 export function registerInterface(req: IRegisterReq): Promise<IRegisterResp> {
     return new Promise((resolve, reject) => {
         http
-            .post("/login/register", false, req)
+            .post("/manager/api/login/register", false, req)
             .then((res) => {
                 resolve(toCamelCaseObject(res.data) as IRegisterResp);
             })
@@ -150,7 +150,7 @@ export function registerInterface(req: IRegisterReq): Promise<IRegisterResp> {
 export function loginOutInterface(): Promise<void> {
     return new Promise((resolve, reject) => {
         http
-            .post("/login/out", true, null)
+            .post("/manager/api/login/out", true, null)
             .then((res) => {
                 resolve();
             })

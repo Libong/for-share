@@ -82,8 +82,7 @@ const handleAvatarUpload = async (event: Event) => {
     }
     // 调用上传接口
     const resp = await fileUploadInterface(formData, params);
-
-    // 假设接口返回的数据格式为 { url: string }
+    
     const avatarUrl = resp.url;
     // 更新用户头像
     emit('update-avatar', avatarUrl, (success) => {
@@ -132,7 +131,7 @@ const savePassword = async () => {
     showMessage('两次输入的密码不一致', CommonMessageState.Error)
     return
   }
-
+  
   emit('update-password',
       {
         current: passwords.current,
@@ -161,7 +160,7 @@ const savePhone = () => {
     showMessage('请输入正确的手机号', CommonMessageState.Error)
     return
   }
-
+  
   emit('update-phone', tempPhone.value, (success) => {
     if (success) {
       showMessage('手机号更新成功', CommonMessageState.Success)
@@ -196,7 +195,7 @@ const savePhone = () => {
             @change="handleAvatarUpload"
         />
       </div>
-
+      
       <div class="info-section">
         <div class="info-item">
           <div class="info-label">昵称</div>
@@ -209,7 +208,7 @@ const savePhone = () => {
             </el-button>
           </div>
         </div>
-
+        
         <div class="info-item">
           <div class="info-label">手机号</div>
           <div class="info-content">
@@ -222,14 +221,14 @@ const savePhone = () => {
           </div>
         </div>
       </div>
-
+      
       <div class="action-section">
         <el-button class="password-btn" @click="openPasswordDialog">
           {{ props.userInfo.hasPassword ? '修改密码' : '设置密码' }}
         </el-button>
       </div>
     </div>
-
+    
     <!-- 修改昵称弹窗 -->
     <el-dialog
         v-model="showNicknameDialog"
@@ -251,7 +250,7 @@ const savePhone = () => {
         </span>
       </template>
     </el-dialog>
-
+    
     <!-- 修改密码弹窗 -->
     <el-dialog
         v-model="showPasswordDialog"
@@ -287,7 +286,7 @@ const savePhone = () => {
         </span>
       </template>
     </el-dialog>
-
+    
     <!-- 添加手机号修改弹窗 -->
     <el-dialog
         v-model="showPhoneDialog"
