@@ -42,7 +42,6 @@ $transition: $timing ease all;
   height: 1.5rem;
   box-shadow: 0 0 40px rgba(144, 154, 171, 0.75);
 
-
   &__link {
     position: relative;
     display: flex;
@@ -117,55 +116,27 @@ $transition: $timing ease all;
         transition: opacity 0.3s, left 0.2s cubic-bezier(1, 0.2, 0.1, 1.2);
       }
     }
-
-    //@for $i from 1 to 12 {
-    //  &:first-child:nth-last-child(#{$i}),
-    //  &:first-child:nth-last-child(#{$i}) ~ li {
-    //    &:hover {
-    //      ~ li:last-child:before {
-    //        opacity: 1;
-    //      }
-    //    }
-    //
-    //    &:last-child:hover:before {
-    //      opacity: 1;
-    //    }
-
-    //@for $j from 1 to $i {
-    //  &:nth-child(#{$j}):hover,
-    //  &.active {
-    //    ~ li:last-child:before {
-    //      @include gooeyEffect($j);
-    //      left: calc(100% / $i) * ($j - 1);
-    //      animation: gooeyEffect-#{$j} $timing 1;
-    //      opacity: 1;
-    //    }
-    //  }
-    //}
-
-    //&:last-child:hover:before,
-    //&.active:before {
-    //  @include gooeyEffect($i);
-    //  left: calc(100% / $i) * ($i - 1);
-    //  animation: gooeyEffect-#{$i} $timing 1;
-    //  opacity: 1;
-    //}
-    //}
-    //}
-
   }
+}
 
-  //&__transition:before {
-  //  transition: $timing cubic-bezier(1, 0.2, 0.1, 1.2) all;
-  //}
-
+@media (max-width: 500px) {
+  .navbar__li:first-child:before {
+    width: 2rem;
+  }
+  .navbar {
+    height: 2rem;
+  }
+  .navbar__link {
+    width: 2rem;
+    height: 2rem;
+  }
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   width: 100%;
-  height: 1.5rem;
+  height: 2rem;
   top: 0.5rem;
   position: fixed;
 
@@ -223,11 +194,8 @@ $transition: $timing ease all;
   cursor: pointer;
 }
 
-//.mode-switch.active .moon {
-//  fill: var(--main-color);
-//}
 .main-content {
   display: flex;
   width: 100%;
-  height: calc(100vh - 2rem);;
+  height: calc(100vh - 2.5rem);;
 }

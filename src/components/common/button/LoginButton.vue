@@ -50,6 +50,7 @@ const customStyle = ref({
   cursor: pointer;
   position: relative;
   transition: transform ease-in 0.1s, box-shadow ease-in 0.25s;
+  color: black;
   
   &:before, &:after {
     position: absolute;

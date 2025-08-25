@@ -42,7 +42,7 @@
       <!-- 弹窗 -->
       <teleport to="body">
         <transition name="fade">
-          <div v-if="modalVisible" class="modal-mask" @click.self="closeModal">
+          <div v-if="modalVisible" class="modal-mask">
             <div class="modal">
               <h3>{{ selectedDate }} 账单</h3>
               <el-scrollbar :height="scrollbarHeight" class="teleport-el-scrollbar"
@@ -85,11 +85,13 @@
                         </div>
                         <!-- 如果图片数组为空，或者在最后一个图片后面显示上传按钮 -->
                         <div
-                            v-if="formExtra.repayImages &&(formExtra.repayImages.length === 0 || formExtra.repayImages.length > 0)"
+                            v-if="!formExtra.repayImages || formExtra.repayImages.length < 3"
                             class="upload-container">
                           <el-upload
                               :before-upload="beforeUpload"
                               :http-request="handleUpload"
+                              :on-error="handleUploadErr"
+                              :on-success="handleUploadErrSuccess"
                               :show-file-list="false"
                               accept="image/*"
                               class="upload-item"
@@ -243,7 +245,7 @@ import {ShowCommonMessage} from "@/tool/message";
 import {localStorage_roleObj_label} from "@/config/localStorage";
 import {rem} from "@/main";
 import {fileUploadInterface, UploadFileType} from "@/api/proto/fileinterface";
-import {UploadRequestOptions} from "element-plus";
+import {UploadFile, UploadFiles, UploadRequestOptions} from "element-plus";
 import {UploadFileTypeText} from "@/config/common";
 import CalendarConfirmDialog from "@/views/calendar/calendarConfirmDialog.vue";
 import {Record} from "@icon-park/vue-next";
@@ -416,7 +418,7 @@ const beforeUpload = (file: File) => {
 const handleUpload: (options: UploadRequestOptions) => void = async (options) => {
   const {file} = options;
   if (!file) {
-    ShowCommonMessage('文件上传失败', "error");
+    ShowCommonMessage('照片上传失败', "error");
     return;
   }
   const formData = new FormData()
@@ -429,6 +431,12 @@ const handleUpload: (options: UploadRequestOptions) => void = async (options) =>
   
   // 假设接口返回的数据格式为 { url: string }
   formExtra.repayImages.push(resp.url)
+}
+const handleUploadErr = (err: string, file: UploadFile, fileList: UploadFiles) => {
+  ShowCommonMessage(err as string, "error");
+}
+const handleUploadErrSuccess = (response: any, file: UploadFile, fileList: UploadFiles) => {
+  ShowCommonMessage("照片上传成功", "success");
 }
 
 // 以 2025-07-30 为 key 的对象

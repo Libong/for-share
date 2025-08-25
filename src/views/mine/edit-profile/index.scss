@@ -2,7 +2,6 @@
   height: calc(100% - 60px);
   overflow-y: auto;
   background-color: var(--app-background);
-  padding: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -60,7 +59,7 @@
   position: relative;
 
   &::after {
-    content: '更换头像';
+    content: '头像';
     position: absolute;
     bottom: 15px;
     color: #8e44ad;
@@ -156,13 +155,23 @@
 // 弹窗样式
 .el-dialog {
   border-radius: 12px !important;
-  overflow: hidden;
+  width: 80%;
+  margin-top: 70%;
+
+  .el-dialog__headerbtn {
+    position: unset;
+    width: 0;
+    height: 0;
+    margin: 0 10px;
+  }
 
   .el-dialog__header {
     margin: 0;
     padding: 15px 20px;
     background: #f7f8fa;
     border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
   }
 
   .el-dialog__body {
@@ -172,6 +181,13 @@
   .el-dialog__footer {
     padding: 10px 20px;
     border-top: 1px solid #f0f0f0;
+  }
+}
+
+@media (max-height: 800px) {
+  .el-dialog {
+    width: 30%;
+    margin-top: 15%;
   }
 }
 
@@ -296,26 +312,27 @@
 }
 
 /*应用于全局 否则将无法替换el组件内部的样式*/
-:root {
-  .edit-profile-update-dialog {
-    width: 25%;
-
-    .el-dialog__header {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-
-      .el-dialog__header {
-        display: flex;
-      }
-
-      .el-dialog__headerbtn {
-        display: flex;
-        position: unset;
-        height: auto;
-        width: auto;
-      }
-    }
-  }
-}
+//:root {
+//
+//  .edit-profile-update-dialog {
+//    width: 25%;
+//
+//    .el-dialog__header {
+//      display: flex;
+//      flex-direction: row;
+//      justify-content: space-between;
+//      align-items: center;
+//
+//      .el-dialog__header {
+//        display: flex;
+//      }
+//
+//      .el-dialog__headerbtn {
+//        display: flex;
+//        position: unset;
+//        height: auto;
+//        width: auto;
+//      }
+//    }
+//  }
+//}

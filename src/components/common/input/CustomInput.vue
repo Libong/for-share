@@ -99,6 +99,7 @@ defineExpose({
         :placeholder="input?.placeholder"
         :type="inputType"
         :value="inputValue"
+        class="custom-input"
         @input="updateModel"
     />
     <span class="content">{{ input.name }}</span>
@@ -108,9 +109,6 @@ defineExpose({
          class="eye"
          @click="showChange()"
     />
-    <!--    <span v-if="type == 'password'">-->
-    <!--     -->
-    <!--    </span>-->
     <span v-show="showNoticeText" class="notice-content">{{ noticeText }}</span>
   </div>
 </template>

@@ -8,10 +8,10 @@
 
 .calendar-owner-select {
   display: flex;
-  width: 50%;
-  height: 2rem;
+  width: 20%;
+  height: 1.5rem;
   //background-color: #0a5988;
-  margin-top: 1rem;
+  margin-top: 0;
   gap: 0.2rem;
 
   img {
@@ -42,17 +42,17 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: calc(8vh - 1.5rem);
+  height: 1rem;
   font-family: "阿里妈妈方圆体 VF Regular", sans-serif;
   font-size: 0.7rem;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
 }
 
 .calendar-wrapper {
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   color: #333;
   width: 70%;
-  margin-top: 1rem;
+  margin-top: 0.2rem;
 }
 
 /* 头部 */
@@ -162,7 +162,7 @@
 
   .image-item {
     width: 20%;
-    height: 80%;
+    height: 120%;
     display: flex;
 
     .image-delete-icon {
@@ -186,7 +186,7 @@
 
 .upload-container {
   width: 20%;
-  height: 80%;
+  height: 120%;
 
   .upload-item {
     width: 100%;
@@ -262,4 +262,15 @@
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+@media (max-width: 500px) {
+  .calendar-owner-select {
+    width: 50%;
+    margin-top: 1rem;
+    height: 2rem;
+  }
+  .calendar-wrapper {
+    margin-top: 1rem;
+  }
 }

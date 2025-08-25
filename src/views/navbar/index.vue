@@ -7,6 +7,7 @@ import EditProfile from '@/views/mine/edit-profile/index.vue'
 import {ShowCommonMessage} from "@/tool/message";
 import {GetCurRole, localStorage_roleObj_label, localStorage_tokenObj_label} from "@/config/localStorage";
 import {useRoute} from "vue-router";
+import Account from "@/assets/username.svg";
 
 onMounted(() => {
   feather.replace();
@@ -43,7 +44,7 @@ function initModeSwitch() {
 
 const userInfo = reactive({
   account: "",
-  avatar: "",
+  avatar: '',
   encryptPhone: "",
   hasPassword: false
 })
@@ -234,8 +235,8 @@ const handleUpdatePassword = async (
         <div ref="profileDropdownRef"
              class="profile-dropdown">
           <button class="profile-btn">
-            <img :src="userInfo.avatar" alt=""/>
-            <span>{{ userInfo.account }}</span>
+            <img :src="userInfo.avatar != undefined ? userInfo.avatar : Account" alt=""/>
+            <span>{{ userInfo.account != undefined ? userInfo.account : '点击更新个人信息' }}</span>
           </button>
           <div class="dropdown-menu">
             <div class="dropdown-item" @click="handleEditProfile">
