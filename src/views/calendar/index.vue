@@ -52,15 +52,10 @@
           
           <div v-show="showDailyStat" class="sum-content">
             <span>{{
-                eventMap[item.dateKey] && eventMap[item.dateKey].dayIncome ? `+${eventMap[item.dateKey].dayIncome}` : '-'
+                statDailyIncomeMap[item.dateKey] ? `+${statDailyIncomeMap[item.dateKey]}` : ''
               }}</span>
             <span>{{
-                eventMap[item.dateKey]
-                    ? `-${(eventMap[item.dateKey].otherExpenses || 0) +
-                    (eventMap[item.dateKey].goodsExpenses || 0) +
-                    (eventMap[item.dateKey].repayExpenses || 0) +
-                    (eventMap[item.dateKey].drinksExpenses || 0)}`
-                    : ''
+                statDailyExpenseMap[item.dateKey] ? `-${statDailyExpenseMap[item.dateKey]}` : ''
               }}</span>
           </div>
         </li>
@@ -303,6 +298,11 @@ function userIsManager() {
 
 async function setSelectOwner(owner: IFinanceBillAccount) {
   selectOwner.value = owner.accountId
+  //重置数据
+  activeDateRepayPointMap.value = {}
+  statDailyIncomeMap.value = {}
+  statDailyExpenseMap.value = {}
+  eventMap.value = {}
   await updateMonthBillData()
   ShowCommonMessage("已切换至" + owner.account + "视角", "success")
 }
@@ -473,6 +473,8 @@ const handleUploadErrSuccess = (response: any, file: UploadFile, fileList: Uploa
 // 以 2025-07-30 为 key 的对象
 const eventMap = ref<Record<number, IFinanceBill>>({})
 const activeDateRepayPointMap = ref<Record<number, boolean>>({})
+const statDailyIncomeMap = ref<Record<number, number>>({})
+const statDailyExpenseMap = ref<Record<number, number>>({})
 
 async function updateMonthBillData() {
   //获取当前月份的头尾时间戳
@@ -492,14 +494,26 @@ async function updateMonthBillData() {
   }
   resp.list.forEach((item) => {
     eventMap.value[item.timestamp] = item
-    if (item.repayExpenses != 0) {
+    //计算每日收入支出
+    statDailyIncomeMap.value[item.timestamp] = item.dayIncome
+    statDailyExpenseMap.value[item.timestamp] = item.drinksExpenses + item.goodsExpenses + item.otherExpenses + item.repayExpenses
+    //有还款信息需要提示
+    if (item.repayExpenses) {
       activeDateRepayPointMap.value[item.timestamp] = true
     }
+    
   })
+  console.log(activeDateRepayPointMap)
 }
 
 function openModal(item: CalendarItem) {
   if (!item.inMonth) return
+  //重置表单
+  ObjClear(form)
+  ObjClear(formExtra)
+  isExpensesVisible.value = false
+  isRepayVisible.value = false
+  isIncomeVisible.value = false
   //设置选中的日期
   selectedDateTimestamp.value = item.dateKey
   //从eventMap中获取数据到form中回显
