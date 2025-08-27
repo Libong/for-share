@@ -1,0 +1,6 @@
+// 设计稿宽度 375px，1rem = 37.5px
+$base: 37.5px;
+
+@function rem($px) {
+  @return $px / $base * 1rem;
+}

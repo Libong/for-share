@@ -1,0 +1,134 @@
+syntax = "proto3";
+
+package com.liBong.login.interface;
+
+option go_package = "./;api";
+
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+import "router/api/proto/router.proto";
+import "auth/api/proto/auth.proto";
+
+service LoginInterface{
+
+  option(libong.prefix) = "libong/login";
+
+  //登陆
+  rpc loginIn (LoginInReq) returns (LoginInResp) {
+    option (google.api.http) = {
+      post: "/in"
+    };
+  }
+  //登陆验证码发送
+  rpc sendLoginSms (SendLoginSmsReq) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      get: "/login/sms/send"
+    };
+  }
+  //注册验证码发送
+  rpc sendRegisterSms (SendRegisterSmsReq) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      get: "/register/sms/send"
+    };
+  }
+  //注册
+  rpc register (RegisterReq) returns (RegisterResp) {
+    option (google.api.http) = {
+      post: "/register"
+    };
+  }
+  //登出
+  rpc signOut (google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (libong.auth) = true;
+    option (google.api.http) = {
+      post: "/out"
+    };
+  }
+  //用户信息
+  rpc userInfo (google.protobuf.Empty) returns (UserInfoResp) {
+    option (libong.auth) = true;
+    option (google.api.http) = {
+      get: "/user/info"
+    };
+  }
+  //修改用户信息
+  rpc updateUserInfo (UpdateUserInfoReq) returns (google.protobuf.Empty) {
+    option (libong.auth) = true;
+    option (google.api.http) = {
+      post: "/user/info/update"
+    };
+  }
+  //用户角色信息
+  rpc userRoles (google.protobuf.Empty) returns (UserRolesResp) {
+    option (libong.auth) = false;
+    option (google.api.http) = {
+      get: "/user/roles"
+    };
+  }
+}
+message LoginInReq{
+  uint32 login_in_type = 1; //登陆类型
+  string account = 2; //用户名
+  string phone = 3; //手机号
+  string password = 4; //密码
+  string verify_code = 5; //验证码
+  string email = 6; //邮箱
+}
+message LoginInResp{
+  string account_id = 1;
+  string access_token = 2;
+  string refresh_token = 3;
+}
+message SendLoginSmsReq{
+  string phone = 1; //手机号
+}
+message SendRegisterSmsReq{
+  string phone = 1; //手机号
+}
+message RegisterReq{
+  uint32 register_type = 1; //注册类型
+  string username = 2; //用户名或邮箱
+  string password = 3; //密码
+  string phone = 4; //手机号
+  string verify_code = 5; //验证码
+}
+message RegisterResp{
+  string account_id = 1;
+  string access_token = 2;
+  string refresh_token = 3;
+}
+message Meta{
+  string id = 1;
+  string name = 2;
+}
+message UserInfoResp{
+  repeated Meta roles = 1;
+  string account = 2; // 用户名
+  uint32 sex = 3; // 性别
+  string avatar = 4; // 头像
+  repeated Meta departments = 5;
+  bool has_password = 6; //是否有密码
+  string encrypt_phone = 7; //加密手机号
+}
+message UpdateUserInfoReq{
+  string account = 1; // 用户名
+  uint32 sex = 2; // 性别
+  string avatar = 3; // 头像
+  string cur_password = 4; //当前密码
+  string origin_password = 5; //原始密码
+}
+message UserRolesResp{
+  repeated Meta roles = 1;
+}
+enum LoginType{
+    LoginTypeUnknown = 0;
+    LoginTypeByPhoneSms = 1; //手机短信
+    LoginTypeByAccountOrPhonePwd = 2; //账户密码
+    LoginTypeByEmailPwd = 3; //邮箱密码
+}
+enum RegisterType{
+  RegisterTypeUnknown = 0;
+  RegisterTypeByPhoneSms = 1; //手机短信
+  RegisterTypeByAccountOrPhonePwd = 2; //账户密码
+  RegisterTypeByEmailPwd = 3; //邮箱密码
+}

@@ -79,7 +79,9 @@
     "modules/*/src/**/*.tsx",
     "modules/**/*.d.ts",
     "modules/*/src/**/*.vue",
-    "vite.config.ts"
+    "vite.config.ts",
+    "declaration.d.ts",
+    "src/components/common/button/*.vue"
   ],
   "exclude": [
     "node_modules",

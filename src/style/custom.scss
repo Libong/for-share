@@ -1,0 +1,18 @@
+.login-message {
+  margin-top: 20vh;
+  //width: rem(200px);
+  max-width: rem(300px);
+  font-size: rem(13px);
+  
+  .el-message__content {
+    font-size: rem(13px);
+  }
+}
+
+.form-message {
+  margin-top: 10%;
+}
+
+.global-message {
+  margin-top: 3%;
+}

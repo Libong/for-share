@@ -1,0 +1,338 @@
+.edit-profile-body {
+  height: calc(100% - 60px);
+  overflow-y: auto;
+  background-color: var(--app-background);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+}
+
+.edit-profile-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row-reverse;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--header-bg);
+
+  .back-btn {
+    padding: 8px;
+    margin-right: 12px;
+    border: none;
+    background: transparent;
+    color: var(--main-color);
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .el-icon {
+      font-size: 20px;
+    }
+  }
+
+  span {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--main-color);
+  }
+}
+
+.profile-container {
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  background: linear-gradient(to bottom, rgba(142, 68, 173, 0.05), transparent);
+  position: relative;
+
+  &::after {
+    content: '头像';
+    position: absolute;
+    bottom: 15px;
+    color: #8e44ad;
+    font-size: 13px;
+    opacity: 0.8;
+  }
+}
+
+.avatar-wrapper {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 20px rgba(142, 68, 173, 0.15);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 25px;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 25px rgba(142, 68, 173, 0.25);
+
+    .avatar-overlay {
+      opacity: 1;
+    }
+  }
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+
+  i {
+    color: white;
+    font-size: 16px;
+  }
+}
+
+.info-section {
+  padding: 20px 0;
+}
+
+.info-item {
+  padding: 16px 25px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(142, 68, 173, 0.03);
+  }
+
+  .info-label {
+    color: #999;
+    font-size: 13px;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+  }
+
+  .info-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .info-value {
+      color: #333;
+      font-size: 15px;
+      font-weight: 500;
+    }
+  }
+}
+
+.action-section {
+  padding: 20px 25px 30px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+// 弹窗样式
+.el-dialog {
+  border-radius: 12px !important;
+  width: 80%;
+  margin-top: 70%;
+
+  .el-dialog__headerbtn {
+    position: unset;
+    width: 0;
+    height: 0;
+    margin: 0 10px;
+  }
+
+  .el-dialog__header {
+    margin: 0;
+    padding: 15px 20px;
+    background: #f7f8fa;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .el-dialog__body {
+    padding: 20px;
+  }
+
+  .el-dialog__footer {
+    padding: 10px 20px;
+    border-top: 1px solid #f0f0f0;
+  }
+}
+
+@media (max-height: 800px) {
+  .el-dialog {
+    width: 30%;
+    margin-top: 15%;
+  }
+}
+
+.dialog-content {
+  padding: 0;
+}
+
+.dialog-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e4e7ed;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #333;
+  background: #fff;
+  transition: all 0.3s ease;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #8e44ad;
+    box-shadow: 0 0 0 2px rgba(142, 68, 173, 0.1);
+  }
+}
+
+.edit-btn.el-button {
+  padding: 4px 8px;
+  height: auto;
+  border: none;
+  background: transparent;
+  color: #8e44ad;
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+    background: rgba(142, 68, 173, 0.1);
+  }
+
+  .el-icon {
+    font-size: 16px;
+  }
+}
+
+.password-btn.el-button {
+  width: 100%;
+  height: 44px;
+  border: none;
+  background: #1f1b1b;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.75);
+    transform: translateY(-1px);
+    //box-shadow: 0 4px 15px rgba(142, 68, 173, 0.2);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// 暗色主题支持
+:root[class='dark'] {
+  .profile-container {
+    background: #2a2a2a;
+  }
+
+  .avatar-section {
+    background: linear-gradient(to bottom, rgba(179, 136, 255, 0.05), transparent);
+    border-color: #333;
+  }
+
+  .info-item {
+    &:hover {
+      background: rgba(179, 136, 255, 0.05);
+    }
+
+    .info-label {
+      color: #888;
+    }
+
+    .info-content .info-value {
+      color: #fff;
+    }
+  }
+
+  .action-section {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .password-btn.el-button {
+    padding: 4px 8px;
+    height: auto;
+    border: none;
+    background: transparent;
+    color: #8e44ad;
+    opacity: 0.7;
+
+    &:hover {
+      opacity: 1;
+      background: rgba(142, 68, 173, 0.1);
+    }
+  }
+
+  :deep(.el-dialog) {
+    .el-dialog__close {
+      color: #999; // 暗色主题下的默认颜色
+
+      &:hover {
+        color: #b388ff; // 暗色主题下悬浮时的颜色
+      }
+    }
+  }
+}
+
+/*应用于全局 否则将无法替换el组件内部的样式*/
+//:root {
+//
+//  .edit-profile-update-dialog {
+//    width: 25%;
+//
+//    .el-dialog__header {
+//      display: flex;
+//      flex-direction: row;
+//      justify-content: space-between;
+//      align-items: center;
+//
+//      .el-dialog__header {
+//        display: flex;
+//      }
+//
+//      .el-dialog__headerbtn {
+//        display: flex;
+//        position: unset;
+//        height: auto;
+//        width: auto;
+//      }
+//    }
+//  }
+//}

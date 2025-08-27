@@ -1,0 +1,51 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    /*font-weight: normal;*/
+}
+
+body {
+    min-height: 100vh;
+    transition: color 0.5s,
+    background-color 0.5s;
+    /*line-height: 1.6;*/
+    font-family: Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
+    font-size: 15px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+@font-face {
+    font-family: "阿里妈妈方圆体 VF Regular";
+    src: url("../src/assets/font/AlimamaFangYuanTiVF-Thin.woff2") format("woff2"),
+    url("../src/assets/font/AlimamaFangYuanTiVF-Thin.woff") format("woff");
+    font-display: swap;
+}
+
+/* 1. 先给一个默认（PC）基准 */
+html {
+    /* 375 px 时 1 rem = 10 px，PC 1920 px 时 1 rem ≈ 51 px → 略大，可以再调小 */
+    font-size: 2.6667vw;
+}
+
+/* 2. 手机端（≤768 px）用另一套基准 */
+@media screen and (max-width: 768px) {
+    html {
+        /* 375 px 时 1 rem = 20 px，刚好 */
+        font-size: 5.3333vw;
+    }
+}

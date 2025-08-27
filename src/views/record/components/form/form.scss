@@ -1,0 +1,82 @@
+.model {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+}
+
+.container {
+  width: 30%;
+  height: 60%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 8px;
+  flex-direction: column;
+
+  .addText {
+    display: flex;
+    font-size: larger;
+    margin-bottom: 20px;
+  }
+
+  &-form {
+    width: 80%;
+    height: 60%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+
+  .bottom-btn {
+    display: flex;
+    width: 80%;
+    justify-content: space-between;
+
+    &-confirm {
+      display: flex;
+      scale: 0.8;
+    }
+
+    &-cancel {
+      width: 85px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      scale: 0.8;
+      outline: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      color: #F6F8FF;
+      border-radius: 12px;
+      background: #1E2235;
+      //padding: 9px 22px 9px 16px;
+    }
+  }
+}
+
+.switch-btn {
+  position: absolute;
+  right: -25px;
+  height: 20px;
+  width: 20px;
+  cursor: pointer;
+}
+
+/*动画刚开始时的效果 相当于从这个状态变成展示的状态*/
+.slide-and-grow-enter-from, .slide-and-grow-leave-to {
+  opacity: 0; //透明
+  transform: translateX(-37%) translateY(-27%) scale(0.5); //缩小
+}
+
+.slide-and-grow-enter-active, .slide-and-grow-leave-active {
+  transition: all 1s ease-in-out;
+}

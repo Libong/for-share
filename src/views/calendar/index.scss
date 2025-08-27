@@ -1,0 +1,327 @@
+.calendar-container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+}
+
+.calendar-owner-select {
+  display: flex;
+  width: 20%;
+  height: 1.5rem;
+  //background-color: #0a5988;
+  margin-top: 0;
+  gap: 0.2rem;
+
+  img {
+    width: rem(32px);
+    height: rem(32px);
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  &-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 30%;
+    cursor: pointer;
+    width: 25%;
+    border: 1px solid rgb(0, 0, 0, 1);
+    background-color: unset;
+
+    &.active {
+      border: none;
+    }
+  }
+}
+
+.header-title {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 1rem;
+  font-family: "阿里妈妈方圆体 VF Regular", sans-serif;
+  margin-top: 0.5rem;
+
+  span {
+    font-size: 0.7rem;
+  }
+
+  &-btn {
+    position: absolute;
+    right: 30%;
+    font-size: 0.4rem;
+    cursor: pointer;
+    padding: 0.3rem;
+    border-radius: 10%;
+
+    &.active {
+      background: white;
+      color: #5c6bc0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+.calendar-wrapper {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #333;
+  width: 40%;
+  margin-top: 0.2rem;
+}
+
+/* 头部 */
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.3rem 0;
+  font-size: 0.5rem;
+  font-weight: 600;
+}
+
+.calendar-header button {
+  border: none;
+  background: none;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0 0.2rem;
+}
+
+/* 星期 */
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 0.4rem;
+  color: #999;
+  margin-bottom: 6px;
+  padding: 0;
+
+  li {
+    list-style-type: none; /* 移除默认的项目符号 */
+  }
+}
+
+/* 日期 */
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  padding: 0;
+}
+
+.days li {
+  height: 1.55rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 0.4rem;
+  cursor: pointer;
+  flex-direction: column;
+
+  .notice-point {
+    width: 5px;
+    height: 5px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      margin: 1px;
+      min-height: 5px;
+      display: block;
+    }
+  }
+
+  .sum-content {
+    display: flex;
+    top: 1rem;
+    flex-direction: column;
+    align-items: center;
+
+    span {
+      display: block;
+      min-height: 0.5rem;
+    }
+  }
+}
+
+.placeholder {
+  color: #ccc;
+}
+
+.today {
+  background: #007aff;
+  color: #fff;
+}
+
+/* 弹窗 */
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+//使得form表单内容高度小于scrollbar时会垂直居中
+:deep(.el-scrollbar__wrap) {
+  display: flex;
+  width: 100%;
+}
+
+:deep(.el-scrollbar__view) {
+  display: flex;
+  width: 100%;
+}
+
+//隐藏垂直滚动条
+:deep(.el-scrollbar__bar.is-vertical) {
+  width: 0;
+}
+
+.teleport-form-style {
+  display: flex;
+  flex-direction: column; /* 垂直排列子元素 */
+  align-items: center; /* 水平居中 */
+  width: 100%;
+  margin: auto;
+
+  //使得整体更偏向于居中
+  :deep(.el-form-item__label) {
+    justify-content: unset;
+  }
+
+  .image-item {
+    width: 20%;
+    height: 120%;
+    display: flex;
+
+    .image-delete-icon {
+      cursor: pointer;
+    }
+  }
+
+  .preview-image {
+    width: 100%;
+    height: 100%;
+  }
+
+  .image-delete-btn {
+    cursor: pointer;
+  }
+
+  :deep(.el-form-item__content) {
+    gap: 0.5rem;
+  }
+}
+
+.upload-container {
+  width: 20%;
+  height: 120%;
+
+  .upload-item {
+    width: 100%;
+    height: 100%;
+  }
+
+  :deep(.el-upload--picture-card) {
+    height: 100%;
+    width: 100%;
+  }
+
+  .el-icon-plus {
+    font-size: rem(10px);
+    color: #999;
+  }
+}
+
+
+.modal {
+  background: #fff;
+  width: 80%;
+  max-width: 320px;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal h3 {
+  text-align: center;
+}
+
+.modal-expend {
+  display: flex;
+  justify-content: center;
+  margin-top: rem(30px);
+  margin-bottom: rem(30px);
+
+  span {
+    margin-right: 0.2rem;
+  }
+}
+
+.form-separator {
+  background-color: rgba(164, 174, 194, 0.75);
+  display: block;
+  height: 2px;
+  width: 100%;
+}
+
+.btn-bar {
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn-bar button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.btn-bar button:first-child {
+  background: #007aff;
+  color: #fff;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+@media (max-width: 500px) {
+  .calendar-owner-select {
+    width: 50%;
+    margin-top: 1rem;
+    height: 2rem;
+  }
+  .calendar-wrapper {
+    margin-top: 1rem;
+    width: 70%;
+  }
+  .header-title-btn {
+    right: 20%;
+  }
+  .days li .notice-point {
+    width: 3px;
+    height: 3px;
+
+    img {
+      min-height: 3px;
+      margin: 0;
+    }
+  }
+}

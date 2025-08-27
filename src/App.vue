@@ -1,7 +1,11 @@
-<script setup lang="ts">
-import Home from "@/components/home/home.vue";
+<script lang="ts" setup>
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 </script>
 
 <template>
-    <Home />
+  <div>
+    <el-config-provider :locale="zhCn">
+      <router-view></router-view>
+    </el-config-provider>
+  </div>
 </template>

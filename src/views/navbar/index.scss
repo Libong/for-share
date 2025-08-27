@@ -1,0 +1,201 @@
+$borderRadius: 10px;
+$primary: #406ff3;
+$text: #6a778e;
+$timing: 250ms;
+$transition: $timing ease all;
+
+.bg-container {
+  /*视口宽度的百分比 vw*/
+  width: 100vw;
+  /*作为flex容器*/
+  display: flex;
+  /*类似水平和垂直居中 */
+  //justify-content: center;
+  align-items: end;
+  /*视口高度的百分比 vh*/
+  height: 100vh;
+  /*背景大小 覆盖整个 会失真*/
+  background-size: cover;
+  background-color: #ebeef5;
+}
+
+@mixin gooeyEffect($i) {
+  @keyframes gooeyEffect-#{$i} {
+    0% {
+      transform: scale(1, 1);
+    }
+    50% {
+      transform: scale(1.5, 0.5);
+    }
+    100% {
+      transform: scale(1, 1);
+    }
+  }
+}
+
+.navbar {
+  $ref: &;
+  display: flex;
+  position: fixed;
+  background: #fff;
+  border-radius: $borderRadius;
+  height: 1.5rem;
+  box-shadow: 0 0 40px rgba(144, 154, 171, 0.75);
+
+  &__link {
+    position: relative;
+    display: flex;
+    height: 1.5rem;
+    width: 1.5rem;
+    color: $text;
+    transition: $transition;
+    align-items: center;
+    justify-content: center;
+
+    &.active-link, &:hover {
+      color: #fff; /* 激活时的颜色 */
+    }
+
+    span {
+      position: absolute;
+      top: 110%; /* 位于链接的正下方 */
+      left: 50%; /* 位于链接的中间 */
+      transform: translate(-50%, -(1rem)); /* 垂直向下移动，并向左对齐 */
+      opacity: 0;
+      //pointer-events: none;
+      color: $primary;
+      background: #fff;
+      transition: $transition;
+      border-radius: $borderRadius * 1.75;
+      text-align: center; /* 文本居中 */
+      width: 120%;
+      padding: 0.3rem;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .navbar:not(:hover) &:focus,
+    &:hover {
+      span {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+    }
+  }
+
+  &__lu {
+    display: flex;
+    list-style-type: none;
+    position: relative;
+    padding: 0;
+    height: 100%;
+  }
+
+  &__li {
+    padding: 0 0.55rem;
+    cursor: pointer;
+
+    &.active, &:hover {
+      .navbar__link {
+        color: #fff; /* 激活时的颜色 */
+      }
+    }
+
+    &:first-child {
+      &:before {
+        margin: 0 0.55rem;
+        content: '';
+        position: absolute;
+        opacity: var(--indicator-opacity, 0);
+        z-index: -1;
+        left: var(--indicator-left, 0);
+        height: 100%;
+        width: 1.5rem;
+        background: $primary;
+        border-radius: $borderRadius * 1.75;
+        transition: opacity 0.3s, left 0.2s cubic-bezier(1, 0.2, 0.1, 1.2);
+      }
+    }
+  }
+}
+
+@media (max-width: 500px) {
+  .navbar__li:first-child:before {
+    width: 2rem;
+  }
+  .navbar {
+    height: 2rem;
+  }
+  .navbar__link {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  height: 2rem;
+  top: 0.5rem;
+  position: fixed;
+
+  &-center {
+    display: flex;
+    justify-content: center;
+    flex-grow: 1; /* 中间的元素可以伸缩，占据剩余空间 */
+  }
+
+  &-right {
+    display: flex;
+    width: 33%;
+    align-items: center;
+    justify-content: right;
+    //margin-bottom: 5px;
+  }
+
+  &-left {
+    display: flex;
+    width: 33%;
+  }
+}
+
+.mode-switch {
+  background-color: transparent;
+  border: 0;
+  color: var(--main-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.setting-btn {
+  color: #fff;
+  background-color: var(--button-bg);
+  border: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.notification-btn {
+  color: var(--main-color);
+  border: 0;
+  background-color: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.main-content {
+  display: flex;
+  width: 100%;
+  height: calc(100vh - 2.5rem);;
+}
