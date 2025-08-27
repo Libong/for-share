@@ -9,6 +9,9 @@
     </div>
     <div class="header-title">
       <span>！！开始记账 ！！</span>
+      <div :class="['header-title-btn',{active:showDailyStat}]"
+           @click="()=>{showDailyStat = !showDailyStat}">每日统计
+      </div>
     </div>
     <div class="calendar-wrapper">
       <!-- 顶部年月 -->
@@ -34,8 +37,32 @@
         }"
             @click="openModal(item)"
         >
-          {{ item.day }}
-          <img v-if="activeDateRepayPointMap[item.dateKey]" alt="" class="notice-point" src="@/assets/red-point.png"/>
+          <span>{{ item.day }}</span>
+          <div v-show="!showDailyStat" class="notice-point">
+            <img
+                v-if="activeDateRepayPointMap[item.dateKey]"
+                alt=""
+                src="@/assets/red-point.png"/>
+            <img
+                v-else
+                alt=""
+                src="@/assets/red-point.png"
+                style="visibility: hidden;"/>
+          </div>
+          
+          <div v-show="showDailyStat" class="sum-content">
+            <span>{{
+                eventMap[item.dateKey] && eventMap[item.dateKey].dayIncome ? `+${eventMap[item.dateKey].dayIncome}` : '-'
+              }}</span>
+            <span>{{
+                eventMap[item.dateKey]
+                    ? `-${(eventMap[item.dateKey].otherExpenses || 0) +
+                    (eventMap[item.dateKey].goodsExpenses || 0) +
+                    (eventMap[item.dateKey].repayExpenses || 0) +
+                    (eventMap[item.dateKey].drinksExpenses || 0)}`
+                    : ''
+              }}</span>
+          </div>
         </li>
       </ul>
       
@@ -44,7 +71,7 @@
         <transition name="fade">
           <div v-if="modalVisible" class="modal-mask">
             <div class="modal">
-              <h3>{{ selectedDate }} 账单</h3>
+              <h3>{{ timestampToYYYYMMDD(selectedDateTimestamp) }} 账单</h3>
               <el-scrollbar :height="scrollbarHeight" class="teleport-el-scrollbar"
                             style="padding: 0 10px;">
                 <!--设置统一的label宽度使其右对齐-->
@@ -61,12 +88,14 @@
                     <div v-show="isRepayVisible">
                       <el-form-item label="还款单位">
                         <el-input
-                            v-model="formExtra.repayUnit">
+                            v-model="formExtra.repayUnit"
+                            :disabled="curUserRole != 'manager'">
                         </el-input>
                       </el-form-item>
                       <el-form-item label="还款金额">
                         <el-input-number
-                            v-model="form.repayExpenses">
+                            v-model="form.repayExpenses"
+                            :disabled="curUserRole != 'manager'">
                         </el-input-number>
                       </el-form-item>
                       <el-form-item label="还款截图证明" label-width="100px">
@@ -79,13 +108,14 @@
                               class="preview-image"
                               fit="cover"
                           ></el-image>
-                          <el-icon class="image-delete-icon" @click="deleteImage(index)">
+                          <el-icon v-if="curUserRole == 'manager'" class="image-delete-icon"
+                                   @click="deleteImage(index)">
                             <Close class="el-icon-close"/>
                           </el-icon>
                         </div>
                         <!-- 如果图片数组为空，或者在最后一个图片后面显示上传按钮 -->
                         <div
-                            v-if="!formExtra.repayImages || formExtra.repayImages.length < 3"
+                            v-if="(!formExtra.repayImages || formExtra.repayImages.length < 3) && curUserRole == 'manager'"
                             class="upload-container">
                           <el-upload
                               :before-upload="beforeUpload"
@@ -294,7 +324,7 @@ interface CalendarItem {
   day: number;
   inMonth: boolean;
   isToday: boolean;
-  dateKey: number;
+  dateKey: number; //当前毫秒时间戳
 }
 
 const calendarGrid = computed(() => {
@@ -354,7 +384,8 @@ async function nextMonth() {
 
 /* ===== 弹窗逻辑 ===== */
 const modalVisible = ref(false)
-const selectedDate = ref('')
+const showDailyStat = ref(false)
+const selectedDateTimestamp = ref(0)
 const form = reactive<IFinanceBill>({
   repayExpenses: 0, drinksExpenses: 0, otherExpenses: 0, otherExpensesRemark: "", goodsExpenses: 0,
   billId: "", timestamp: 0, remark: "", extra: "",
@@ -440,7 +471,7 @@ const handleUploadErrSuccess = (response: any, file: UploadFile, fileList: Uploa
 }
 
 // 以 2025-07-30 为 key 的对象
-const eventMap = ref<Record<string, IFinanceBill>>({})
+const eventMap = ref<Record<number, IFinanceBill>>({})
 const activeDateRepayPointMap = ref<Record<number, boolean>>({})
 
 async function updateMonthBillData() {
@@ -460,44 +491,43 @@ async function updateMonthBillData() {
     return
   }
   resp.list.forEach((item) => {
-    const dateStr = timestampToYYYYMMDD(item.timestamp);
-    eventMap.value[dateStr] = item
+    eventMap.value[item.timestamp] = item
     if (item.repayExpenses != 0) {
       activeDateRepayPointMap.value[item.timestamp] = true
     }
   })
 }
 
-function openModal(item: any) {
+function openModal(item: CalendarItem) {
   if (!item.inMonth) return
   //设置选中的日期
-  selectedDate.value = `${year.value}-${String(month.value + 1).padStart(2, '0')}-${String(
-      item.day,
-  ).padStart(2, '0')}`
+  selectedDateTimestamp.value = item.dateKey
   //从eventMap中获取数据到form中回显
-  if (eventMap.value[selectedDate.value] && eventMap.value[selectedDate.value].extra) {
-    const extraJson = JSON.parse(eventMap.value[selectedDate.value].extra)
+  if (eventMap.value[item.dateKey] && eventMap.value[item.dateKey].extra) {
+    const extraJson = JSON.parse(eventMap.value[item.dateKey].extra)
     formExtra.repayUnit = extraJson.repayUnit || ''
     formExtra.repayImages = extraJson.repayImages || []
-    Object.assign(form, eventMap.value[selectedDate.value])
+    Object.assign(form, eventMap.value[item.dateKey])
   }
   modalVisible.value = true
 }
 
 function closeModal() {
   ObjClear(form)
-  ObjClear(formExtra)
+  if (curUserRole.value == 'manager') {
+    ObjClear(formExtra)
+  }
   modalVisible.value = false
 }
 
 async function clear() {
-  if (!eventMap.value[selectedDate.value]) {
+  if (!eventMap.value[selectedDateTimestamp.value]) {
     closeModal()
     return
   }
-  const billId = eventMap.value[selectedDate.value].billId
+  const billId = eventMap.value[selectedDateTimestamp.value].billId
   await deleteFinanceBillInterface({billId: billId})
-  eventMap.value[selectedDate.value] = {} as IFinanceBill
+  eventMap.value[selectedDateTimestamp.value] = {} as IFinanceBill
   ShowCommonMessage("清空成功", "success")
   closeModal()
 }
@@ -505,9 +535,7 @@ async function clear() {
 async function save() {
   //设置当前日期时间戳
   // if (form.timestamp == 0) {
-  let date = new Date(selectedDate.value);
-  date.setHours(0, 0, 0, 0)
-  form.timestamp = date.getTime()
+  form.timestamp = selectedDateTimestamp.value
   // }
   const formExtraJson = JSON.stringify(formExtra)
   if (form.billId != "") {
@@ -523,12 +551,12 @@ async function save() {
     form.billId = resp.billId
   }
   // 确保 eventMap.value[selectedDate.value] 是一个对象
-  if (!eventMap.value[selectedDate.value]) {
-    eventMap.value[selectedDate.value] = {} as IFinanceBill
+  if (!eventMap.value[selectedDateTimestamp.value]) {
+    eventMap.value[selectedDateTimestamp.value] = {} as IFinanceBill
   }
   //更新本地数据 form数据会被清空
-  Object.assign(eventMap.value[selectedDate.value], form)
-  eventMap.value[selectedDate.value].extra = formExtraJson
+  Object.assign(eventMap.value[selectedDateTimestamp.value], form)
+  eventMap.value[selectedDateTimestamp.value].extra = formExtraJson
   closeModal()
   ShowCommonMessage("保存成功", "success")
 }

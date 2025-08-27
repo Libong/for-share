@@ -38,20 +38,39 @@
 }
 
 .header-title {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
   height: 1rem;
   font-family: "阿里妈妈方圆体 VF Regular", sans-serif;
-  font-size: 0.7rem;
   margin-top: 0.5rem;
+
+  span {
+    font-size: 0.7rem;
+  }
+
+  &-btn {
+    position: absolute;
+    right: 30%;
+    font-size: 0.4rem;
+    cursor: pointer;
+    padding: 0.3rem;
+    border-radius: 10%;
+
+    &.active {
+      background: white;
+      color: #5c6bc0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+  }
 }
 
 .calendar-wrapper {
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   color: #333;
-  width: 70%;
+  width: 40%;
   margin-top: 0.2rem;
 }
 
@@ -94,12 +113,6 @@
   grid-template-columns: repeat(7, 1fr);
   gap: 2px;
   padding: 0;
-
-  .notice-point {
-    width: 3px;
-    height: 3px;
-    margin: 1px;
-  }
 }
 
 .days li {
@@ -111,6 +124,31 @@
   font-size: 0.4rem;
   cursor: pointer;
   flex-direction: column;
+
+  .notice-point {
+    width: 5px;
+    height: 5px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      margin: 1px;
+      min-height: 5px;
+      display: block;
+    }
+  }
+
+  .sum-content {
+    display: flex;
+    top: 1rem;
+    flex-direction: column;
+    align-items: center;
+
+    span {
+      display: block;
+      min-height: 0.5rem;
+    }
+  }
 }
 
 .placeholder {
@@ -272,5 +310,18 @@
   }
   .calendar-wrapper {
     margin-top: 1rem;
+    width: 70%;
+  }
+  .header-title-btn {
+    right: 20%;
+  }
+  .days li .notice-point {
+    width: 3px;
+    height: 3px;
+
+    img {
+      min-height: 3px;
+      margin: 0;
+    }
   }
 }
