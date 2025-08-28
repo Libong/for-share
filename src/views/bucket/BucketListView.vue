@@ -219,6 +219,9 @@ const deleteBucket = (id: string, name: string) => {
 const refreshBuckets = async (needNotice?: boolean) => {
   let resp = await searchBucketsPageInterface({});
   buckets.value = [];
+  if (!resp.list) {
+    return
+  }
   resp.list.forEach((bucket) => {
     buckets.value.push({
       establishAt: bucket.establishAt,

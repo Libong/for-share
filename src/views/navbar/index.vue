@@ -142,7 +142,7 @@ function to(path: string, index: number) {
       if (GetCurRole() != 'manager') {
         ShowCommonMessage("功能暂未开放", "info");
       }
-      break
+      return;
     default:
       break;
   }
