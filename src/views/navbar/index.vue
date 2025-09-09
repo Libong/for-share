@@ -141,8 +141,9 @@ function to(path: string, index: number) {
     case "BucketHome":
       if (GetCurRole() != 'manager') {
         ShowCommonMessage("功能暂未开放", "info");
+        return;
       }
-      return;
+      break
     default:
       break;
   }

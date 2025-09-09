@@ -21,52 +21,51 @@
 import {onMounted} from "vue";
 
 onMounted(() => {
-  console.log(111)
   document.querySelectorAll('.truck-button').forEach(button => {
     button.addEventListener('click', e => {
-
+      
       e.preventDefault();
-
+      
       let box = button.querySelector('.box'),
           truck = button.querySelector('.truck');
-
+      
       if (!button.classList.contains('done')) {
-
+        
         if (!button.classList.contains('animation')) {
-
+          
           button.classList.add('animation');
-
+          
           gsap.to(button, {
             '--box-s': 1,
             '--box-o': 1,
             duration: .3,
             delay: .5
           });
-
+          
           gsap.to(box, {
             x: 0,
             duration: .4,
             delay: .7
           });
-
+          
           gsap.to(button, {
             '--hx': -5,
             '--bx': 50,
             duration: .18,
             delay: .92
           });
-
+          
           gsap.to(box, {
             y: 0,
             duration: .1,
             delay: 1.15
           });
-
+          
           gsap.set(button, {
             '--truck-y': 0,
             '--truck-y-n': -26
           });
-
+          
           gsap.to(button, {
             '--truck-y': 1,
             '--truck-y-n': -25,
@@ -97,9 +96,9 @@ onMounted(() => {
               });
             }
           });
-
+          
         }
-
+        
       } else {
         button.classList.remove('animation', 'done');
         gsap.set(truck, {
@@ -119,7 +118,7 @@ onMounted(() => {
           y: -6
         });
       }
-
+      
     });
   });
 })
@@ -163,7 +162,7 @@ onMounted(() => {
   transform-style: preserve-3d;
   transform: rotateX(var(--rx, 0deg)) translateZ(0);
   transition: transform .5s, border-radius .3s linear var(--br-d, 0s);
-
+  
   &:before,
   &:after {
     content: '';
@@ -177,12 +176,12 @@ onMounted(() => {
     transform-origin: 0 100%;
     transform: rotateX(90deg) scaleX(var(--sy, 1));
   }
-
+  
   &:after {
     --sy: var(--progress, 0);
     --b: var(--street-fill);
   }
-
+  
   .default,
   .success {
     display: block;
@@ -192,14 +191,14 @@ onMounted(() => {
     opacity: var(--o, 1);
     transition: opacity .3s;
   }
-
+  
   .success {
     --o: 0;
     position: absolute;
     top: 12px;
     left: 0;
     right: 0;
-
+    
     svg {
       width: 12px;
       height: 10px;
@@ -216,13 +215,13 @@ onMounted(() => {
       transition: stroke-dashoffset .4s ease .45s;
     }
   }
-
+  
   .truck {
     position: absolute;
     width: 72px;
     height: 28px;
     transform: rotateX(90deg) translate3d(var(--truck-x, 4px), calc(var(--truck-y-n, -26) * 1px), 12px);
-
+    
     &:before,
     &:after {
       content: '';
@@ -237,11 +236,11 @@ onMounted(() => {
       background: var(--wheel-dot);
       transform: translateY(calc(var(--truck-y) * -1px)) translateZ(0);
     }
-
+    
     &:after {
       --l: 54px;
     }
-
+    
     .wheel,
     .wheel:before {
       position: absolute;
@@ -253,23 +252,23 @@ onMounted(() => {
       background: var(--wheel);
       transform: translateZ(0);
     }
-
+    
     .wheel {
       transform: translateY(calc(var(--truck-y) * -1px)) translateZ(0);
     }
-
+    
     .wheel:before {
       --l: 35px;
       --b: 0;
       content: '';
     }
-
+    
     .front,
     .back,
     .box {
       position: absolute;
     }
-
+    
     .back {
       left: 0;
       bottom: 0;
@@ -278,13 +277,13 @@ onMounted(() => {
       height: 28px;
       border-radius: 1px 1px 0 0;
       background: linear-gradient(68deg, var(--back-inner) 0%, var(--back-inner) 22%, var(--back-inner-shadow) 22.1%, var(--back-inner-shadow) 100%);
-
+      
       &:before,
       &:after {
         content: '';
         position: absolute;
       }
-
+      
       &:before {
         left: 11px;
         top: 0;
@@ -294,7 +293,7 @@ onMounted(() => {
         border-radius: 0 1px 0 0;
         background: var(--back);
       }
-
+      
       &:after {
         border-radius: 1px;
         width: 73px;
@@ -304,7 +303,7 @@ onMounted(() => {
         background: var(--base);
       }
     }
-
+    
     .front {
       left: 47px;
       bottom: -1px;
@@ -313,13 +312,13 @@ onMounted(() => {
       -webkit-clip-path: polygon(55% 0, 72% 44%, 100% 58%, 100% 100%, 0 100%, 0 0);
       clip-path: polygon(55% 0, 72% 44%, 100% 58%, 100% 100%, 0 100%, 0 0);
       background: linear-gradient(84deg, var(--front-shadow) 0%, var(--front-shadow) 10%, var(--front) 12%, var(--front) 100%);
-
+      
       &:before,
       &:after {
         content: '';
         position: absolute;
       }
-
+      
       &:before {
         width: 7px;
         height: 8px;
@@ -330,7 +329,7 @@ onMounted(() => {
         clip-path: polygon(0 0, 60% 0%, 100% 100%, 0% 100%);
         background: linear-gradient(59deg, var(--window) 0%, var(--window) 57%, var(--window-shadow) 55%, var(--window-shadow) 100%)
       }
-
+      
       &:after {
         width: 3px;
         height: 2px;
@@ -339,7 +338,7 @@ onMounted(() => {
         background: var(--front-light);
       }
     }
-
+    
     .box {
       width: 13px;
       height: 13px;
@@ -353,13 +352,13 @@ onMounted(() => {
       background: linear-gradient(68deg, var(--box) 0%, var(--box) 50%, var(--box-shadow) 50.2%, var(--box-shadow) 100%);
       background-size: 250% 100%;
       background-position-x: calc(var(--bx, 0) * 1%);
-
+      
       &:before,
       &:after {
         content: '';
         position: absolute;
       }
-
+      
       &:before {
         content: '';
         background: rgba(white, .2);
@@ -368,7 +367,7 @@ onMounted(() => {
         top: 6px;
         height: 1px;
       }
-
+      
       &:after {
         width: 6px;
         left: 100%;
@@ -379,20 +378,20 @@ onMounted(() => {
       }
     }
   }
-
+  
   &.animation {
     --rx: -90deg;
     --br: 0;
-
+    
     .default {
       --o: 0;
     }
-
+    
     &.done {
       --rx: 0deg;
       --br: 5px;
       --br-d: .2s;
-
+      
       .success {
         --o: 1;
         --offset: 0;
@@ -408,7 +407,7 @@ html {
 
 * {
   box-sizing: inherit;
-
+  
   &:before,
   &:after {
     box-sizing: inherit;
@@ -423,25 +422,25 @@ body {
   justify-content: center;
   align-items: center;
   background: #ECEFFC;
-
+  
   .dribbble {
     position: fixed;
     display: block;
     right: 20px;
     bottom: 20px;
-
+    
     img {
       display: block;
       height: 28px;
     }
   }
-
+  
   .twitter {
     position: fixed;
     display: block;
     right: 64px;
     bottom: 14px;
-
+    
     svg {
       width: 32px;
       height: 32px;

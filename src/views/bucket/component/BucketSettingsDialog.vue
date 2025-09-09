@@ -251,7 +251,6 @@ const showAll = ref(false)
 const displayAccountShowKeyMap = ref<Map<string, boolean>>(new Map())
 
 const displayAccounts = computed(() => {
-  console.log(props.bucket.list)
   if (showAll.value) {
     return props.bucket.list
   }
@@ -314,7 +313,6 @@ const searchUsers = async () => {
   } else {
     searchAccounts.value = []
   }
-  console.log(searchAccounts)
 }
 
 //选择人员进行关联
@@ -359,10 +357,8 @@ const getInitials = (name: string): string => {
 
 const copyToClipboard = (text: string) => {
   navigator.clipboard.writeText(text).then(() => {
-    console.log('复制成功:', text);
     // 这里可以添加提示用户复制成功的逻辑
   }).catch(err => {
-    console.error('复制失败:', err);
   });
 }
 </script>

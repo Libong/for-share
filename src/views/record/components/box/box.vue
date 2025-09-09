@@ -115,7 +115,6 @@ const handleDaysLeftMouseEnter = () => {
   if (daysLeftTimer !== null) {
     clearTimeout(daysLeftTimer);
   }
-  console.log("handleDaysLeftMouseEnter in")
   // 设置定时器，1秒后显示按钮
   daysLeftTimer = setTimeout(() => {
     showCompleteButton.value = true;
@@ -129,7 +128,6 @@ const handleDaysLeftMouseLeave = () => {
     clearTimeout(daysLeftTimer);
     daysLeftTimer = null;
   }
-  console.log("handleDaysLeftMouseEnter out")
   // 隐藏按钮
   showCompleteButton.value = false;
 };

@@ -1,11 +1,46 @@
-export function ObjClear(obj: any) {
-    for (let key in obj) {
-        if (typeof obj[key] === "boolean") {
-            obj[key] = false;
-            continue
-        }
-        obj[key] = typeof obj[key as keyof typeof obj] === "number" ? 0 : "";
+/**
+ * 将目标值重置为“空”形态
+ * - 数组  -> []
+ * - 对象  -> 每个字段递归清零
+ * - 布尔  -> false
+ * - 数字  -> 0
+ * - 字符串 -> ''
+ * - null / undefined 保持不动（可按需改）
+ */
+export function ObjClear<T>(target: T): T {
+    if (Array.isArray(target)) {
+        // 直接清空数组
+        target.length = 0;
+        return target;
     }
+
+    if (target === null || target === undefined) return target;
+
+    if (typeof target !== 'object') {
+        // 基本类型兜底，实际调用时不会走到这里
+        return target;
+    }
+
+    // 普通对象
+    for (const key in target) {
+        if (!Object.prototype.hasOwnProperty.call(target, key)) continue;
+
+        const val = (target as any)[key];
+
+        if (Array.isArray(val)) {
+            (target as any)[key] = [];
+        } else if (val && typeof val === 'object') {
+            (target as any)[key] = ObjClear(val);
+        } else if (typeof val === 'boolean') {
+            (target as any)[key] = false;
+        } else if (typeof val === 'number') {
+            (target as any)[key] = 0;
+        } else if (typeof val === 'string') {
+            (target as any)[key] = '';
+        }
+        // null / undefined 保持原样
+    }
+    return target;
 }
 
 // 转换函数，将驼峰式命名转换为下划线式命名
@@ -97,7 +132,7 @@ export function calculateShelfLife(production: number, expiry: number): ShelfLif
     return shelfLife;
 }
 
-export function timestampToYYYYMMDD(timestamp: number): string {
+export function timestampToYYYYMMDD(timestamp: number, remY?: boolean): string {
     // 如果时间戳是秒级的，需要转换为毫秒
     if (timestamp.toString().length === 10) {
         timestamp *= 1000;
@@ -108,6 +143,14 @@ export function timestampToYYYYMMDD(timestamp: number): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份从0开始，需要加1
     const day = String(date.getDate()).padStart(2, '0');
-
+    if (remY) {
+        return `${month}-${day}`;
+    }
     return `${year}-${month}-${day}`;
+}
+
+export function isPlainObject(value: any): value is Record<string, unknown> {
+    return value !== null &&
+        typeof value === 'object' &&
+        Object.prototype.toString.call(value) === '[object Object]';
 }

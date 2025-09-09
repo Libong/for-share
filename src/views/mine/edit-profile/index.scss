@@ -150,13 +150,22 @@
 .action-section {
   padding: 20px 25px 30px;
   border-top: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+
+  .default-password {
+    font-family: "阿里妈妈方圆体 VF Regular";
+    font-size: 10px;
+    margin-bottom: 0.2rem;
+  }
 }
 
 // 弹窗样式
 .el-dialog {
   border-radius: 12px !important;
-  width: 80%;
+  width: 65%;
   margin-top: 70%;
+  height: 30%;
 
   .el-dialog__headerbtn {
     position: unset;
@@ -166,6 +175,7 @@
   }
 
   .el-dialog__header {
+    height: 20%;
     margin: 0;
     padding: 15px 20px;
     background: #f7f8fa;
@@ -175,46 +185,49 @@
   }
 
   .el-dialog__body {
-    padding: 20px;
+    height: 55%;
+    padding: 0 20px 10px 20px;
   }
 
   .el-dialog__footer {
     padding: 10px 20px;
     border-top: 1px solid #f0f0f0;
+    height: 23%;
+
+    .dialog-footer {
+      display: flex;
+      justify-content: space-between;
+      height: 100%;
+
+      .el-button {
+        height: 100%;
+      }
+    }
   }
 }
 
 @media (max-height: 800px) {
   .el-dialog {
-    width: 30%;
+    width: 20%;
     margin-top: 15%;
+    height: 45%;
+
+    .el-dialog__footer {
+      height: 18%;
+    }
   }
 }
 
 .dialog-content {
   padding: 0;
+  height: 100%;
+  width: 100%;
 }
 
 .dialog-input {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #e4e7ed;
-  border-radius: 6px;
-  margin-bottom: 12px;
-  font-size: 14px;
-  color: #333;
-  background: #fff;
-  transition: all 0.3s ease;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-
-  &:focus {
-    outline: none;
-    border-color: #8e44ad;
-    box-shadow: 0 0 0 2px rgba(142, 68, 173, 0.1);
-  }
+  height: 25%;
+  margin: 15px 0;
 }
 
 .edit-btn.el-button {
@@ -310,29 +323,3 @@
     }
   }
 }
-
-/*应用于全局 否则将无法替换el组件内部的样式*/
-//:root {
-//
-//  .edit-profile-update-dialog {
-//    width: 25%;
-//
-//    .el-dialog__header {
-//      display: flex;
-//      flex-direction: row;
-//      justify-content: space-between;
-//      align-items: center;
-//
-//      .el-dialog__header {
-//        display: flex;
-//      }
-//
-//      .el-dialog__headerbtn {
-//        display: flex;
-//        position: unset;
-//        height: auto;
-//        width: auto;
-//      }
-//    }
-//  }
-//}

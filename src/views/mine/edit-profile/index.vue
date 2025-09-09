@@ -5,6 +5,7 @@ import {Camera, Edit} from '@element-plus/icons-vue'
 import {fileUploadInterface, UploadFileType} from "@/api/proto/fileinterface";
 import {CommonMessageState} from "@/config/enum";
 import {UploadFileTypeText} from "@/config/common";
+import CustomContentInput from "@/views/mine/edit-profile/CustomContentInput.vue";
 
 // 定义 props
 let props = defineProps<{
@@ -93,7 +94,6 @@ const handleAvatarUpload = async (event: Event) => {
       }
     })
   } catch (error) {
-    console.error('Upload failed:', error)
     showMessage('文件上传失败', CommonMessageState.Error)
   } finally {
     // 无论成功还是失败，都清空 input 的值
@@ -223,6 +223,7 @@ const savePhone = () => {
       </div>
       
       <div class="action-section">
+        <span v-if="!(userInfo.hasPassword)" class="default-password">默认密码为：手机号+li</span>
         <el-button class="password-btn" @click="openPasswordDialog">
           {{ props.userInfo.hasPassword ? '修改密码' : '设置密码' }}
         </el-button>
@@ -260,24 +261,27 @@ const savePhone = () => {
         width="30%"
     >
       <div class="dialog-content">
-        <input v-if="props.userInfo.hasPassword"
-               v-model="passwords.current"
-               class="dialog-input"
-               placeholder="请输入当前密码"
-               type="password"
-        />
-        <input
-            v-model="passwords.new"
-            class="dialog-input"
-            placeholder="请输入新密码"
-            type="password"
-        />
-        <input
-            v-model="passwords.confirm"
-            class="dialog-input"
-            placeholder="请确认新密码"
-            type="password"
-        />
+        <div class="dialog-input">
+          <CustomContentInput
+              v-model:input-value="passwords.current"
+              :input="{ placeholder: '请输入当前密码', name: '当前密码' }"
+              :type="'password'"
+          />
+        </div>
+        <div class="dialog-input">
+          <CustomContentInput
+              v-model:input-value="passwords.new"
+              :input="{ placeholder: '请输入新密码', name: '新密码' }"
+              :type="'password'"
+          />
+        </div>
+        <div class="dialog-input">
+          <CustomContentInput
+              v-model:input-value="passwords.confirm"
+              :input="{ placeholder: '请确认新密码', name: '确认密码' }"
+              :type="'password'"
+          />
+        </div>
       </div>
       <template #footer>
         <span class="dialog-footer">
@@ -304,12 +308,10 @@ const savePhone = () => {
             type="tel"
         />
       </div>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="showPhoneDialog = false">取消</el-button>
-          <el-button type="primary" @click="savePhone">确认</el-button>
+      <span class="dialog-footer">
+          <el-button class="dialog-footer-btn" @click="showPhoneDialog = false">取消</el-button>
+          <el-button class="dialog-footer-btn" type="primary" @click="savePhone">确认</el-button>
         </span>
-      </template>
     </el-dialog>
   </div>
 </template>

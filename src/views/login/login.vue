@@ -164,7 +164,7 @@ import {ElMessage, ElNotification} from "element-plus";
 import {ObjClear} from "@/tool/tool";
 import router from "@/router";
 import LoginButton from "@/components/common/button/LoginButton.vue";
-import {localStorage_roleObj_label, localStorage_tokenObj_label} from "@/config/localStorage";
+import {SetCurRole, SetCurToken} from "@/config/localStorage";
 import {isDev, isProd} from "@/config/env/envConfig";
 import {
   FormTypeEnum,
@@ -396,16 +396,15 @@ async function login() {
   loginReq.loginInType = loginChangeItem.loginType;
   try {
     let loginResp = await loginInInterface(loginReq);
-    localStorage.setItem(localStorage_tokenObj_label, JSON.stringify({
+    await SetCurToken(JSON.stringify({
       localStorage_token_label: loginResp.accessToken,
       localStorage_refresh_token_label: loginResp.refreshToken
     }));
     let userRolesResp = await userRolesInterface();
     //TODO 默认获取第一个角色 后续在进行选择如果有多个的话
     if (userRolesResp.roles.length > 0) {
-      localStorage.setItem(localStorage_roleObj_label, JSON.stringify(userRolesResp.roles[0]));
+      await SetCurRole(JSON.stringify(userRolesResp.roles[0]));
     }
-    
     ElNotification({
       title: "",
       message: "登录成功",

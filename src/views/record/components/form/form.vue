@@ -142,7 +142,7 @@ const rules = computed(() => {
           isValid = false;
           message = '生产日期必须小于购买日期';
         }
-
+        
         if (!isValid && isFormConfirming.value) {
           callback(new Error(message));
           return;
@@ -201,7 +201,7 @@ const rules = computed(() => {
           isValid = false;
           message = '过期时间必须大于购买日期';
         }
-
+        
         if (!isValid && isFormConfirming.value) {
           callback(new Error(message));
           return;
@@ -223,7 +223,6 @@ const rules = computed(() => {
             callback(new Error('请先填写生产日期'));
           }
           const date = new Date(props.data.produceAt);
-          console.log(selectDateType.value);
           switch (selectDateType.value) {
             case "年":
               props.data.overdueAt = new Date(date.setFullYear(date.getFullYear() + selectDateNum.value)).getTime();

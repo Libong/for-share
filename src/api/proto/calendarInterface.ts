@@ -3,25 +3,26 @@ import http from "@/tool/http";
 
 export interface IFinanceBill {
     billId: string; //账单编号
-    dayIncome: number, //今日收入
-    cash: number, //现金收入
-    onlineIncome: number, //在线收入
-    goodsExpenses: number, //货物支出
-    drinksExpenses: number, //酒水支出
-    otherExpenses: number, //其他支出
-    otherExpensesRemark: string, //其他支出备注
-    isDraw: number, //是否提款
-    drawIncome: number, //提款收入
-    cardIncome: number, //卡收入
-    remark: string, //备注
-    timestamp: number, //时间戳
-    repayExpenses: number, //还款支出
-    extra: string,
+    dayIncome: number; //今日收入
+    cash: number; //现金收入
+    onlineIncome: number; //在线收入
+    goodsExpenses: number; //货物支出
+    drinksExpenses: number; //酒水支出
+    otherExpenses: number; //其他支出
+    otherExpensesRemark: string; //其他支出备注
+    isDraw: number; //是否提款
+    drawIncome: number; //提款收入
+    cardIncome: number; //卡收入
+    remark: string; //备注
+    timestamp: number; //时间戳
+    repayExpenses: number; //还款支出
+    extra: string; //额外
 }
 
 export interface IFinanceBillExtra {
     repayUnit: string; //还款单位
     repayImages: string[]; //还款证明图
+    drawDate: number; //提款日期
 }
 
 export enum FinanceBillIsDraw {
@@ -45,6 +46,7 @@ export interface IAddFinanceBillReq {
     timestamp: number, //时间戳
     repayExpenses: number, //还款支出
     extra: string,
+    owner: string; //拥有者
 }
 
 export interface IAddFinanceBillResp {

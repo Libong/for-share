@@ -1,0 +1,137 @@
+.shaking {
+  animation: shakeAnimation 0.5s ease;
+}
+
+@keyframes shakeAnimation {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+}
+
+.input-er {
+  /*固定位置*/
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  margin-top: 0.5rem;
+
+  /* 覆盖自动填充时的背景颜色 */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    transition: color 5000s ease, background-color 5000s ease; /* 非常长的过渡时间 */
+    transition-delay: 5000s; /* 延迟开始时间 */
+    -webkit-text-fill-color: black; /* 设置文本颜色 */
+    background-color: transparent !important; /* 强制背景颜色为透明 */
+  }
+
+  input {
+    width: 100%;
+    height: 100%;
+    /*不设置边框 否则会有边框会有阴影*/
+    border: 2px solid #e4e7ed;
+    /*背景设置透明*/
+    background: transparent;
+    /*类似于边框border 描边 不过safari不会生效*/
+    outline: none;
+    /*圆角边框*/
+    border-radius: rem(5px);
+    /*字体大小*/
+    font-size: 0.32rem;
+    font-weight: bold;
+    /*字体颜色*/
+    color: rgba(0, 0, 0, 0.75);
+    /*加边距使文本浮空 不会贴紧输入框*/
+    padding: 0 rem(15px);
+    /*设置颜色*/
+
+    &::placeholder {
+      font-weight: bold;
+      //font-size: 10px;
+    }
+
+    /*聚焦时*/
+
+    &:focus {
+      /*改变描边的颜色*/
+      border: 2px solid rgb(0, 0, 0, 0.5);
+      /*提示字消失*/
+
+      &::placeholder {
+        /*完全透明*/
+        opacity: 0;
+      }
+
+      /*输入框外展示提示字*/
+
+      & + .content {
+        /*显示*/
+        opacity: 1;
+        top: -15px;
+      }
+    }
+
+    /*当内部提示字未展示时(输入框中有内容) 展示外部提示字*/
+
+    &:not(:placeholder-shown) + .content {
+      /*显示*/
+      opacity: 1;
+      top: -15px;
+    }
+  }
+
+  .content {
+    /*会根据父标签中为relative的div 移动*/
+    position: absolute;
+    /*偏移到合适的位置*/
+    top: -10px;
+    left: 0;
+    /*字体颜色*/
+    color: black;
+    /*字体大小 比提示小点*/
+    font-size: 11px;
+    /*字体加粗*/
+    font-weight: bold;
+    /*当改元素被改变时的动画 时间0.25 ease-out函数(使得变化开始较快，然后逐渐减慢)*/
+    transition: 0.25s ease-out;
+    /*默认隐藏*/
+    opacity: 0;
+  }
+
+  .notice-content {
+    /*会根据父标签中为relative的div 移动*/
+    position: absolute;
+    left: 33%;
+    /*字体颜色*/
+    color: rgba(255, 0, 0, 0.8);
+    /*字体大小 比提示小点*/
+    font-size: rem(11px);
+    /*字体加粗*/
+    font-weight: bolder;
+    /*当改元素被改变时的动画 时间0.25 ease-out函数(使得变化开始较快，然后逐渐减慢)*/
+    transition: 0.25s ease-out;
+    top: rem(40px);
+  }
+
+  .eye {
+    position: absolute;
+    height: 25px;
+    width: 25px;
+    right: rem(10px);
+    //top: rem(1px);
+    /*手指*/
+    cursor: pointer;
+  }
+}

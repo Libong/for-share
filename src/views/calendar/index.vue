@@ -1,9 +1,9 @@
 <template>
   <div class="calendar-container">
     <div v-if="allOwners.length != 0" class="calendar-owner-select">
-      <button v-for="item in allOwners" :class="{active:item.accountId != selectOwner}"
+      <button v-for="item in allOwners" :class="{active:item.accountId !== selectOwner}"
               class="calendar-owner-select-btn" @click="setSelectOwner(item)">
-        <img :src="item.avatar" alt=""/>
+        <img :src="item.avatar ? item.avatar : Account" alt=""/>
         <span>{{ item.account }}</span>
       </button>
     </div>
@@ -33,11 +33,16 @@
             :key="idx"
             :class="{
           placeholder: !item.inMonth,
-          today: item.isToday,
         }"
-            @click="openModal(item)"
         >
-          <span>{{ item.day }}</span>
+          <div :class="{today:item.isToday}" class="li-first" @click="openModal(item)">
+            <img v-if="eventMap[item.dateKey] && eventMap[item.dateKey].isDraw && showDailyStat" :src="Draw" alt=""
+                 class="draw-img draw-img-up"/>
+            <span class="day-text">{{ item.day }}</span>
+            <img v-if="eventMap[item.dateKey] && eventMap[item.dateKey].drawIncome && showDailyStat" :src="DrawIncome"
+                 alt=""
+                 class="draw-img draw-img-down"/>
+          </div>
           <div v-show="!showDailyStat" class="notice-point">
             <img
                 v-if="activeDateRepayPointMap[item.dateKey]"
@@ -68,9 +73,9 @@
             <div class="modal">
               <h3>{{ timestampToYYYYMMDD(selectedDateTimestamp) }} 账单</h3>
               <el-scrollbar :height="scrollbarHeight" class="teleport-el-scrollbar"
-                            style="padding: 0 10px;">
+                            style="padding: 0 10px 10px 10px;">
                 <!--设置统一的label宽度使其右对齐-->
-                <el-form class="teleport-form-style" label-width="80px">
+                <el-form ref="formRef" :model="form" :rules="rules" class="teleport-form-style" label-width="80px">
                   <div v-if="showRepayContent" class="modal-expend"
                        @click="toggleRepay">
                     <span>还款详情</span>
@@ -95,7 +100,7 @@
                       </el-form-item>
                       <el-form-item label="还款截图证明" label-width="100px">
                       </el-form-item>
-                      <el-form-item label-width="0px">
+                      <el-form-item class="special-el-form-item-img" label-width="0px">
                         <div v-for="(image, index) in formExtra.repayImages" :key="index" class="image-item">
                           <el-image
                               :preview-src-list="[image]"
@@ -167,11 +172,17 @@
                           <el-radio :value="2">否</el-radio>
                         </el-radio-group>
                       </el-form-item>
-                      <el-form-item label="提款收入">
+                      <el-form-item class="special-el-form-item-drawIncome" label="提款收入" prop="drawIncome">
                         <el-input-number
                             v-model="form.drawIncome"
                             :min="0"
+                            style="width: 60%"
+                            @input="validateSingleField('drawIncome')"
                         />
+                        <el-select v-model="formExtraTempDrawDate" :disabled="!form.drawIncome"
+                                   placeholder="请选择">
+                          <el-option v-for="t in recentDrawTimestamps" :label="timestampToYYYYMMDD(t,true)" :value="t"/>
+                        </el-select>
                       </el-form-item>
                       <el-form-item label="卡收入">
                         <el-input-number
@@ -212,7 +223,7 @@
                       <el-form-item label="其他支出">
                         <el-input-number v-model="form.otherExpenses" :min="0"/>
                       </el-form-item>
-                      <el-form-item label="其他支出备注:" label-width="100px">
+                      <el-form-item label="其他支出备注:" label-width="120px">
                       </el-form-item>
                       <el-form-item label-width="0px">
                         <el-input
@@ -229,7 +240,7 @@
                 </el-form>
               </el-scrollbar>
               <div class="btn-bar">
-                <button @click="save">保存</button>
+                <button @click="save(formRef)">保存</button>
                 <button @click="clear">清空</button>
                 <button @click="closeModal">取消</button>
               </div>
@@ -267,13 +278,16 @@ import {
 } from "@/api/proto/calendarInterface";
 import {ObjClear, timestampToYYYYMMDD} from "@/tool/tool";
 import {ShowCommonMessage} from "@/tool/message";
-import {localStorage_roleObj_label} from "@/config/localStorage";
+import {GetCurRole} from "@/config/localStorage";
 import {rem} from "@/main";
 import {fileUploadInterface, UploadFileType} from "@/api/proto/fileinterface";
-import {UploadFile, UploadFiles, UploadRequestOptions} from "element-plus";
+import {FormInstance, UploadFile, UploadFiles, UploadRequestOptions} from "element-plus";
 import {UploadFileTypeText} from "@/config/common";
 import CalendarConfirmDialog from "@/views/calendar/calendarConfirmDialog.vue";
 import {Record} from "@icon-park/vue-next";
+import Account from "@/assets/username.svg";
+import Draw from "@/assets/draw.png";
+import DrawIncome from "@/assets/drawIncome.png";
 
 onMounted(() => {
   updateMonthBillData();
@@ -286,23 +300,14 @@ const allOwners = ref<IFinanceBillAccount[]>([])
 const curUserRole = ref("")
 
 function userIsManager() {
-  const roleObjStr = localStorage.getItem(localStorage_roleObj_label);
-  if (roleObjStr) {
-    const roleObj = JSON.parse(roleObjStr);
-    curUserRole.value = roleObj.id
-    if (roleObj.id == "manager") {
-      searchOwners();
-    }
+  curUserRole.value = GetCurRole();
+  if (curUserRole.value == "manager") {
+    searchOwners();
   }
 }
 
 async function setSelectOwner(owner: IFinanceBillAccount) {
   selectOwner.value = owner.accountId
-  //重置数据
-  activeDateRepayPointMap.value = {}
-  statDailyIncomeMap.value = {}
-  statDailyExpenseMap.value = {}
-  eventMap.value = {}
   await updateMonthBillData()
   ShowCommonMessage("已切换至" + owner.account + "视角", "success")
 }
@@ -391,10 +396,44 @@ const form = reactive<IFinanceBill>({
   billId: "", timestamp: 0, remark: "", extra: "",
   cardIncome: 0, cash: 0, drawIncome: 0, isDraw: 2, onlineIncome: 0, dayIncome: 0
 })
+const formExtraTempDrawDate = ref<number | undefined>(undefined)
 const formExtra = reactive<IFinanceBillExtra>({
-  repayUnit: "", repayImages: []
+  repayUnit: "", repayImages: [], drawDate: 0
 })
 /* ===== 表单内容 ===== */
+const formRef = ref<FormInstance>()
+//TODO 很怪validateField调用后会将对应的规则的callback中的new Error作为reject返回 然后被全局捕获
+// 当数字变化时，立即重新校验下拉框
+async function validateSingleField(propName: string) {
+  //用于重新显示select的请选择样式 只有当值为undefined、空字符串时才能被判定为false
+  if (!form.drawIncome) {
+    formExtraTempDrawDate.value = undefined
+  }
+  try {
+    await formRef.value?.validateField(propName);
+  } catch (err) {
+  }
+}
+
+// 校验规则
+const rules = {
+  drawIncome: [
+    {
+      validator: (_: any, value: any, callback: any) => {
+        // 只要数字不为 0，就必须选一项
+        if (form.drawIncome !== 0 && !formExtraTempDrawDate.value) {
+          console.log("validator err")
+          callback(new Error('请选择对应提款日期'))
+        } else {
+          console.log("validator ok")
+          callback()
+        }
+      },
+      trigger: ['change', 'blur']
+    }
+  ]
+}
+
 const showRepayContent = computed(() => {
   return form.repayExpenses != 0 || curUserRole.value == 'manager'
 })
@@ -470,17 +509,38 @@ const handleUploadErrSuccess = (response: any, file: UploadFile, fileList: Uploa
   ShowCommonMessage("照片上传成功", "success");
 }
 
-// 以 2025-07-30 为 key 的对象
+/* ===== 数据更新 ===== */
 const eventMap = ref<Record<number, IFinanceBill>>({})
 const activeDateRepayPointMap = ref<Record<number, boolean>>({})
 const statDailyIncomeMap = ref<Record<number, number>>({})
 const statDailyExpenseMap = ref<Record<number, number>>({})
+const recentDrawTimestamps = ref<number[]>([])
+
+function resetStatMap() {
+  activeDateRepayPointMap.value = {}
+  statDailyIncomeMap.value = {}
+  statDailyExpenseMap.value = {}
+  recentDrawTimestamps.value = []
+  eventMap.value = {}
+}
+
+function updateItemMap(item: IFinanceBill) {
+  //计算每日收入支出
+  statDailyIncomeMap.value[item.timestamp] = item.dayIncome
+  statDailyExpenseMap.value[item.timestamp] = item.drinksExpenses + item.goodsExpenses + item.otherExpenses + item.repayExpenses
+  //有还款信息需要提示
+  if (item.repayExpenses) {
+    activeDateRepayPointMap.value[item.timestamp] = true
+  }
+}
 
 async function updateMonthBillData() {
-  //获取当前月份的头尾时间戳
-  const startMonthTimestamp = new Date(year.value, month.value, 1)
+  //重置数据
+  resetStatMap()
+  //获取当前月份的头尾时间戳 (另外由于需要获取到最近的提款日期用于提款收入时的选择 前后各多10天)
+  const startMonthTimestamp = new Date(year.value, month.value, -9)
   startMonthTimestamp.setHours(0, 0, 0, 0)
-  const endMonthTimestamp = new Date(year.value, month.value + 1, 1, 0, 0, -1)
+  const endMonthTimestamp = new Date(year.value, month.value + 1, 11, 0, 0, -1)
   const resp = await searchFinanceBillsPageInterface({
     endTimestamp: endMonthTimestamp.getTime(),
     pageNum: 0,
@@ -494,16 +554,11 @@ async function updateMonthBillData() {
   }
   resp.list.forEach((item) => {
     eventMap.value[item.timestamp] = item
-    //计算每日收入支出
-    statDailyIncomeMap.value[item.timestamp] = item.dayIncome
-    statDailyExpenseMap.value[item.timestamp] = item.drinksExpenses + item.goodsExpenses + item.otherExpenses + item.repayExpenses
-    //有还款信息需要提示
-    if (item.repayExpenses) {
-      activeDateRepayPointMap.value[item.timestamp] = true
+    if (item.isDraw) {
+      recentDrawTimestamps.value.push(item.timestamp)
     }
-    
+    updateItemMap(item)
   })
-  console.log(activeDateRepayPointMap)
 }
 
 function openModal(item: CalendarItem) {
@@ -517,17 +572,23 @@ function openModal(item: CalendarItem) {
   //设置选中的日期
   selectedDateTimestamp.value = item.dateKey
   //从eventMap中获取数据到form中回显
-  if (eventMap.value[item.dateKey] && eventMap.value[item.dateKey].extra) {
-    const extraJson = JSON.parse(eventMap.value[item.dateKey].extra)
-    formExtra.repayUnit = extraJson.repayUnit || ''
-    formExtra.repayImages = extraJson.repayImages || []
+  if (eventMap.value[item.dateKey]) {
     Object.assign(form, eventMap.value[item.dateKey])
+    if (eventMap.value[item.dateKey].extra) {
+      const extraJson = JSON.parse(eventMap.value[item.dateKey].extra)
+      formExtra.repayUnit = extraJson.repayUnit || ''
+      formExtra.repayImages = extraJson.repayImages || []
+      formExtra.drawDate = extraJson.drawDate || 0
+      formExtraTempDrawDate.value = extraJson.drawDate || 0
+    }
   }
+  
   modalVisible.value = true
 }
 
 function closeModal() {
   ObjClear(form)
+  //TODO 有点忘记加这个判断的意义了
   if (curUserRole.value == 'manager') {
     ObjClear(formExtra)
   }
@@ -546,11 +607,23 @@ async function clear() {
   closeModal()
 }
 
-async function save() {
+async function save(formEl: FormInstance | undefined) {
+  if (!formEl) {
+    return
+  }
+  let formCheckValid = false
+  await formEl.validate((valid, fields) => {
+    formCheckValid = valid
+    if (!valid) {
+      ShowCommonMessage("记录填写有误，请检查", "error")
+    }
+  })
+  if (!formCheckValid) {
+    return
+  }
   //设置当前日期时间戳
-  // if (form.timestamp == 0) {
   form.timestamp = selectedDateTimestamp.value
-  // }
+  formExtra.drawDate = formExtraTempDrawDate.value ?? 0
   const formExtraJson = JSON.stringify(formExtra)
   if (form.billId != "") {
     const updateReq = {} as IUpdateFinanceBillReq
@@ -560,6 +633,9 @@ async function save() {
   } else {
     const addReq = {} as IAddFinanceBillReq
     Object.assign(addReq, form)
+    if (selectOwner.value != '') {
+      addReq.owner = selectOwner.value
+    }
     addReq.extra = formExtraJson
     const resp = await addFinanceBillInterface(addReq)
     form.billId = resp.billId
@@ -571,6 +647,7 @@ async function save() {
   //更新本地数据 form数据会被清空
   Object.assign(eventMap.value[selectedDateTimestamp.value], form)
   eventMap.value[selectedDateTimestamp.value].extra = formExtraJson
+  updateItemMap(form)
   closeModal()
   ShowCommonMessage("保存成功", "success")
 }
