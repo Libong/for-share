@@ -315,17 +315,48 @@ watch(currentType, () => {
       </div>
     </div>
 
-    <!-- 详情弹窗 -->
-    <el-dialog v-model="detailVisible" :title="detailTitle" width="600px" custom-class="anime-dialog">
-      <el-table :data="currentDetails" style="width: 100%" border stripe>
-        <el-table-column prop="name" label="名称/接口" min-width="150" show-overflow-tooltip />
-        <el-table-column prop="user" label="操作用户" width="100" />
-        <el-table-column prop="time" label="时间" width="100" />
-        <el-table-column v-if="currentDetails[0]?.ip" prop="ip" label="访问IP" width="130" />
-      </el-table>
+    <!-- 详情弹窗：科技动漫终端版 -->
+    <el-dialog 
+      v-model="detailVisible" 
+      width="650px" 
+      custom-class="anime-terminal-dialog"
+      :show-close="false"
+    >
+      <template #header>
+        <div class="terminal-header">
+          <div class="status-dot"></div>
+          <span class="header-title" v-html="detailTitle.replace('[', '<strong>[').replace(']', ']</strong>')"></span>
+        </div>
+      </template>
+
+      <div class="terminal-body">
+        <div class="scanline"></div>
+        <el-table 
+          :data="currentDetails" 
+          style="width: 100%" 
+          class="tech-table"
+        >
+          <el-table-column prop="name" label="OBJECT / API" min-width="180">
+            <template #default="scope">
+              <span class="tech-item-name">{{ scope.row.name }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="user" label="OPERATOR" width="110">
+            <template #default="scope">
+              <span class="tech-user-badge">{{ scope.row.user }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="time" label="TIME" width="100" />
+          <el-table-column v-if="currentDetails[0]?.ip" prop="ip" label="SOURCE IP" width="140" />
+        </el-table>
+      </div>
+
       <template #footer>
         <div class="dialog-footer">
-          <button class="filter-btn active" @click="detailVisible = false">关闭终端</button>
+          <div class="footer-msg">Connection Secure: 256-bit AES</div>
+          <button class="terminal-close-btn" @click="detailVisible = false">
+            <span class="btn-icon">×</span> CLOSE TERMINAL
+          </button>
         </div>
       </template>
     </el-dialog>
@@ -506,28 +537,179 @@ watch(currentType, () => {
   opacity: 0;
 }
 
-:deep(.anime-dialog) {
-  border-radius: 16px;
+:deep(.anime-terminal-dialog) {
+  background: rgba(15, 18, 25, 0.95) !important;
+  backdrop-filter: blur(25px);
+  border-radius: 2px;
+  border-left: 4px solid #6c5ce7;
+  border-right: 1px solid rgba(162, 155, 254, 0.2);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(108, 92, 231, 0.1);
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
   
   .el-dialog__header {
-    background: #f8f9ff;
-    padding: 20px;
+    background: rgba(108, 92, 231, 0.1);
+    padding: 15px 20px;
     margin: 0;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid rgba(162, 155, 254, 0.2);
   }
-  .el-dialog__title {
-    font-weight: bold;
-    color: #4834d4;
+
+  .terminal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      background: #00ff88;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #00ff88;
+      animation: blink 1.5s infinite;
+    }
+
+    .header-title {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      padding-left: 12px;
+      border-left: 3px solid #6c5ce7;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      strong {
+        color: #fff;
+        font-family: 'ZCOOL KuaiLe', cursive;
+        font-size: 16px;
+        text-shadow: 0 0 10px rgba(108, 92, 231, 0.8);
+      }
+    }
   }
-  .el-dialog__body {
-    padding: 20px;
+
+  .terminal-body {
+    position: relative;
+    padding: 10px;
+  }
+
+  .scanline {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      rgba(18, 16, 16, 0) 50%,
+      rgba(0, 0, 0, 0.1) 50%
+    ), linear-gradient(
+      90deg,
+      rgba(255, 0, 0, 0.03),
+      rgba(0, 255, 0, 0.01),
+      rgba(0, 0, 255, 0.03)
+    );
+    background-size: 100% 3px, 3px 100%;
+    pointer-events: none;
+    z-index: 10;
+    opacity: 0.3;
+  }
+
+  /* Table Customization */
+  .tech-table {
+    background: transparent !important;
+    color: #cbd5e0 !important;
+    
+    &::before { display: none; }
+    
+    th.el-table__cell {
+      background: rgba(108, 92, 231, 0.05) !important;
+      color: #a29bfe !important;
+      font-weight: bold;
+      font-size: 12px;
+      border-bottom: 1px solid rgba(162, 155, 254, 0.2) !important;
+    }
+
+    td.el-table__cell {
+      border-bottom: 1px dashed rgba(162, 155, 254, 0.1) !important;
+      background: transparent !important;
+    }
+
+    tr:hover td.el-table__cell {
+      background: rgba(108, 92, 231, 0.1) !important;
+    }
+  }
+
+  .tech-item-name {
+    color: #fff;
+    font-family: monospace;
+  }
+
+  .tech-user-badge {
+    background: rgba(162, 155, 254, 0.2);
+    color: #a29bfe;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    border: 1px solid rgba(162, 155, 254, 0.3);
+  }
+
+  .el-dialog__footer {
+    border-top: 1px solid rgba(162, 155, 254, 0.2);
+    padding: 15px 20px;
   }
 }
 
 .dialog-footer {
-  text-align: right;
-  padding: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .footer-msg {
+    font-size: 11px;
+    color: rgba(162, 155, 254, 0.4);
+    font-family: monospace;
+  }
+}
+
+.terminal-close-btn {
+  background: #6c5ce7;
+  color: #fff;
+  border: none;
+  padding: 8px 24px;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  border-radius: 30px; /* 改为椭圆 */
+  text-transform: uppercase;
+
+  &:hover {
+    background: #4834d4;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+  }
+
+  .btn-icon {
+    font-size: 18px;
+    font-weight: normal;
+  }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* Custom Scrollbar for Table */
+:deep(.el-scrollbar__bar) {
+  opacity: 1;
+  .el-scrollbar__thumb {
+    background: rgba(108, 92, 231, 0.5);
+    &:hover { background: #6c5ce7; }
+  }
 }
 </style>
