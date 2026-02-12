@@ -16,27 +16,39 @@ interface LogDetail {
 // --- 状态管理 ---
 const currentType = ref<StatType>('daily');
 const interfaceChartRef = ref<HTMLElement | null>(null);
+const interfaceFixedChartRef = ref<HTMLElement | null>(null);
 const productAddChartRef = ref<HTMLElement | null>(null);
 const favorChartRef = ref<HTMLElement | null>(null);
 
 let interfaceChart: echarts.ECharts | null = null;
+let interfaceFixedChart: echarts.ECharts | null = null;
 let productAddChart: echarts.ECharts | null = null;
 let favorChart: echarts.ECharts | null = null;
 
 // 实时数字位置信息
-const flipPositions = ref<{ x: number, y: number, value: number }[]>([]);
+const flipPositions = ref<{ x: number, y: number, value: number, visible: boolean }[]>([]);
+
+const chartHeight = ref('420px');
 
 const updateFlipPositions = () => {
   if (!interfaceChart) return;
-  const data = interfaceStats.value[currentType.value];
-  // 使用 nextTick 确保图表已渲染
-  nextTick(() => {
-    const positions = data.names.map((_, index) => {
-      // 获取柱子末端的像素坐标 [value, index] -> [x, y]
+  const data = (interfaceStats.value as any)[currentType.value];
+  
+  // 使用 requestAnimationFrame 替代 nextTick 获取更丝滑的同步效果
+  requestAnimationFrame(() => {
+    const list: { x: number, y: number, value: number, visible: boolean }[] = [];
+    (data.names as string[]).forEach((_, index: number) => {
       const pos = interfaceChart!.convertToPixel({ seriesIndex: 0 }, [data.values[index], index]);
-      return { x: pos[0], y: pos[1], value: data.values[index] };
+      const isVisible = interfaceChart!.containPixel('grid', pos);
+      
+      list.push({ 
+        x: pos[0], 
+        y: pos[1], 
+        value: data.values[index], 
+        visible: isVisible 
+      });
     });
-    flipPositions.value = positions;
+    flipPositions.value = list;
   });
 };
 
@@ -46,18 +58,26 @@ const detailTitle = ref('');
 const currentDetails = ref<LogDetail[]>([]);
 
 // --- 模拟数据 ---
-
+// TODO: 这里的模拟数据后期需要通过 API 接口获取
 // 接口访问数据
 const interfaceStats = ref({
   daily: {
-    names: ['/api/user/login', '/api/product/list', '/api/order/create', '/api/user/profile', '/api/product/add'],
-    values: [210, 560, 120, 330, 45],
+    names: [
+      '/api/user/login', '/api/product/list', '/api/order/create', '/api/user/profile', '/api/product/add',
+      '/api/cart/add', '/api/search/keyword', '/api/notice/list', '/api/upload/image', '/api/config/get'
+    ],
+    values: [210, 560, 120, 330, 45, 89, 412, 110, 56, 230],
     logs: [
       [{name: '/api/user/login', user: 'Admin', time: '10:05', ip: '192.168.1.1'}, {name: '/api/user/login', user: 'Guest', time: '10:10', ip: '192.168.1.10'}],
       [{name: '/api/product/list', user: 'UserA', time: '10:15', ip: '192.168.1.5'}],
       [{name: '/api/order/create', user: 'UserB', time: '10:20', ip: '192.168.2.1'}],
       [{name: '/api/user/profile', user: 'UserC', time: '10:25', ip: '192.168.1.3'}],
-      [{name: '/api/product/add', user: 'Admin', time: '10:30', ip: '192.168.1.1'}]
+      [{name: '/api/product/add', user: 'Admin', time: '10:30', ip: '192.168.1.1'}],
+      [{name: '/api/cart/add', user: 'UserX', time: '10:35', ip: '192.168.3.1'}],
+      [{name: '/api/search/keyword', user: 'UserY', time: '10:40', ip: '192.168.3.5'}],
+      [{name: '/api/notice/list', user: 'UserB', time: '10:45', ip: '192.168.2.1'}],
+      [{name: '/api/upload/image', user: 'Staff1', time: '10:50', ip: '192.168.1.50'}],
+      [{name: '/api/config/get', user: 'System', time: '10:55', ip: '127.0.0.1'}]
     ]
   },
   weekly: {
@@ -72,24 +92,46 @@ const interfaceStats = ref({
   }
 });
 
+const getNiceMax = (maxValue: number) => {
+  if (maxValue <= 0) return 100;
+  // 计算数量级
+  const magnitude = Math.pow(10, Math.floor(Math.log10(maxValue)));
+  const normalized = maxValue / magnitude;
+  
+  let niceMax;
+  if (normalized < 1.5) niceMax = 1.5;
+  else if (normalized < 2) niceMax = 2;
+  else if (normalized < 3) niceMax = 3;
+  else if (normalized < 4) niceMax = 4;
+  else if (normalized < 5) niceMax = 5;
+  else if (normalized < 8) niceMax = 8;
+  else niceMax = 10;
+  
+  return niceMax * magnitude;
+};
+
 // 模拟 WebSocket 实时更新 (仅针对当日数据)
 let wsTimer: any = null;
 const startWsSimulation = () => {
+  // TODO: 后期替换为真实的 WebSocket 连接逻辑
   wsTimer = setInterval(() => {
     // 随机增加几个访问量
     const index = Math.floor(Math.random() * interfaceStats.value.daily.values.length);
     interfaceStats.value.daily.values[index] += Math.floor(Math.random() * 5) + 1;
     
-    // 如果当前选中的是 daily，更新图表
-    if (currentType.value === 'daily' && interfaceChart) {
-      interfaceChart.setOption({
-        series: [{ data: interfaceStats.value.daily.values }]
-      });
+    // 如果当前选中的是 daily，更新两个图表
+    if (currentType.value === 'daily') {
+      if (interfaceChart) interfaceChart.setOption({ series: [{ data: interfaceStats.value.daily.values }] });
+      if (interfaceFixedChart) {
+        const maxValue = Math.max(...interfaceStats.value.daily.values);
+        interfaceFixedChart.setOption({ xAxis: { max: getNiceMax(maxValue) } });
+      }
       updateFlipPositions();
     }
   }, 3000); // 3秒更新一次
 };
 
+// TODO: 商品新增数据后期需要通过 API 接口动态拉取
 const productAddData = {
   daily: {
     categories: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
@@ -115,6 +157,7 @@ const productAddData = {
   }
 };
 
+// TODO: 商品收藏热度数据后期需要通过 API 接口获取
 const favorData = {
   products: ['机械键盘', '曲面屏', '游戏主机', '无线耳机', '人体工学椅', '数位板'],
   levels: [95, 88, 82, 75, 68, 55]
@@ -123,31 +166,63 @@ const favorData = {
 // --- 图表初始化函数 ---
 
 const initInterfaceChart = () => {
-  if (!interfaceChartRef.value) return;
+  if (!interfaceChartRef.value || !interfaceFixedChartRef.value) return;
+  
+  // 1. 初始化固定的底层 (负责 X 轴和网格线)
+  if (interfaceFixedChart) interfaceFixedChart.dispose();
+  interfaceFixedChart = echarts.init(interfaceFixedChartRef.value);
+  
+  // 2. 初始化滚动的上层 (负责 Y 轴和柱状图)
   if (interfaceChart) interfaceChart.dispose();
   interfaceChart = echarts.init(interfaceChartRef.value);
   
-  const data = interfaceStats.value[currentType.value];
+  const data = (interfaceStats.value as any)[currentType.value];
+  const maxValue = Math.max(...(data.values as number[]), 100); 
+  const syncMax = getNiceMax(maxValue);
   
-  const option = {
+  // 统一边距：左侧留够标签空间，其余四周留白
+  const commonGrid = { left: 120, right: 30, bottom: 40, top: 50, containLabel: false };
+  
+  // 底层配置：只显示 X 轴和背景网格
+  const fixedOption = {
     title: { 
       text: '实时功能接口访问统计 (WebSocket)', 
-      textStyle: { color: '#6c5ce7', fontSize: 16 } 
+      textStyle: { color: '#6c5ce7', fontSize: 16 },
+      top: 10,
+      left: 10
     },
-    tooltip: { 
-      trigger: 'axis',
-      axisPointer: { type: 'shadow' }
-    },
-    grid: { left: '3%', right: '10%', bottom: '3%', containLabel: true },
+    grid: commonGrid,
     xAxis: { 
       type: 'value',
-      axisLine: { show: false },
-      splitLine: { lineStyle: { type: 'dashed' } }
+      min: 0,
+      max: syncMax,
+      axisLine: { show: true, lineStyle: { color: '#dcdde1' } },
+      splitLine: { show: true, lineStyle: { type: 'dashed' } },
+      axisLabel: { color: '#636e72', fontSize: 11, margin: 12 }
+    },
+    yAxis: { type: 'category', data: [], axisLine: { show: false }, axisTick: { show: false } },
+    series: []
+  };
+
+  // 上层配置：显示 Y 轴和条形图，背景透明
+  const scrollOption = {
+    backgroundColor: 'transparent',
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    grid: { ...commonGrid, top: 0, bottom: 0 }, // 绘图区高度由容器比例决定
+    xAxis: { 
+      type: 'value', 
+      min: 0,
+      max: syncMax,
+      axisLine: { show: false }, 
+      splitLine: { show: false }, 
+      axisLabel: { show: false } 
     },
     yAxis: { 
       type: 'category', 
       data: data.names,
-      axisLabel: { color: '#636e72', fontSize: 11 }
+      inverse: true,
+      axisLine: { show: true, lineStyle: { color: '#dcdde1' } },
+      axisLabel: { color: '#636e72', fontSize: 11, width: 80, overflow: 'truncate' }
     },
     series: [
       {
@@ -161,18 +236,20 @@ const initInterfaceChart = () => {
           ]),
           borderRadius: [0, 4, 4, 0]
         },
-        label: {
-          show: false // 隐藏自带标签，使用 Vue Overlay 实现翻牌效果
-        },
+        label: { show: false },
         animationDuration: 1000,
-        animationDurationUpdate: 500
+        animationDurationUpdate: 300
       }
     ]
   };
-  interfaceChart.setOption(option);
-  updateFlipPositions();
 
-  // 点击下钻
+  interfaceFixedChart.setOption(fixedOption);
+  interfaceChart.setOption(scrollOption);
+  
+  interfaceChart.on('finished', () => {
+    updateFlipPositions();
+  });
+
   interfaceChart.on('click', (params: any) => {
     const index = params.dataIndex;
     detailTitle.value = `接口 [ ${data.names[index]} ] 访问日志`;
@@ -185,6 +262,7 @@ const initProductAddChart = () => {
   if (!productAddChartRef.value) return;
   if (productAddChart) productAddChart.dispose();
   productAddChart = echarts.init(productAddChartRef.value);
+  // TODO: 商品新增趋势数据后期应通过 API 获取
   const data = productAddData[currentType.value];
   const option = {
     title: { text: '商品新增趋势 (点击查看详情)', textStyle: { color: '#6c5ce7', fontSize: 16 } },
@@ -205,6 +283,7 @@ const initProductAddChart = () => {
   productAddChart.on('click', (params: any) => {
     const index = params.dataIndex;
     detailTitle.value = `${data.categories[index]} 新增商品详情`;
+    // TODO: 这里的详情点击后期需要通过 API 获取
     currentDetails.value = data.details[index] || [];
     detailVisible.value = true;
   });
@@ -232,14 +311,28 @@ const initFavorChart = () => {
   favorChart.setOption(option);
 };
 
+const updateChartHeight = () => {
+  const data = (interfaceStats.value as any)[currentType.value];
+  // 网格可用高度为 330px (420 - 50 - 40)，显示 5 个则每个 66px
+  const itemHeight = 66;
+  const height = (data.names as string[]).length * itemHeight;
+  chartHeight.value = `${height}px`;
+  nextTick(() => {
+    interfaceChart?.resize();
+    updateFlipPositions();
+  });
+};
+
 const handleResize = () => {
   interfaceChart?.resize();
+  interfaceFixedChart?.resize();
   productAddChart?.resize();
   favorChart?.resize();
   updateFlipPositions();
 };
 
 onMounted(() => {
+  updateChartHeight();
   initInterfaceChart();
   initProductAddChart();
   initFavorChart();
@@ -249,9 +342,11 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (wsTimer) clearInterval(wsTimer);
+  window.removeEventListener('resize', handleResize);
 });
 
 watch(currentType, () => {
+  updateChartHeight();
   initInterfaceChart();
   initProductAddChart();
 });
@@ -276,24 +371,33 @@ watch(currentType, () => {
             </button>
           </div>
         </div>
-        <div class="chart-wrapper" style="position: relative;">
-          <div ref="interfaceChartRef" class="chart-div"></div>
+        <div class="dual-chart-container">
+          <!-- 底面层：固定的刻度线和标题 -->
+          <div ref="interfaceFixedChartRef" class="fixed-chart-layer"></div>
           
-          <!-- 翻牌数字覆盖层 -->
-          <div class="flip-labels-overlay">
-            <div 
-              v-for="(item, idx) in flipPositions" 
-              :key="idx"
-              class="flip-label-item"
-              :style="{ left: (item.x + 30) + 'px', top: (item.y + 15) + 'px', transform: 'translateY(-50%)' }"
-            >
-              <div class="flip-value">
-                <div v-for="(digit, dIdx) in String(item.value).split('')" :key="dIdx" class="digit-box">
-                  <transition name="flip-num" mode="out-in">
-                    <span :key="digit">{{ digit }}</span>
-                  </transition>
+          <!-- 滑动层：包裹了加长版图表 -->
+          <div class="chart-scroll-wrapper scroll-chart-layer">
+            <div class="chart-wrapper" :style="{ height: chartHeight, position: 'relative' }">
+              <div ref="interfaceChartRef" class="chart-div" style="height: 100%;"></div>
+              
+              <!-- 翻牌数字覆盖层 -->
+              <div class="flip-labels-overlay">
+                <div 
+                  v-for="(item, idx) in flipPositions" 
+                  :key="idx"
+                  v-show="item.visible"
+                  class="flip-label-item"
+                  :style="{ left: (item.x + 30) + 'px', top: item.y + 'px', transform: 'translateY(-50%)' }"
+                >
+                  <div class="flip-value">
+                    <div v-for="(digit, dIdx) in String(item.value).split('')" :key="dIdx" class="digit-box">
+                      <transition name="flip-num" mode="out-in">
+                        <span :key="digit">{{ digit }}</span>
+                      </transition>
+                    </div>
+                    <span class="unit">次</span>
+                  </div>
                 </div>
-                <span class="unit">次</span>
               </div>
             </div>
           </div>
@@ -376,7 +480,9 @@ watch(currentType, () => {
 }
 
 .chart-main-card {
-  grid-column: span 2;
+  grid-column: span 2; /* 跨两列 */
+  width: 60%; /* 宽度缩小到 60% */
+  justify-self: center; /* 居中 */
 }
 
 .anime-card {
@@ -461,19 +567,56 @@ watch(currentType, () => {
   }
 }
 
-.chart-wrapper {
+.dual-chart-container {
+  position: relative;
+  height: 420px;
   background: #fff;
   border-radius: 12px;
-  padding: 15px;
+  padding: 10px; /* 统一外围留白 */
+  box-sizing: border-box;
+}
+
+.fixed-chart-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.scroll-chart-layer {
+  position: absolute;
+  top: 50px; /* 避开顶部标题 */
+  bottom: 40px; /* 避开底部刻度线 */
+  left: 0;
+  width: 100%;
+  z-index: 2;
+  background: transparent !important;
+}
+
+.chart-scroll-wrapper {
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: 12px;
+  padding: 0;
+  overscroll-behavior: contain;
+
+  /* 隐藏滚动条 */
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.chart-wrapper {
+  background: transparent;
+  border-radius: 12px;
+  padding: 0; /* 彻底移除内边距，确保坐标系从 0,0 开始 */
 }
 
 .chart-div {
   width: 100%;
-  height: 320px;
-}
-
-.chart-main-card .chart-div {
-  height: 420px;
 }
 
 /* 翻牌覆盖层样式 */
