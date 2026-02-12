@@ -319,12 +319,11 @@ watch(currentType, () => {
     <el-dialog 
       v-model="detailVisible" 
       width="650px" 
-      custom-class="anime-terminal-dialog"
+      class="anime-terminal-dialog"
       :show-close="false"
     >
       <template #header>
         <div class="terminal-header">
-          <div class="status-dot"></div>
           <span class="header-title" v-html="detailTitle.replace('[', '<strong>[').replace(']', ']</strong>')"></span>
         </div>
       </template>
@@ -336,18 +335,13 @@ watch(currentType, () => {
           style="width: 100%" 
           class="tech-table"
         >
-          <el-table-column prop="name" label="OBJECT / API" min-width="180">
-            <template #default="scope">
-              <span class="tech-item-name">{{ scope.row.name }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="user" label="OPERATOR" width="110">
+          <el-table-column prop="user" label="OPERATOR" min-width="120" align="center" header-align="center">
             <template #default="scope">
               <span class="tech-user-badge">{{ scope.row.user }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="time" label="TIME" width="100" />
-          <el-table-column v-if="currentDetails[0]?.ip" prop="ip" label="SOURCE IP" width="140" />
+          <el-table-column prop="time" label="TIME" min-width="120" align="center" header-align="center" />
+          <el-table-column v-if="currentDetails[0]?.ip" prop="ip" label="SOURCE IP" min-width="160" align="center" header-align="center" />
         </el-table>
       </div>
 
@@ -355,7 +349,7 @@ watch(currentType, () => {
         <div class="dialog-footer">
           <div class="footer-msg">Connection Secure: 256-bit AES</div>
           <button class="terminal-close-btn" @click="detailVisible = false">
-            <span class="btn-icon">×</span> CLOSE TERMINAL
+            <span class="btn-icon">×</span> CLOSE
           </button>
         </div>
       </template>
@@ -537,125 +531,118 @@ watch(currentType, () => {
   opacity: 0;
 }
 
-:deep(.anime-terminal-dialog) {
-  background: rgba(15, 18, 25, 0.95) !important;
-  backdrop-filter: blur(25px);
-  border-radius: 2px;
-  border-left: 4px solid #6c5ce7;
-  border-right: 1px solid rgba(162, 155, 254, 0.2);
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(108, 92, 231, 0.1);
+@keyframes blink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+</style>
+
+<style lang="scss">
+/* 详情弹窗全局样式：科技动漫终端版 (因为 el-dialog 默认 Teleport 到 body) */
+.anime-terminal-dialog {
+  background: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(20px);
+  border-radius: 4px;
+  border-left: 6px solid #6c5ce7;
+  border-right: 1px solid rgba(108, 92, 231, 0.1);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.08), inset 0 0 10px rgba(108, 92, 231, 0.02);
   overflow: hidden;
   
   .el-dialog__header {
-    background: rgba(108, 92, 231, 0.1);
-    padding: 15px 20px;
+    // background: rgba(108, 92, 231, 0.03);
+    padding: 20px;
     margin: 0;
-    border-bottom: 1px solid rgba(162, 155, 254, 0.2);
+    // border-bottom: 1px solid rgba(108, 92, 231, 0.08);
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .terminal-header {
     display: flex;
     align-items: center;
-    gap: 12px;
     
-    .status-dot {
-      width: 10px;
-      height: 10px;
-      background: #00ff88;
-      border-radius: 50%;
-      box-shadow: 0 0 10px #00ff88;
-      animation: blink 1.5s infinite;
-    }
-
     .header-title {
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 13px;
+      color: #636e72;
+      font-size: 14px;
       font-weight: 500;
       letter-spacing: 0.5px;
-      padding-left: 12px;
-      border-left: 3px solid #6c5ce7;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
 
       strong {
-        color: #fff;
+        color: #4834d4;
         font-family: 'ZCOOL KuaiLe', cursive;
-        font-size: 16px;
-        text-shadow: 0 0 10px rgba(108, 92, 231, 0.8);
+        font-size: 17px;
+        text-shadow: 0 2px 4px rgba(72, 52, 212, 0.1);
       }
     }
   }
 
   .terminal-body {
     position: relative;
-    padding: 10px;
+    padding: 15px;
+    background: #fff;
   }
 
   .scanline {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      rgba(18, 16, 16, 0) 50%,
-      rgba(0, 0, 0, 0.1) 50%
-    ), linear-gradient(
-      90deg,
-      rgba(255, 0, 0, 0.03),
-      rgba(0, 255, 0, 0.01),
-      rgba(0, 0, 255, 0.03)
-    );
-    background-size: 100% 3px, 3px 100%;
-    pointer-events: none;
-    z-index: 10;
-    opacity: 0.3;
+    display: none; /* 浅色模式下扫描线效果一般，暂时关闭 */
   }
 
-  /* Table Customization */
+  /* Table Customization for Light Theme */
   .tech-table {
     background: transparent !important;
-    color: #cbd5e0 !important;
+    color: #2d3436 !important;
     
     &::before { display: none; }
     
     th.el-table__cell {
-      background: rgba(108, 92, 231, 0.05) !important;
-      color: #a29bfe !important;
+      background: rgba(108, 92, 231, 0.04) !important;
+      color: #6c5ce7 !important;
       font-weight: bold;
-      font-size: 12px;
-      border-bottom: 1px solid rgba(162, 155, 254, 0.2) !important;
+      font-size: 13px;
+      border-bottom: 2px solid rgba(108, 92, 231, 0.1) !important;
     }
 
     td.el-table__cell {
-      border-bottom: 1px dashed rgba(162, 155, 254, 0.1) !important;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.03) !important;
       background: transparent !important;
     }
 
     tr:hover td.el-table__cell {
-      background: rgba(108, 92, 231, 0.1) !important;
+      background: rgba(108, 92, 231, 0.02) !important;
     }
   }
 
   .tech-item-name {
-    color: #fff;
+    color: #4834d4;
+    font-weight: 600;
     font-family: monospace;
   }
 
   .tech-user-badge {
-    background: rgba(162, 155, 254, 0.2);
-    color: #a29bfe;
-    padding: 2px 8px;
-    border-radius: 4px;
+    background: #f1f2f6;
+    color: #6c5ce7;
+    padding: 2px 10px;
+    border-radius: 12px;
     font-size: 11px;
-    border: 1px solid rgba(162, 155, 254, 0.3);
+    font-weight: 500;
+    border: 1px solid rgba(108, 92, 231, 0.1);
   }
 
   .el-dialog__footer {
-    border-top: 1px solid rgba(162, 155, 254, 0.2);
+    border-top: 1px solid rgba(0, 0, 0, 0.03);
     padding: 15px 20px;
+    background: #f9f9fb;
+  }
+
+  .el-scrollbar__bar {
+    .el-scrollbar__thumb {
+      background: rgba(108, 92, 231, 0.3);
+      &:hover { background: #6c5ce7; }
+    }
   }
 }
 
@@ -696,20 +683,6 @@ watch(currentType, () => {
   .btn-icon {
     font-size: 18px;
     font-weight: normal;
-  }
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.8); }
-}
-
-/* Custom Scrollbar for Table */
-:deep(.el-scrollbar__bar) {
-  opacity: 1;
-  .el-scrollbar__thumb {
-    background: rgba(108, 92, 231, 0.5);
-    &:hover { background: #6c5ce7; }
   }
 }
 </style>
