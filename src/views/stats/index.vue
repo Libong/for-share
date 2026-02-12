@@ -19,16 +19,20 @@ const interfaceChartRef = ref<HTMLElement | null>(null);
 const interfaceFixedChartRef = ref<HTMLElement | null>(null);
 const productAddChartRef = ref<HTMLElement | null>(null);
 const favorChartRef = ref<HTMLElement | null>(null);
+const favorFixedChartRef = ref<HTMLElement | null>(null);
 
 let interfaceChart: echarts.ECharts | null = null;
 let interfaceFixedChart: echarts.ECharts | null = null;
 let productAddChart: echarts.ECharts | null = null;
 let favorChart: echarts.ECharts | null = null;
+let favorFixedChart: echarts.ECharts | null = null;
 
 // 实时数字位置信息
 const flipPositions = ref<{ x: number, y: number, value: number, visible: boolean }[]>([]);
 
 const chartHeight = ref('420px');
+const favorChartWidth = ref('100%');
+const favorFlipPositions = ref<{ x: number, y: number, value: number, visible: boolean }[]>([]);
 
 const updateFlipPositions = () => {
   if (!interfaceChart) return;
@@ -49,6 +53,28 @@ const updateFlipPositions = () => {
       });
     });
     flipPositions.value = list;
+  });
+};
+
+const updateFavorFlipPositions = () => {
+  if (!favorChart) return;
+  const data = favorStats.value;
+  
+  requestAnimationFrame(() => {
+    const list: { x: number, y: number, value: number, visible: boolean }[] = [];
+    (data.products as string[]).forEach((_, index: number) => {
+      // 这里的坐标转换需要根据系列类型和维度索引调整
+      const pos = favorChart!.convertToPixel({ seriesIndex: 0 }, [index, data.levels[index]]);
+      const isVisible = favorChart!.containPixel('grid', pos);
+      
+      list.push({ 
+        x: pos[0], 
+        y: pos[1], 
+        value: data.levels[index], 
+        visible: isVisible 
+      });
+    });
+    favorFlipPositions.value = list;
   });
 };
 
@@ -128,6 +154,18 @@ const startWsSimulation = () => {
       }
       updateFlipPositions();
     }
+
+    // 随机更新收藏热度
+    const favorIndex = Math.floor(Math.random() * favorStats.value.levels.length);
+    const delta = Math.floor(Math.random() * 3) + 1;
+    let newValue = favorStats.value.levels[favorIndex] + delta;
+    if (newValue > 100) newValue = 80; // 超过100重置
+    favorStats.value.levels[favorIndex] = newValue;
+
+    if (favorChart) {
+      favorChart.setOption({ series: [{ data: favorStats.value.levels }] });
+      updateFavorFlipPositions();
+    }
   }, 3000); // 3秒更新一次
 };
 
@@ -158,10 +196,10 @@ const productAddData = {
 };
 
 // TODO: 商品收藏热度数据后期需要通过 API 接口获取
-const favorData = {
-  products: ['机械键盘', '曲面屏', '游戏主机', '无线耳机', '人体工学椅', '数位板'],
-  levels: [95, 88, 82, 75, 68, 55]
-};
+const favorStats = ref({
+  products: ['机械键盘', '曲面屏', '游戏主机', '无线耳机', '人体工学椅', '数位板', '游戏手柄', '电竞麦克风', '护眼台灯', '智能插座'],
+  levels: [95, 88, 82, 75, 68, 55, 42, 38, 30, 25]
+});
 
 // --- 图表初始化函数 ---
 
@@ -290,25 +328,82 @@ const initProductAddChart = () => {
 };
 
 const initFavorChart = () => {
-  if (!favorChartRef.value) return;
+  if (!favorChartRef.value || !favorFixedChartRef.value) return;
+  
+  if (favorFixedChart) favorFixedChart.dispose();
+  favorFixedChart = echarts.init(favorFixedChartRef.value);
+  
   if (favorChart) favorChart.dispose();
   favorChart = echarts.init(favorChartRef.value);
-  const option = {
-    title: { text: '商品收藏热度排名', textStyle: { color: '#6c5ce7', fontSize: 16 } },
-    tooltip: { trigger: 'axis' },
-    xAxis: { type: 'category', data: favorData.products },
-    yAxis: { type: 'value', max: 100 },
-    series: [{
-      name: '收藏度',
-      type: 'line',
-      step: 'middle',
-      data: favorData.levels,
-      itemStyle: { color: '#fab1a0' },
-      lineStyle: { width: 4 },
-      areaStyle: { color: 'rgba(250, 177, 160, 0.2)' }
-    }]
+  
+  const data = favorStats.value;
+  
+  // 统一边距：左侧留出 Y 轴空间 (50)，右侧留白 (30)
+  const commonGrid = { left: 50, right: 30, bottom: 60, top: 50, containLabel: false };
+  
+  const fixedOption = {
+    title: { 
+      text: '商品收藏热度排名 (实时更新)', 
+      textStyle: { color: '#6c5ce7', fontSize: 16 },
+      top: 10,
+      left: 10
+    },
+    grid: commonGrid,
+    xAxis: { type: 'category', data: [], axisLine: { show: false }, axisTick: { show: false } },
+    yAxis: { 
+      type: 'value',
+      min: 0,
+      max: 100,
+      interval: 20,
+      axisLine: { show: true, lineStyle: { color: '#dcdde1' } },
+      splitLine: { show: true, lineStyle: { type: 'dashed', color: '#f1f2f6' } },
+      axisLabel: { color: '#636e72', fontSize: 11 }
+    },
+    series: []
   };
-  favorChart.setOption(option);
+
+  const scrollOption = {
+    backgroundColor: 'transparent',
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    grid: { left: 0, right: 0, top: 50, bottom: 60 }, 
+    xAxis: { 
+      type: 'category', 
+      data: data.products,
+      axisLine: { show: true, lineStyle: { color: '#dcdde1' } },
+      axisLabel: { color: '#636e72', fontSize: 11, rotate: 30, interval: 0, margin: 12 }
+    },
+    yAxis: { 
+      type: 'value', 
+      min: 0,
+      max: 100,
+      axisLine: { show: false }, 
+      splitLine: { show: false }, 
+      axisLabel: { show: false } 
+    },
+    series: [
+      {
+        name: '收藏度',
+        type: 'bar',
+        data: data.levels,
+        itemStyle: {
+          color: new echarts.graphic.LinearGradient(0, 1, 0, 0, [
+            { offset: 0, color: '#fab1a0' },
+            { offset: 1, color: '#ff7675' }
+          ]),
+          borderRadius: [4, 4, 0, 0]
+        },
+        animationDuration: 1000,
+        animationDurationUpdate: 300
+      }
+    ]
+  };
+
+  favorFixedChart.setOption(fixedOption);
+  favorChart.setOption(scrollOption);
+  
+  favorChart.on('finished', () => {
+    updateFavorFlipPositions();
+  });
 };
 
 const updateChartHeight = () => {
@@ -317,9 +412,18 @@ const updateChartHeight = () => {
   const itemHeight = 66;
   const height = (data.names as string[]).length * itemHeight;
   chartHeight.value = `${height}px`;
+
+  // 更新收藏热度图表宽度 (横向滚动)
+  const favorData = favorStats.value;
+  const itemWidth = 100;
+  const width = favorData.products.length * itemWidth;
+  favorChartWidth.value = `${Math.max(width, 600)}px`;
+
   nextTick(() => {
     interfaceChart?.resize();
+    favorChart?.resize();
     updateFlipPositions();
+    updateFavorFlipPositions();
   });
 };
 
@@ -328,7 +432,9 @@ const handleResize = () => {
   interfaceFixedChart?.resize();
   productAddChart?.resize();
   favorChart?.resize();
+  favorFixedChart?.resize();
   updateFlipPositions();
+  updateFavorFlipPositions();
 };
 
 onMounted(() => {
@@ -413,8 +519,35 @@ watch(currentType, () => {
 
       <!-- 商品收藏度 -->
       <div class="anime-card">
-        <div class="chart-wrapper">
-          <div ref="favorChartRef" class="chart-div"></div>
+        <div class="dual-chart-container">
+          <!-- 底面层：固定的刻度线和标题 -->
+          <div ref="favorFixedChartRef" class="fixed-chart-layer"></div>
+          
+          <!-- 滑动层：包裹了加宽版图表 -->
+          <div class="chart-scroll-wrapper scroll-chart-layer horizontal">
+            <div class="chart-wrapper" :style="{ width: favorChartWidth, height: '100%', position: 'relative' }">
+              <div ref="favorChartRef" class="chart-div" style="width: 100%; height: 100%;"></div>
+              
+              <!-- 翻牌数字覆盖层 (收藏度) -->
+              <div class="flip-labels-overlay">
+                <div 
+                  v-for="(item, idx) in favorFlipPositions" 
+                  :key="idx"
+                  v-show="item.visible"
+                  class="flip-label-item"
+                  :style="{ left: item.x + 'px', top: (item.y - 25) + 'px', transform: 'translateX(-50%)' }"
+                >
+                  <div class="flip-value favor">
+                    <div v-for="(digit, dIdx) in String(item.value).split('')" :key="dIdx" class="digit-box">
+                      <transition name="flip-num" mode="out-in">
+                        <span :key="digit">{{ digit }}</span>
+                      </transition>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -588,11 +721,28 @@ watch(currentType, () => {
 .scroll-chart-layer {
   position: absolute;
   top: 50px; /* 避开顶部标题 */
-  bottom: 40px; /* 避开底部刻度线 */
+  bottom: 60px; /* 默认留出底部空间 */
   left: 0;
   width: 100%;
   z-index: 2;
   background: transparent !important;
+
+  &.horizontal {
+    bottom: 0;
+    left: 50px; /* 避开固定 Y 轴区域 (与 commonGrid.left 一致) */
+    width: calc(100% - 50px);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    &::-webkit-scrollbar {
+      display: block;
+      height: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: rgba(108, 92, 231, 0.2);
+      border-radius: 3px;
+    }
+  }
 }
 
 .chart-scroll-wrapper {
@@ -602,7 +752,12 @@ watch(currentType, () => {
   padding: 0;
   overscroll-behavior: contain;
 
-  /* 隐藏滚动条 */
+  &.horizontal {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  /* 隐藏垂直滚动条 */
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
@@ -617,6 +772,7 @@ watch(currentType, () => {
 
 .chart-div {
   width: 100%;
+  height: 400px;
 }
 
 /* 翻牌覆盖层样式 */
@@ -644,6 +800,12 @@ watch(currentType, () => {
   color: #6c5ce7;
   font-weight: bold;
   font-size: 16px;
+
+  &.favor {
+    color: #d63031;
+    font-size: 14px;
+    font-weight: bold;
+  }
 }
 
 .digit-box {
