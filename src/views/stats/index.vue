@@ -223,12 +223,6 @@ const initInterfaceChart = () => {
   
   // 底层配置：只显示 X 轴和背景网格
   const fixedOption = {
-    title: { 
-      text: '实时功能接口访问统计 (WebSocket)', 
-      textStyle: { color: '#6c5ce7', fontSize: 16 },
-      top: 10,
-      left: 10
-    },
     grid: commonGrid,
     xAxis: { 
       type: 'value',
@@ -303,9 +297,14 @@ const initProductAddChart = () => {
   // TODO: 商品新增趋势数据后期应通过 API 获取
   const data = productAddData[currentType.value];
   const option = {
-    title: { text: '商品新增趋势 (点击查看详情)', textStyle: { color: '#6c5ce7', fontSize: 16 } },
     tooltip: { trigger: 'item', formatter: '{b}: {c} 个' },
-    xAxis: { type: 'category', data: data.categories },
+    grid: { left: 50, right: 30, bottom: 60, top: 40, containLabel: false },
+    xAxis: { 
+      type: 'category', 
+      data: data.categories,
+      axisLine: { lineStyle: { color: '#dcdde1' } },
+      axisLabel: { color: '#636e72', fontSize: 11, rotate: 30, interval: 0, margin: 12 }
+    },
     yAxis: { type: 'value' },
     series: [{
       data: data.values,
@@ -342,12 +341,6 @@ const initFavorChart = () => {
   const commonGrid = { left: 50, right: 30, bottom: 60, top: 50, containLabel: false };
   
   const fixedOption = {
-    title: { 
-      text: '商品收藏热度排名 (实时更新)', 
-      textStyle: { color: '#6c5ce7', fontSize: 16 },
-      top: 10,
-      left: 10
-    },
     grid: commonGrid,
     xAxis: { type: 'category', data: [], axisLine: { show: false }, axisTick: { show: false } },
     yAxis: { 
@@ -465,7 +458,7 @@ watch(currentType, () => {
       <!-- 接口访问统计 (原流量统计) -->
       <div class="anime-card chart-main-card">
         <div class="header">
-          <h2 class="title">数据驾驶舱 <span>Interface Control Center</span></h2>
+          <h2 class="title">实时功能接口访问统计 <span>Interface Control Center</span></h2>
           <div class="filter-group">
             <button 
               v-for="type in (['daily', 'weekly', 'monthly'] as StatType[])" 
@@ -478,6 +471,7 @@ watch(currentType, () => {
           </div>
         </div>
         <div class="dual-chart-container">
+          <div class="chart-title-html">实时功能接口访问统计 (WebSocket)</div>
           <!-- 底面层：固定的刻度线和标题 -->
           <div ref="interfaceFixedChartRef" class="fixed-chart-layer"></div>
           
@@ -512,14 +506,22 @@ watch(currentType, () => {
 
       <!-- 商品新增趋势 -->
       <div class="anime-card">
-        <div class="chart-wrapper">
-          <div ref="productAddChartRef" class="chart-div"></div>
+        <div class="header">
+          <h2 class="title small">商品新增趋势 <span>Product Trend</span></h2>
+        </div>
+        <div class="dual-chart-container small">
+          <div class="chart-wrapper" style="height: 100%;">
+            <div ref="productAddChartRef" class="chart-div" style="height: 100%;"></div>
+          </div>
         </div>
       </div>
 
       <!-- 商品收藏度 -->
       <div class="anime-card">
-        <div class="dual-chart-container">
+        <div class="header">
+          <h2 class="title small">收藏热度排名 <span>Product Popularity</span></h2>
+        </div>
+        <div class="dual-chart-container small">
           <!-- 底面层：固定的刻度线和标题 -->
           <div ref="favorFixedChartRef" class="fixed-chart-layer"></div>
           
@@ -659,6 +661,10 @@ watch(currentType, () => {
     display: flex;
     flex-direction: column;
 
+    &.small {
+      font-size: 20px;
+    }
+
     span {
       font-size: 11px;
       color: #95afc0;
@@ -707,6 +713,14 @@ watch(currentType, () => {
   border-radius: 12px;
   padding: 10px; /* 统一外围留白 */
   box-sizing: border-box;
+
+  &.small {
+    height: 320px;
+  }
+}
+
+.chart-title-html {
+  display: none; /* 已迁移到 header，暂时保留 class 以防万一 */
 }
 
 .fixed-chart-layer {
@@ -768,11 +782,16 @@ watch(currentType, () => {
   background: transparent;
   border-radius: 12px;
   padding: 0; /* 彻底移除内边距，确保坐标系从 0,0 开始 */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .chart-div {
   width: 100%;
-  height: 400px;
+  height: 100%;
 }
 
 /* 翻牌覆盖层样式 */
