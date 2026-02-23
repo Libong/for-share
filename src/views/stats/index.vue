@@ -1,7 +1,9 @@
-<script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
+<script lang="ts" setup>
+import {nextTick, onMounted, onUnmounted, ref, watch} from 'vue';
 import * as echarts from 'echarts';
-import { ElDialog, ElTable, ElTableColumn } from 'element-plus';
+import {ElDialog, ElTable, ElTableColumn} from 'element-plus';
+import {WebSocketClient} from '@/tool/websocket';
+import {GetCurToken} from "@/config/localStorage";
 
 // --- 类型定义 ---
 type StatType = 'daily' | 'weekly' | 'monthly';
@@ -42,14 +44,14 @@ const updateFlipPositions = () => {
   requestAnimationFrame(() => {
     const list: { x: number, y: number, value: number, visible: boolean }[] = [];
     (data.names as string[]).forEach((_, index: number) => {
-      const pos = interfaceChart!.convertToPixel({ seriesIndex: 0 }, [data.values[index], index]);
+      const pos = interfaceChart!.convertToPixel({seriesIndex: 0}, [data.values[index], index]);
       const isVisible = interfaceChart!.containPixel('grid', pos);
       
-      list.push({ 
-        x: pos[0], 
-        y: pos[1], 
-        value: data.values[index], 
-        visible: isVisible 
+      list.push({
+        x: pos[0],
+        y: pos[1],
+        value: data.values[index],
+        visible: isVisible
       });
     });
     flipPositions.value = list;
@@ -64,14 +66,14 @@ const updateFavorFlipPositions = () => {
     const list: { x: number, y: number, value: number, visible: boolean }[] = [];
     (data.products as string[]).forEach((_, index: number) => {
       // 这里的坐标转换需要根据系列类型和维度索引调整
-      const pos = favorChart!.convertToPixel({ seriesIndex: 0 }, [index, data.levels[index]]);
+      const pos = favorChart!.convertToPixel({seriesIndex: 0}, [index, data.levels[index]]);
       const isVisible = favorChart!.containPixel('grid', pos);
       
-      list.push({ 
-        x: pos[0], 
-        y: pos[1], 
-        value: data.levels[index], 
-        visible: isVisible 
+      list.push({
+        x: pos[0],
+        y: pos[1],
+        value: data.levels[index],
+        visible: isVisible
       });
     });
     favorFlipPositions.value = list;
@@ -94,7 +96,12 @@ const interfaceStats = ref({
     ],
     values: [210, 560, 120, 330, 45, 89, 412, 110, 56, 230],
     logs: [
-      [{name: '/api/user/login', user: 'Admin', time: '10:05', ip: '192.168.1.1'}, {name: '/api/user/login', user: 'Guest', time: '10:10', ip: '192.168.1.10'}],
+      [{name: '/api/user/login', user: 'Admin', time: '10:05', ip: '192.168.1.1'}, {
+        name: '/api/user/login',
+        user: 'Guest',
+        time: '10:10',
+        ip: '192.168.1.10'
+      }],
       [{name: '/api/product/list', user: 'UserA', time: '10:15', ip: '192.168.1.5'}],
       [{name: '/api/order/create', user: 'UserB', time: '10:20', ip: '192.168.2.1'}],
       [{name: '/api/user/profile', user: 'UserC', time: '10:25', ip: '192.168.1.3'}],
@@ -136,37 +143,63 @@ const getNiceMax = (maxValue: number) => {
   return niceMax * magnitude;
 };
 
-// 模拟 WebSocket 实时更新 (仅针对当日数据)
-let wsTimer: any = null;
-const startWsSimulation = () => {
-  // TODO: 后期替换为真实的 WebSocket 连接逻辑
-  wsTimer = setInterval(() => {
-    // 随机增加几个访问量
-    const index = Math.floor(Math.random() * interfaceStats.value.daily.values.length);
-    interfaceStats.value.daily.values[index] += Math.floor(Math.random() * 5) + 1;
-    
-    // 如果当前选中的是 daily，更新两个图表
-    if (currentType.value === 'daily') {
-      if (interfaceChart) interfaceChart.setOption({ series: [{ data: interfaceStats.value.daily.values }] });
-      if (interfaceFixedChart) {
-        const maxValue = Math.max(...interfaceStats.value.daily.values);
-        interfaceFixedChart.setOption({ xAxis: { max: getNiceMax(maxValue) } });
+// WebSocket 实例
+let wsClient: WebSocketClient | null = null;
+
+interface WsMessage {
+  type: string;
+  
+}
+
+const handleWsMessage = (message: WsMessage) => {
+  if (!message || typeof message !== 'object') return;
+  
+  // 根据消息类型更新数据
+  // 假设格式为: { type: 'interface_stats_update', data: { index: number, value: number } }
+  // 或者: { type: 'favor_stats_update', data: { index: number, value: number } }
+  
+  const {type, data} = message;
+  
+  if (type === 'interface_stats_update' && data) {
+    const {index, value} = data;
+    if (interfaceStats.value.daily.values[index] !== undefined) {
+      interfaceStats.value.daily.values[index] = value;
+      
+      if (currentType.value === 'daily') {
+        if (interfaceChart) interfaceChart.setOption({series: [{data: interfaceStats.value.daily.values}]});
+        if (interfaceFixedChart) {
+          const maxValue = Math.max(...interfaceStats.value.daily.values);
+          interfaceFixedChart.setOption({xAxis: {max: getNiceMax(maxValue)}});
+        }
+        updateFlipPositions();
       }
-      updateFlipPositions();
     }
-
-    // 随机更新收藏热度
-    const favorIndex = Math.floor(Math.random() * favorStats.value.levels.length);
-    const delta = Math.floor(Math.random() * 3) + 1;
-    let newValue = favorStats.value.levels[favorIndex] + delta;
-    if (newValue > 100) newValue = 80; // 超过100重置
-    favorStats.value.levels[favorIndex] = newValue;
-
-    if (favorChart) {
-      favorChart.setOption({ series: [{ data: favorStats.value.levels }] });
-      updateFavorFlipPositions();
+  } else if (type === 'favor_stats_update' && data) {
+    const {index, value} = data;
+    if (favorStats.value.levels[index] !== undefined) {
+      favorStats.value.levels[index] = value;
+      
+      if (favorChart) {
+        favorChart.setOption({series: [{data: favorStats.value.levels}]});
+        updateFavorFlipPositions();
+      }
     }
-  }, 3000); // 3秒更新一次
+  }
+};
+
+const initWebSocket = () => {
+  wsClient = new WebSocketClient({
+    onMessage: handleWsMessage,
+    onError: (err) => console.error('Stats WebSocket Error:', err),
+    onOpen(ev) {
+      console.log('连接成功，准备发送验证信息...');
+      wsClient?.send({
+        type: 'auth',
+        token: GetCurToken()
+      });
+    },
+  });
+  wsClient.connect();
 };
 
 // TODO: 商品新增数据后期需要通过 API 接口动态拉取
@@ -215,46 +248,46 @@ const initInterfaceChart = () => {
   interfaceChart = echarts.init(interfaceChartRef.value);
   
   const data = (interfaceStats.value as any)[currentType.value];
-  const maxValue = Math.max(...(data.values as number[]), 100); 
+  const maxValue = Math.max(...(data.values as number[]), 100);
   const syncMax = getNiceMax(maxValue);
   
   // 统一边距：左侧留够标签空间，其余四周留白
-  const commonGrid = { left: 120, right: 30, bottom: 40, top: 50, containLabel: false };
+  const commonGrid = {left: 120, right: 30, bottom: 40, top: 50, containLabel: false};
   
   // 底层配置：只显示 X 轴和背景网格
   const fixedOption = {
     grid: commonGrid,
-    xAxis: { 
+    xAxis: {
       type: 'value',
       min: 0,
       max: syncMax,
-      axisLine: { show: true, lineStyle: { color: '#dcdde1' } },
-      splitLine: { show: true, lineStyle: { type: 'dashed' } },
-      axisLabel: { color: '#636e72', fontSize: 11, margin: 12 }
+      axisLine: {show: true, lineStyle: {color: '#dcdde1'}},
+      splitLine: {show: true, lineStyle: {type: 'dashed'}},
+      axisLabel: {color: '#636e72', fontSize: 11, margin: 12}
     },
-    yAxis: { type: 'category', data: [], axisLine: { show: false }, axisTick: { show: false } },
+    yAxis: {type: 'category', data: [], axisLine: {show: false}, axisTick: {show: false}},
     series: []
   };
-
+  
   // 上层配置：显示 Y 轴和条形图，背景透明
   const scrollOption = {
     backgroundColor: 'transparent',
-    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-    grid: { ...commonGrid, top: 0, bottom: 0 }, // 绘图区高度由容器比例决定
-    xAxis: { 
-      type: 'value', 
+    tooltip: {trigger: 'axis', axisPointer: {type: 'shadow'}},
+    grid: {...commonGrid, top: 0, bottom: 0}, // 绘图区高度由容器比例决定
+    xAxis: {
+      type: 'value',
       min: 0,
       max: syncMax,
-      axisLine: { show: false }, 
-      splitLine: { show: false }, 
-      axisLabel: { show: false } 
+      axisLine: {show: false},
+      splitLine: {show: false},
+      axisLabel: {show: false}
     },
-    yAxis: { 
-      type: 'category', 
+    yAxis: {
+      type: 'category',
       data: data.names,
       inverse: true,
-      axisLine: { show: true, lineStyle: { color: '#dcdde1' } },
-      axisLabel: { color: '#636e72', fontSize: 11, width: 80, overflow: 'truncate' }
+      axisLine: {show: true, lineStyle: {color: '#dcdde1'}},
+      axisLabel: {color: '#636e72', fontSize: 11, width: 80, overflow: 'truncate'}
     },
     series: [
       {
@@ -263,25 +296,25 @@ const initInterfaceChart = () => {
         data: data.values,
         itemStyle: {
           color: new echarts.graphic.LinearGradient(1, 0, 0, 0, [
-            { offset: 0, color: '#a29bfe' },
-            { offset: 1, color: '#6c5ce7' }
+            {offset: 0, color: '#a29bfe'},
+            {offset: 1, color: '#6c5ce7'}
           ]),
           borderRadius: [0, 4, 4, 0]
         },
-        label: { show: false },
+        label: {show: false},
         animationDuration: 1000,
         animationDurationUpdate: 300
       }
     ]
   };
-
+  
   interfaceFixedChart.setOption(fixedOption);
   interfaceChart.setOption(scrollOption);
   
   interfaceChart.on('finished', () => {
     updateFlipPositions();
   });
-
+  
   interfaceChart.on('click', (params: any) => {
     const index = params.dataIndex;
     detailTitle.value = `接口 [ ${data.names[index]} ] 访问日志`;
@@ -297,26 +330,26 @@ const initProductAddChart = () => {
   // TODO: 商品新增趋势数据后期应通过 API 获取
   const data = productAddData[currentType.value];
   const option = {
-    tooltip: { trigger: 'item', formatter: '{b}: {c} 个' },
-    grid: { left: 50, right: 30, bottom: 60, top: 40, containLabel: false },
-    xAxis: { 
-      type: 'category', 
+    tooltip: {trigger: 'item', formatter: '{b}: {c} 个'},
+    grid: {left: 50, right: 30, bottom: 60, top: 40, containLabel: false},
+    xAxis: {
+      type: 'category',
       data: data.categories,
-      axisLine: { lineStyle: { color: '#dcdde1' } },
-      axisLabel: { color: '#636e72', fontSize: 11, rotate: 30, interval: 0, margin: 12 }
+      axisLine: {lineStyle: {color: '#dcdde1'}},
+      axisLabel: {color: '#636e72', fontSize: 11, rotate: 30, interval: 0, margin: 12}
     },
-    yAxis: { type: 'value' },
+    yAxis: {type: 'value'},
     series: [{
       data: data.values,
       type: 'line',
       symbol: 'diamond',
       symbolSize: 12,
-      itemStyle: { color: '#74b9ff' },
-      areaStyle: { color: 'rgba(116, 185, 255, 0.1)' }
+      itemStyle: {color: '#74b9ff'},
+      areaStyle: {color: 'rgba(116, 185, 255, 0.1)'}
     }]
   };
   productAddChart.setOption(option);
-
+  
   productAddChart.on('click', (params: any) => {
     const index = params.dataIndex;
     detailTitle.value = `${data.categories[index]} 新增商品详情`;
@@ -338,40 +371,40 @@ const initFavorChart = () => {
   const data = favorStats.value;
   
   // 统一边距：左侧留出 Y 轴空间 (50)，右侧留白 (30)
-  const commonGrid = { left: 50, right: 30, bottom: 60, top: 50, containLabel: false };
+  const commonGrid = {left: 50, right: 30, bottom: 60, top: 50, containLabel: false};
   
   const fixedOption = {
     grid: commonGrid,
-    xAxis: { type: 'category', data: [], axisLine: { show: false }, axisTick: { show: false } },
-    yAxis: { 
+    xAxis: {type: 'category', data: [], axisLine: {show: false}, axisTick: {show: false}},
+    yAxis: {
       type: 'value',
       min: 0,
       max: 100,
       interval: 20,
-      axisLine: { show: true, lineStyle: { color: '#dcdde1' } },
-      splitLine: { show: true, lineStyle: { type: 'dashed', color: '#f1f2f6' } },
-      axisLabel: { color: '#636e72', fontSize: 11 }
+      axisLine: {show: true, lineStyle: {color: '#dcdde1'}},
+      splitLine: {show: true, lineStyle: {type: 'dashed', color: '#f1f2f6'}},
+      axisLabel: {color: '#636e72', fontSize: 11}
     },
     series: []
   };
-
+  
   const scrollOption = {
     backgroundColor: 'transparent',
-    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-    grid: { left: 0, right: 0, top: 50, bottom: 60 }, 
-    xAxis: { 
-      type: 'category', 
+    tooltip: {trigger: 'axis', axisPointer: {type: 'shadow'}},
+    grid: {left: 0, right: 0, top: 50, bottom: 60},
+    xAxis: {
+      type: 'category',
       data: data.products,
-      axisLine: { show: true, lineStyle: { color: '#dcdde1' } },
-      axisLabel: { color: '#636e72', fontSize: 11, rotate: 30, interval: 0, margin: 12 }
+      axisLine: {show: true, lineStyle: {color: '#dcdde1'}},
+      axisLabel: {color: '#636e72', fontSize: 11, rotate: 30, interval: 0, margin: 12}
     },
-    yAxis: { 
-      type: 'value', 
+    yAxis: {
+      type: 'value',
       min: 0,
       max: 100,
-      axisLine: { show: false }, 
-      splitLine: { show: false }, 
-      axisLabel: { show: false } 
+      axisLine: {show: false},
+      splitLine: {show: false},
+      axisLabel: {show: false}
     },
     series: [
       {
@@ -380,8 +413,8 @@ const initFavorChart = () => {
         data: data.levels,
         itemStyle: {
           color: new echarts.graphic.LinearGradient(0, 1, 0, 0, [
-            { offset: 0, color: '#fab1a0' },
-            { offset: 1, color: '#ff7675' }
+            {offset: 0, color: '#fab1a0'},
+            {offset: 1, color: '#ff7675'}
           ]),
           borderRadius: [4, 4, 0, 0]
         },
@@ -390,7 +423,7 @@ const initFavorChart = () => {
       }
     ]
   };
-
+  
   favorFixedChart.setOption(fixedOption);
   favorChart.setOption(scrollOption);
   
@@ -405,13 +438,13 @@ const updateChartHeight = () => {
   const itemHeight = 66;
   const height = (data.names as string[]).length * itemHeight;
   chartHeight.value = `${height}px`;
-
+  
   // 更新收藏热度图表宽度 (横向滚动)
   const favorData = favorStats.value;
   const itemWidth = 100;
   const width = favorData.products.length * itemWidth;
   favorChartWidth.value = `${Math.max(width, 600)}px`;
-
+  
   nextTick(() => {
     interfaceChart?.resize();
     favorChart?.resize();
@@ -435,12 +468,12 @@ onMounted(() => {
   initInterfaceChart();
   initProductAddChart();
   initFavorChart();
-  startWsSimulation();
+  initWebSocket();
   window.addEventListener('resize', handleResize);
 });
 
 onUnmounted(() => {
-  if (wsTimer) clearInterval(wsTimer);
+  if (wsClient) wsClient.disconnect();
   window.removeEventListener('resize', handleResize);
 });
 
@@ -460,11 +493,11 @@ watch(currentType, () => {
         <div class="header">
           <h2 class="title">实时功能接口访问统计 <span>Interface Control Center</span></h2>
           <div class="filter-group">
-            <button 
-              v-for="type in (['daily', 'weekly', 'monthly'] as StatType[])" 
-              :key="type"
-              :class="['filter-btn', { active: currentType === type }]"
-              @click="currentType = type"
+            <button
+                v-for="type in (['daily', 'weekly', 'monthly'] as StatType[])"
+                :key="type"
+                :class="['filter-btn', { active: currentType === type }]"
+                @click="currentType = type"
             >
               {{ type === 'daily' ? '当日实况' : type === 'weekly' ? '周度统计' : '月度归档' }}
             </button>
@@ -477,21 +510,21 @@ watch(currentType, () => {
           
           <!-- 滑动层：包裹了加长版图表 -->
           <div class="chart-scroll-wrapper scroll-chart-layer">
-            <div class="chart-wrapper" :style="{ height: chartHeight, position: 'relative' }">
+            <div :style="{ height: chartHeight, position: 'relative' }" class="chart-wrapper">
               <div ref="interfaceChartRef" class="chart-div" style="height: 100%;"></div>
               
               <!-- 翻牌数字覆盖层 -->
               <div class="flip-labels-overlay">
-                <div 
-                  v-for="(item, idx) in flipPositions" 
-                  :key="idx"
-                  v-show="item.visible"
-                  class="flip-label-item"
-                  :style="{ left: (item.x + 30) + 'px', top: item.y + 'px', transform: 'translateY(-50%)' }"
+                <div
+                    v-for="(item, idx) in flipPositions"
+                    v-show="item.visible"
+                    :key="idx"
+                    :style="{ left: (item.x + 30) + 'px', top: item.y + 'px', transform: 'translateY(-50%)' }"
+                    class="flip-label-item"
                 >
                   <div class="flip-value">
                     <div v-for="(digit, dIdx) in String(item.value).split('')" :key="dIdx" class="digit-box">
-                      <transition name="flip-num" mode="out-in">
+                      <transition mode="out-in" name="flip-num">
                         <span :key="digit">{{ digit }}</span>
                       </transition>
                     </div>
@@ -503,7 +536,7 @@ watch(currentType, () => {
           </div>
         </div>
       </div>
-
+      
       <!-- 商品新增趋势 -->
       <div class="anime-card">
         <div class="header">
@@ -515,7 +548,7 @@ watch(currentType, () => {
           </div>
         </div>
       </div>
-
+      
       <!-- 商品收藏度 -->
       <div class="anime-card">
         <div class="header">
@@ -527,21 +560,21 @@ watch(currentType, () => {
           
           <!-- 滑动层：包裹了加宽版图表 -->
           <div class="chart-scroll-wrapper scroll-chart-layer horizontal">
-            <div class="chart-wrapper" :style="{ width: favorChartWidth, height: '100%', position: 'relative' }">
+            <div :style="{ width: favorChartWidth, height: '100%', position: 'relative' }" class="chart-wrapper">
               <div ref="favorChartRef" class="chart-div" style="width: 100%; height: 100%;"></div>
               
               <!-- 翻牌数字覆盖层 (收藏度) -->
               <div class="flip-labels-overlay">
-                <div 
-                  v-for="(item, idx) in favorFlipPositions" 
-                  :key="idx"
-                  v-show="item.visible"
-                  class="flip-label-item"
-                  :style="{ left: item.x + 'px', top: (item.y - 25) + 'px', transform: 'translateX(-50%)' }"
+                <div
+                    v-for="(item, idx) in favorFlipPositions"
+                    v-show="item.visible"
+                    :key="idx"
+                    :style="{ left: item.x + 'px', top: (item.y - 25) + 'px', transform: 'translateX(-50%)' }"
+                    class="flip-label-item"
                 >
                   <div class="flip-value favor">
                     <div v-for="(digit, dIdx) in String(item.value).split('')" :key="dIdx" class="digit-box">
-                      <transition name="flip-num" mode="out-in">
+                      <transition mode="out-in" name="flip-num">
                         <span :key="digit">{{ digit }}</span>
                       </transition>
                     </div>
@@ -553,37 +586,39 @@ watch(currentType, () => {
         </div>
       </div>
     </div>
-
+    
     <!-- 详情弹窗：科技动漫终端版 -->
-    <el-dialog 
-      v-model="detailVisible" 
-      width="650px" 
-      class="anime-terminal-dialog"
-      :show-close="false"
+    <el-dialog
+        v-model="detailVisible"
+        :show-close="false"
+        class="anime-terminal-dialog"
+        width="650px"
     >
       <template #header>
         <div class="terminal-header">
           <span class="header-title" v-html="detailTitle.replace('[', '<strong>[').replace(']', ']</strong>')"></span>
         </div>
       </template>
-
+      
       <div class="terminal-body">
         <div class="scanline"></div>
-        <el-table 
-          :data="currentDetails" 
-          style="width: 100%" 
-          class="tech-table"
+        <el-table
+            :data="currentDetails"
+            class="tech-table"
+            style="width: 100%"
         >
-          <el-table-column prop="user" label="OPERATOR" min-width="120" align="center" header-align="center">
+          <el-table-column align="center" header-align="center" label="OPERATOR" min-width="120" prop="user">
             <template #default="scope">
               <span class="tech-user-badge">{{ scope.row.user }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="time" label="TIME" min-width="120" align="center" header-align="center" />
-          <el-table-column v-if="currentDetails[0]?.ip" prop="ip" label="SOURCE IP" min-width="160" align="center" header-align="center" />
+          <el-table-column align="center" header-align="center" label="TIME" min-width="120" prop="time"/>
+          <el-table-column v-if="currentDetails[0]?.ip" align="center" header-align="center" label="SOURCE IP"
+                           min-width="160"
+                           prop="ip"/>
         </el-table>
       </div>
-
+      
       <template #footer>
         <div class="dialog-footer">
           <div class="footer-msg">Connection Secure: 256-bit AES</div>
@@ -596,7 +631,7 @@ watch(currentType, () => {
   </div>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap');
 
 .stats-container {
@@ -630,11 +665,11 @@ watch(currentType, () => {
   transition: transform 0.3s ease;
   position: relative;
   overflow: hidden;
-
+  
   &:hover {
     transform: translateY(-5px);
   }
-
+  
   &::before {
     content: '';
     position: absolute;
@@ -652,7 +687,7 @@ watch(currentType, () => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 25px;
-
+  
   .title {
     font-family: 'ZCOOL KuaiLe', cursive;
     color: #4834d4;
@@ -660,11 +695,11 @@ watch(currentType, () => {
     margin: 0;
     display: flex;
     flex-direction: column;
-
+    
     &.small {
       font-size: 20px;
     }
-
+    
     span {
       font-size: 11px;
       color: #95afc0;
@@ -679,7 +714,7 @@ watch(currentType, () => {
 .filter-group {
   display: flex;
   gap: 10px;
-
+  
   .filter-btn {
     padding: 8px 16px;
     border-radius: 8px;
@@ -690,13 +725,13 @@ watch(currentType, () => {
     transition: all 0.2s ease;
     font-size: 14px;
     font-weight: 500;
-
+    
     &:hover {
       background: #f1f2f6;
       color: #6c5ce7;
       border-color: #a29bfe;
     }
-
+    
     &.active {
       background: #6c5ce7;
       border-color: #6c5ce7;
@@ -713,7 +748,7 @@ watch(currentType, () => {
   border-radius: 12px;
   padding: 10px; /* 统一外围留白 */
   box-sizing: border-box;
-
+  
   &.small {
     height: 320px;
   }
@@ -740,7 +775,7 @@ watch(currentType, () => {
   width: 100%;
   z-index: 2;
   background: transparent !important;
-
+  
   &.horizontal {
     bottom: 0;
     left: 50px; /* 避开固定 Y 轴区域 (与 commonGrid.left 一致) */
@@ -748,10 +783,12 @@ watch(currentType, () => {
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: thin;
+    
     &::-webkit-scrollbar {
       display: block;
       height: 6px;
     }
+    
     &::-webkit-scrollbar-thumb {
       background: rgba(108, 92, 231, 0.2);
       border-radius: 3px;
@@ -765,14 +802,15 @@ watch(currentType, () => {
   border-radius: 12px;
   padding: 0;
   overscroll-behavior: contain;
-
+  
   &.horizontal {
     overflow-x: auto;
     overflow-y: hidden;
   }
-
+  
   /* 隐藏垂直滚动条 */
   scrollbar-width: none;
+  
   &::-webkit-scrollbar {
     display: none;
   }
@@ -819,7 +857,7 @@ watch(currentType, () => {
   color: #6c5ce7;
   font-weight: bold;
   font-size: 16px;
-
+  
   &.favor {
     color: #d63031;
     font-size: 14px;
@@ -856,8 +894,14 @@ watch(currentType, () => {
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.8); }
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
 }
 </style>
 
@@ -881,7 +925,7 @@ watch(currentType, () => {
     justify-content: center;
     align-items: center;
   }
-
+  
   .terminal-header {
     display: flex;
     align-items: center;
@@ -895,7 +939,7 @@ watch(currentType, () => {
       display: flex;
       align-items: center;
       gap: 10px;
-
+      
       strong {
         color: #4834d4;
         font-family: 'ZCOOL KuaiLe', cursive;
@@ -904,23 +948,25 @@ watch(currentType, () => {
       }
     }
   }
-
+  
   .terminal-body {
     position: relative;
     padding: 15px;
     background: #fff;
   }
-
+  
   .scanline {
     display: none; /* 浅色模式下扫描线效果一般，暂时关闭 */
   }
-
+  
   /* Table Customization for Light Theme */
   .tech-table {
     background: transparent !important;
     color: #2d3436 !important;
     
-    &::before { display: none; }
+    &::before {
+      display: none;
+    }
     
     th.el-table__cell {
       background: rgba(108, 92, 231, 0.04) !important;
@@ -929,23 +975,23 @@ watch(currentType, () => {
       font-size: 13px;
       border-bottom: 2px solid rgba(108, 92, 231, 0.1) !important;
     }
-
+    
     td.el-table__cell {
       border-bottom: 1px solid rgba(0, 0, 0, 0.03) !important;
       background: transparent !important;
     }
-
+    
     tr:hover td.el-table__cell {
       background: rgba(108, 92, 231, 0.02) !important;
     }
   }
-
+  
   .tech-item-name {
     color: #4834d4;
     font-weight: 600;
     font-family: monospace;
   }
-
+  
   .tech-user-badge {
     background: #f1f2f6;
     color: #6c5ce7;
@@ -955,17 +1001,20 @@ watch(currentType, () => {
     font-weight: 500;
     border: 1px solid rgba(108, 92, 231, 0.1);
   }
-
+  
   .el-dialog__footer {
     border-top: 1px solid rgba(0, 0, 0, 0.03);
     padding: 15px 20px;
     background: #f9f9fb;
   }
-
+  
   .el-scrollbar__bar {
     .el-scrollbar__thumb {
       background: rgba(108, 92, 231, 0.3);
-      &:hover { background: #6c5ce7; }
+      
+      &:hover {
+        background: #6c5ce7;
+      }
     }
   }
 }
@@ -974,7 +1023,7 @@ watch(currentType, () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-
+  
   .footer-msg {
     font-size: 11px;
     color: rgba(162, 155, 254, 0.4);
@@ -997,13 +1046,13 @@ watch(currentType, () => {
   transition: all 0.3s ease;
   border-radius: 30px; /* 改为椭圆 */
   text-transform: uppercase;
-
+  
   &:hover {
     background: #4834d4;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
   }
-
+  
   .btn-icon {
     font-size: 18px;
     font-weight: normal;

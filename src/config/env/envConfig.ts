@@ -4,6 +4,7 @@ interface EnvConfig {
     APP_ID: string;
     ENV: string;
     STORAGE_URL: string;
+    WEBSOCKET_URL: string;
 }
 
 export const envConfig: EnvConfig = {
@@ -12,6 +13,7 @@ export const envConfig: EnvConfig = {
     FILE_UPLOAD_URL: import.meta.env.VITE_FILE_UPLOAD_URL,
     ENV: import.meta.env.VITE_APP_ENV,
     STORAGE_URL: import.meta.env.VITE_STORAGE_URL,
+    WEBSOCKET_URL: import.meta.env.VITE_WEBSOCKET_URL,
 }
 
 export const isDev = envConfig.ENV === 'dev'
