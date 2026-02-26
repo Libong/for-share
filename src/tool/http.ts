@@ -1,8 +1,9 @@
 import axios, {AxiosInstance, AxiosRequestConfig} from "axios";
-import {toSnakeCase} from "@/tool/tool";
+import {isPlainObject, toSnakeCase} from "@/tool/tool";
 import router from "@/router";
-import {localStorage_roleObj_label, localStorage_tokenObj_label} from "@/config/localStorage";
-import {envConfig} from "@/config/env/envConfig";
+import {GetCurRole, GetCurToken, localStorage_roleObj_label, localStorage_tokenObj_label} from "@/config/localStorage";
+import {envConfig, isProd} from "@/config/env/envConfig";
+import {decryptAES, encryptAES, encryptRSA, generateAESKey} from "@/tool/crypt";
 
 export interface IApiResponse {
     code: number;
@@ -31,19 +32,21 @@ const createAxiosInstance = (auth: boolean, contentType?: string, baseUrl?: stri
     instance.interceptors.request.use((config: AxiosRequestConfig | any) => {
         // 只有在需要认证的情况下才添加token
         if (auth) {
-            const tokenObjStr = localStorage.getItem(localStorage_tokenObj_label);
-            if (tokenObjStr) {
-                const tokenObj = JSON.parse(tokenObjStr);
-                config.headers['li-token'] = tokenObj.localStorage_token_label;
-            }
-
-            const roleObjStr = localStorage.getItem(localStorage_roleObj_label);
-            if (roleObjStr) {
-                const roleObj = JSON.parse(roleObjStr);
-                config.headers['li-role'] = roleObj.id;
-            }
+            config.headers['li-token'] = GetCurToken();
+            config.headers['li-role'] = GetCurRole();
         }
 
+        if (config.headers['Content-Type'] === 'application/json' && isProd) {
+            /*数据加密*/
+            //1.生成对称加密的key 随机每次请求不同 并存于axios的自定义属性透传 用于响应时获取并解析后端传递的对称加密数据
+            const aesKey = generateAESKey()
+            config.__AESKey = aesKey
+            //2.将key进行非对称加密 传递给后端
+            config.headers['li-key'] = encryptRSA(aesKey)
+            //3.将数据进行对称加密
+            const encryptObj = encryptAES(JSON.stringify(config.data), aesKey);
+            config.data = encryptObj.ciphertext + encryptObj.iv;
+        }
         return config;
     });
 
@@ -53,6 +56,11 @@ const createAxiosInstance = (auth: boolean, contentType?: string, baseUrl?: stri
             const apiResponse = res.data as IApiResponse;
             if (apiResponse.error !== "") {
                 return Promise.reject(apiResponse.error);
+            }
+            if (res.config && !isPlainObject(res.data.data) && isProd) {
+                const aesKey = res.config.__AESKey
+                const decryptData = decryptAES(res.data.data, aesKey);
+                res.data.data = JSON.parse(decryptData)
             }
             return res;
         },
@@ -70,7 +78,7 @@ const createAxiosInstance = (auth: boolean, contentType?: string, baseUrl?: stri
     return instance;
 };
 
-function handleAuthenticationError(redirectPath: string) {
+export function handleAuthenticationError(redirectPath: string) {
     localStorage.removeItem(localStorage_tokenObj_label);
     localStorage.removeItem(localStorage_roleObj_label);
     router.push({path: '/login', query: {redirect: redirectPath}}).then(r => {

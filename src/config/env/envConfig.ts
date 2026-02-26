@@ -4,6 +4,7 @@ interface EnvConfig {
     APP_ID: string;
     ENV: string;
     STORAGE_URL: string;
+    CRYPT_KEY: string;
     WEBSOCKET_URL: string;
 }
 
@@ -13,6 +14,7 @@ export const envConfig: EnvConfig = {
     FILE_UPLOAD_URL: import.meta.env.VITE_FILE_UPLOAD_URL,
     ENV: import.meta.env.VITE_APP_ENV,
     STORAGE_URL: import.meta.env.VITE_STORAGE_URL,
+    CRYPT_KEY: import.meta.env.VITE_CRYPT_KEY,
     WEBSOCKET_URL: import.meta.env.VITE_WEBSOCKET_URL,
 }
 

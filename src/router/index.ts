@@ -1,16 +1,20 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
-import { ElNotification } from "element-plus";
-import { localStorage_tokenObj_label } from "@/config/localStorage";
+import {createRouter, createWebHistory, RouteRecordRaw} from "vue-router";
+import {ElNotification} from "element-plus";
 
 const routes: Array<RouteRecordRaw> = [
     {
         path: "/",
-        redirect: "/stats",
+        redirect: "/login",
     },
     {
         path: "/stats",
         name: "Stats",
         component: () => import("@/views/stats/index.vue"),
+    },
+    {
+        path: "/login",
+        name: "Login",
+        component: () => import("@/views/login/index.vue"),
     },
 ];
 
